@@ -1,0 +1,379 @@
+{
+  "in_progress": {
+    "description": "In-place rebuild of state-for-agents: TUW data deleted, portfolio AGENTS/tasks/guide/rules/skills/pending written",
+    "id": "PV-STATE",
+    "started": "2026-10-15",
+    "title": "Agent tracker rebuild"
+  },
+  "project": "Portfolio VS Code",
+  "pushed_count": 0,
+  "session": {
+    "branch": "main",
+    "next_up": "PV-STORE (lib/store.ts), then PV-LOCALGIT, then shell components",
+    "pending_verifications": [
+      "browser smoke of shell once layout+explorer land",
+      "npm run dev with 1 real section row"
+    ],
+    "tip": "066e225",
+    "unpushed": [
+      "066e225",
+      "7396d55",
+      "9fdb81b",
+      "230dfcf",
+      "a55fcae",
+      "418a0b1",
+      "dc0abf8",
+      "1c51165",
+      "dd2e569",
+      "9aff507",
+      "3b3d262",
+      "c68a14b",
+      "d387649",
+      "7cb7b6c",
+      "075e310",
+      "d68ffc0",
+      "ce41c49",
+      "7263a3f",
+      "29d9a45",
+      "80332f9",
+      "42ce2a3",
+      "d73813b",
+      "038fbd5",
+      "e937d16",
+      "611acc6",
+      "76a2e6b",
+      "20bf5eb",
+      "ba0f41a",
+      "9246bf6",
+      "6d11746",
+      "2c87b1f",
+      "7cc4e2f",
+      "099518b",
+      "7c5f573",
+      "31b7526",
+      "207b4d5",
+      "21441c0",
+      "552d6d6",
+      "3c9841b",
+      "1515731",
+      "70d8b04",
+      "7e75a4d",
+      "db56194",
+      "f770245",
+      "7fea49b",
+      "132b461",
+      "dcc0150",
+      "59f9162",
+      "de46926",
+      "aac76f6",
+      "b4fa392",
+      "7939f48",
+      "51147b8",
+      "d1a5550",
+      "e6fa7cf",
+      "163cfe9",
+      "ec525ed",
+      "0b3e36e",
+      "69fd81d",
+      "7ea3b66",
+      "037bed9",
+      "8a03a49",
+      "fae4fb9",
+      "7306e57",
+      "2c5cd04",
+      "76d91f6",
+      "ffeeec1",
+      "9bb0e53",
+      "7215b97",
+      "144e580",
+      "5bb34c7"
+    ]
+  },
+  "source_of_truth": {
+    "code": "E:/Portfolio (branch main, no origin)",
+    "reference": "VS Code 1.90+ Dark Modern (8px rounded workbench)",
+    "skill_index": "state-for-agents/AGENTS.md",
+    "tokens": "app/globals.css @theme"
+  },
+  "summary": {
+    "backlog": 30,
+    "done": 5,
+    "in_progress": 1,
+    "total": 36
+  },
+  "tasks": [
+    {
+      "finished": "2026-10-15",
+      "id": "PV-DOCS",
+      "log": "5bb34c7..7ea3b66 (12 DOC files, one commit each)",
+      "owner": "agent",
+      "started": "2026-10-14",
+      "status": "done",
+      "title": "Docs 01-11 + index (all detailed)",
+      "verified": true,
+      "vscode_match": true
+    },
+    {
+      "finished": "2026-10-15",
+      "id": "PV-SCAFFOLD",
+      "log": "0b3e36e structure + ec525ed..d68ffc0 (42 skeleton files: 7 configs + 34 placeholders + lockfile, one commit each)",
+      "owner": "agent",
+      "started": "2026-10-15",
+      "status": "done",
+      "title": "Next.js 16 skeleton + structure file",
+      "verified": true,
+      "vscode_match": true
+    },
+    {
+      "finished": "2026-10-15",
+      "id": "PV-DB",
+      "log": "075e310 init + 7cb7b6c gitignore + d387649..9fdb81b (10 migrations + gitkeep drop, applied clean on local Supabase, zero seed rows)",
+      "owner": "agent",
+      "started": "2026-10-15",
+      "status": "done",
+      "title": "Local Supabase: 10 migrations, verified",
+      "verified": true,
+      "vscode_match": true
+    },
+    {
+      "finished": "2026-10-15",
+      "id": "PV-LIB-DB",
+      "log": "7396d55 (tsc clean + live anon/admin queries, 0 rows)",
+      "owner": "agent",
+      "started": "2026-10-15",
+      "status": "done",
+      "title": "lib/db.ts clients",
+      "verified": true,
+      "vscode_match": true
+    },
+    {
+      "finished": "2026-10-15",
+      "id": "PV-LIB-VALIDATORS",
+      "log": "066e225 (tsc clean + 6 parse cases)",
+      "owner": "agent",
+      "started": "2026-10-15",
+      "status": "done",
+      "title": "lib/validators.ts schemas",
+      "verified": true,
+      "vscode_match": true
+    },
+    {
+      "description": "In-place rebuild of state-for-agents: TUW data deleted, portfolio AGENTS/tasks/guide/rules/skills/pending written",
+      "id": "PV-STATE",
+      "started": "2026-10-15",
+      "status": "in_progress",
+      "title": "Agent tracker rebuild"
+    },
+    {
+      "description": "Zustand slices: explorer, editorTabs, terminalSessions, localEdits, localCommits, uiRenames, tmpFs, preview, theme + selectors (isDirty, displayContent, viewCommits)",
+      "file": "lib/store.ts",
+      "id": "PV-STORE",
+      "status": "backlog",
+      "title": "Zustand store (all slices + selectors)"
+    },
+    {
+      "description": "LocalEdit/LocalCommit/RealCommit types + merge helper (lib/terminal/parser.ts, per DOC/09 §8)",
+      "file": "lib/localGit.ts",
+      "id": "PV-LOCALGIT",
+      "status": "backlog",
+      "title": "Local git types"
+    },
+    {
+      "description": "Octokit allowlist gate: visible projects only, else 404 (lib/allowlist.ts, per DOC/09)",
+      "file": "lib/allowlist.ts",
+      "id": "PV-LIB-ALLOWLIST",
+      "status": "backlog",
+      "title": "Allowlist helper"
+    },
+    {
+      "description": "Server Octokit singleton with GITHUB_PAT (lib/github.ts, per DOC/06 §1)",
+      "file": "lib/github.ts",
+      "id": "PV-LIB-GITHUB",
+      "status": "backlog",
+      "title": "GitHub client"
+    },
+    {
+      "description": "Upstash helpers: get/set/del + key builders + TTLs 48h/24h (lib/cache.ts, per DOC/07)",
+      "file": "lib/cache.ts",
+      "id": "PV-LIB-CACHE",
+      "status": "backlog",
+      "title": "Redis cache helper"
+    },
+    {
+      "description": "Merged real+tmp VFS + resolveName() (lib/vfs.ts)",
+      "file": "lib/vfs.ts",
+      "id": "PV-LIB-VFS",
+      "status": "backlog",
+      "title": "VFS helper"
+    },
+    {
+      "description": "Pure parse(input, ctx) with base + git-local commands (lib/terminal/parser.ts, per DOC/10 §2-3)",
+      "file": "lib/terminal/parser.ts",
+      "id": "PV-LIB-PARSER",
+      "status": "backlog",
+      "title": "Terminal parser"
+    },
+    {
+      "description": "Workbench grid + fonts (app/layout.tsx)",
+      "file": "app/layout.tsx",
+      "id": "PV-C-LAYOUT",
+      "status": "backlog",
+      "title": "Root layout"
+    },
+    {
+      "description": "36px + Command Center pill (components/vscode/TitleBar.tsx, per DOC/05 §3)",
+      "file": "components/vscode/TitleBar.tsx",
+      "id": "PV-C-TITLEBAR",
+      "status": "backlog",
+      "title": "TitleBar"
+    },
+    {
+      "description": "48px, badges, avatar + gear (components/vscode/ActivityBar.tsx, per DOC/05 §4)",
+      "file": "components/vscode/ActivityBar.tsx",
+      "id": "PV-C-ACTIVITYBAR",
+      "status": "backlog",
+      "title": "ActivityBar"
+    },
+    {
+      "description": "280px, DB sections + tree + rename/dirty states (SideBar.tsx + Explorer.tsx, per DOC/05 §5)",
+      "file": "components/vscode/Explorer.tsx",
+      "id": "PV-C-SIDEBAR",
+      "status": "backlog",
+      "title": "Sidebar + Explorer"
+    },
+    {
+      "description": "35px tabs + 22px breadcrumb + split icons (Tabs.tsx + Breadcrumb.tsx, per DOC/05 §6)",
+      "file": "components/vscode/Tabs.tsx",
+      "id": "PV-C-TABS",
+      "status": "backlog",
+      "title": "Tabs + breadcrumb"
+    },
+    {
+      "description": "Shiki + textarea overlay + Ctrl+S local (components/vscode/FileViewer.tsx, per DOC/05 §6)",
+      "file": "components/vscode/FileViewer.tsx",
+      "id": "PV-C-FILEVIEWER",
+      "status": "backlog",
+      "title": "FileViewer"
+    },
+    {
+      "description": "24px accent + main* + Ln/Col + local:k (components/vscode/StatusBar.tsx, per DOC/05 §8)",
+      "file": "components/vscode/StatusBar.tsx",
+      "id": "PV-C-STATUSBAR",
+      "status": "backlog",
+      "title": "StatusBar"
+    },
+    {
+      "description": "Ctrl+P/K fuzzy open + commands (components/vscode/CommandPalette.tsx, per DOC/05 §9)",
+      "file": "components/vscode/CommandPalette.tsx",
+      "id": "PV-C-PALETTE",
+      "status": "backlog",
+      "title": "Command palette"
+    },
+    {
+      "description": "Commit input + local lane SVG + real list + View more (components/vscode/SourceControl.tsx, per DOC/05 §7)",
+      "file": "components/vscode/SourceControl.tsx",
+      "id": "PV-C-SOURCECONTROL",
+      "status": "backlog",
+      "title": "Source Control"
+    },
+    {
+      "description": "xterm panel + git-local commands (components/vscode/TerminalPanel.tsx, per DOC/10 §1-3)",
+      "file": "components/vscode/TerminalPanel.tsx",
+      "id": "PV-C-TERMINAL",
+      "status": "backlog",
+      "title": "Terminal panel"
+    },
+    {
+      "description": "Ctrl+Shift+V split + live local preview (components/vscode/MarkdownPreview.tsx, per DOC/10 §5)",
+      "file": "components/vscode/MarkdownPreview.tsx",
+      "id": "PV-C-MDPREVIEW",
+      "status": "backlog",
+      "title": "Markdown preview"
+    },
+    {
+      "description": "Iframe split + url bar + fallback card (components/vscode/BrowserPreview.tsx, per DOC/10 §4)",
+      "file": "components/vscode/BrowserPreview.tsx",
+      "id": "PV-C-BROWSERPREVIEW",
+      "status": "backlog",
+      "title": "Browser preview"
+    },
+    {
+      "description": "Home shell mount (app/page.tsx)",
+      "file": "app/page.tsx",
+      "id": "PV-PAGE-HOME",
+      "status": "backlog",
+      "title": "Home page"
+    },
+    {
+      "description": "Catch-all deep-links /Projects/repo/path (app/(portfolio)/[[...file]]/page.tsx)",
+      "file": "app/(portfolio)/[[...file]]/page.tsx",
+      "id": "PV-PAGE-PORTFOLIO",
+      "status": "backlog",
+      "title": "Portfolio page"
+    },
+    {
+      "description": "Visible join cache (app/api/projects/route.ts, per DOC/09 §1)",
+      "file": "app/api/projects/route.ts",
+      "id": "PV-API-PROJECTS",
+      "status": "backlog",
+      "title": "API projects"
+    },
+    {
+      "description": "Allowlist + Redis + ETag flow (app/api/repo/tree/route.ts, per DOC/09 §2)",
+      "file": "app/api/repo/tree/route.ts",
+      "id": "PV-API-TREE",
+      "status": "backlog",
+      "title": "API tree"
+    },
+    {
+      "description": "SHA verify + 512KB/binary guards (app/api/repo/blob/route.ts, per DOC/09 §3)",
+      "file": "app/api/repo/blob/route.ts",
+      "id": "PV-API-BLOB",
+      "status": "backlog",
+      "title": "API blob"
+    },
+    {
+      "description": "Paginated real history (app/api/commits/route.ts, per DOC/09 §4)",
+      "file": "app/api/commits/route.ts",
+      "id": "PV-API-COMMITS",
+      "status": "backlog",
+      "title": "API commits"
+    },
+    {
+      "description": "Terminal curl backend 20KB/8s/30-per-min (app/api/proxy/route.ts, per DOC/09 §5)",
+      "file": "app/api/proxy/route.ts",
+      "id": "PV-API-PROXY",
+      "status": "backlog",
+      "title": "API proxy"
+    },
+    {
+      "description": "Nightly warm + HEAD DEL (app/api/cron/sync/route.ts, per DOC/09 §6)",
+      "file": "app/api/cron/sync/route.ts",
+      "id": "PV-API-CRON",
+      "status": "backlog",
+      "title": "API cron sync"
+    },
+    {
+      "description": "revalidateTag repo:o/r (app/api/revalidate/route.ts, per DOC/09 §6)",
+      "file": "app/api/revalidate/route.ts",
+      "id": "PV-API-REVALIDATE",
+      "status": "backlog",
+      "title": "API revalidate"
+    },
+    {
+      "description": "Supabase link + db push + Vercel prod env + logo upload",
+      "file": null,
+      "id": "PV-ENV-PROD",
+      "status": "backlog",
+      "title": "Prod env + link"
+    },
+    {
+      "description": "Custom domain + frame-ancestors + final smoke (per DOC/11)",
+      "file": null,
+      "id": "PV-DEPLOY",
+      "status": "backlog",
+      "title": "Deploy"
+    }
+  ],
+  "tracker_version": 1
+}
