@@ -11,6 +11,7 @@
     ],
     "tip": "066e225",
     "unpushed": [
+      "7d0eec0",
       "29f44aa",
       "5d630e9",
       "5c8e45a",
@@ -105,8 +106,8 @@
     "tokens": "app/globals.css @theme"
   },
   "summary": {
-    "total": 36,
-    "done": 6,
+    "total": 37,
+    "done": 7,
     "in_progress": 0,
     "backlog": 30
   },
@@ -384,6 +385,19 @@
       "id": "PV-DEPLOY",
       "status": "backlog",
       "title": "Deploy"
+    },
+    {
+      "id": "PV-SKILL-DEPTH",
+      "title": "dumb-depth skill",
+      "description": "Smart edge, dumb core: one-way imports, side effects at adapters only",
+      "file": "state-for-agents/skills/dumb-depth/SKILL.md",
+      "status": "done",
+      "owner": "agent",
+      "started": "2026-10-15",
+      "finished": "2026-10-15",
+      "log": "7d0eec0 (secret-leak + import-direction checks empty)",
+      "verified": true,
+      "vscode_match": true
     }
   ],
   "tracker_version": 1
