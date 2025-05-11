@@ -7,31 +7,57 @@
 @source not "../state-for-agents";
 
 @theme {
+  /* === Core Surfaces & Chrome (VS Code Dark Modern) === */
   --color-vscode-bg: #1e1e1e;
   --color-vscode-side: #181818;
-  --color-vscode-tab: #1f1f1f;
+  --color-vscode-tab: #181818;
+  --color-vscode-tab-hover: #1f1f1f;
   --color-vscode-tab-active: #1e1e1e;
   --color-vscode-border: #2b2b2b;
+
+  /* === Typography & Hierarchy === */
   --color-vscode-fg: #cccccc;
+  --color-vscode-fg-active: #ffffff;
   --color-vscode-dim: #858585;
+  --color-vscode-muted: #9d9d9d;
+
+  /* === Brand Accent & Interactive States === */
   --color-vscode-accent: #0078d4;
-  --color-vscode-accent-hover: #006bb3;
+  --color-vscode-accent-hover: #026ec1;
+
+  /* === Git, Status & Diagnostics === */
   --color-vscode-dot: #e2c08d;
   --color-vscode-added: #73c991;
   --color-vscode-error: #f14c4c;
-  --radius-vscode: 8px;
-  --radius-tab: 6px;
-  --radius-pill: 999px;
-  --font-vscode-ui: "Segoe WPC", "Segoe UI", system-ui, sans-serif;
-  --font-vscode-code: "Cascadia Code", "JetBrains Mono", Consolas, monospace;
-  --shadow-vscode: 0 8px 24px rgb(0 0 0 / 0.45);
+  --color-vscode-warning: #cca700;
+  --color-vscode-gutter-added: #2ea043;
+  --color-vscode-gutter-modified: #0078d4;
+
+  /* === Lists, Inputs, Command Center & Widgets === */
   --color-vscode-list-hover: #2a2d2e;
   --color-vscode-list-active: #04395e;
   --color-vscode-input-bg: #3c3c3c;
-  --color-vscode-badge-bg: #007acc;
+  --color-vscode-command-bg: #242424;
+  --color-vscode-widget-bg: #252526;
+  --color-vscode-widget-border: #454545;
+
+  /* === Editor Selection, Line Highlight & Scrollbars === */
+  --color-vscode-selection: #264f78;
+  --color-vscode-line-highlight: #282828;
+  --color-vscode-scroll: rgba(121, 121, 121, 0.4);
+  --color-vscode-scroll-hover: rgba(121, 121, 121, 0.7);
+
+  /* === Badges & Integrated Terminal === */
+  --color-vscode-badge-bg: #0078d4;
   --color-vscode-badge-fg: #ffffff;
   --color-vscode-term-green: #23d18b;
   --color-vscode-term-blue: #3b8eea;
-  --color-vscode-scroll: rgba(121, 121, 121, 0.4);
-  --color-vscode-scroll-hover: rgba(121, 121, 121, 0.7);
+
+  /* === Radii, Fonts & Elevation === */
+  --radius-vscode: 8px;
+  --radius-tab: 6px;
+  --radius-pill: 999px;
+  --font-vscode-ui: "Segoe WPC", "Segoe UI", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-vscode-code: "Cascadia Code", "JetBrains Mono", Consolas, "Courier New", monospace;
+  --shadow-vscode: 0 8px 24px rgb(0 0 0 / 0.45);
 }
