@@ -4,13 +4,16 @@
   "pushed_count": 0,
   "session": {
     "branch": "main",
-    "next_up": "PV-C-ACTIVITYBAR",
+    "next_up": "PV-C-SIDEBAR (mount proposal for first pixels stands)",
     "pending_verifications": [
       "browser smoke of shell once layout+explorer land",
       "npm run dev with 1 real section row"
     ],
     "tip": "066e225",
     "unpushed": [
+      "7d5a9f0",
+      "0220059",
+      "3168611",
       "d5e1b30",
       "9684fd4",
       "8cbc57d",
@@ -115,9 +118,9 @@
   },
   "summary": {
     "total": 37,
-    "done": 11,
+    "done": 12,
     "in_progress": 0,
-    "backlog": 26
+    "backlog": 25
   },
   "tasks": [
     {
@@ -268,11 +271,16 @@
       "vscode_match": true
     },
     {
-      "description": "48px, badges, avatar + gear (components/vscode/ActivityBar.tsx, per DOC/05 §4)",
       "file": "components/vscode/ActivityBar.tsx",
       "id": "PV-C-ACTIVITYBAR",
-      "status": "backlog",
-      "title": "ActivityBar"
+      "status": "done",
+      "title": "ActivityBar",
+      "owner": "agent",
+      "started": "2026-10-16",
+      "finished": "2026-10-16",
+      "log": "7d5a9f0 (tsc clean, token audit clean, badge math 4/4, visual deferred)",
+      "verified": true,
+      "vscode_match": true
     },
     {
       "description": "280px, DB sections + tree + rename/dirty states (SideBar.tsx + Explorer.tsx, per DOC/05 §5)",
