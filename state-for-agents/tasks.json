@@ -4,13 +4,14 @@
   "pushed_count": 0,
   "session": {
     "branch": "main",
-    "next_up": "PV-C-SIDEBAR (mount proposal for first pixels stands)",
+    "next_up": "Mount shell in catch-all page for first pixels",
     "pending_verifications": [
       "browser smoke of shell once layout+explorer land",
       "npm run dev with 1 real section row"
     ],
     "tip": "066e225",
     "unpushed": [
+      "8104943",
       "c96c2dc",
       "7d5a9f0",
       "0220059",
@@ -127,9 +128,9 @@
   },
   "summary": {
     "total": 37,
-    "done": 12,
+    "done": 13,
     "in_progress": 0,
-    "backlog": 25
+    "backlog": 24
   },
   "tasks": [
     {
@@ -292,11 +293,16 @@
       "vscode_match": true
     },
     {
-      "description": "280px, DB sections + tree + rename/dirty states (SideBar.tsx + Explorer.tsx, per DOC/05 §5)",
       "file": "components/vscode/Explorer.tsx",
       "id": "PV-C-SIDEBAR",
-      "status": "backlog",
-      "title": "Sidebar + Explorer"
+      "status": "done",
+      "title": "Sidebar + Explorer",
+      "owner": "agent",
+      "started": "2026-10-16",
+      "finished": "2026-10-16",
+      "log": "8104943 (tsc clean, token audit clean, resolveName 2/2, render deferred)",
+      "verified": true,
+      "vscode_match": true
     },
     {
       "description": "35px tabs + 22px breadcrumb + split icons (Tabs.tsx + Breadcrumb.tsx, per DOC/05 §6)",
