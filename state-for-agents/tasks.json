@@ -4,13 +4,14 @@
   "pushed_count": 0,
   "session": {
     "branch": "main",
-    "next_up": "PV-C-TABS",
+    "next_up": "PV-ICONS: TitleBar menu row",
     "pending_verifications": [
       "browser smoke of shell once layout+explorer land",
       "npm run dev with 1 real section row"
     ],
     "tip": "066e225",
     "unpushed": [
+      "1de5eeb",
       "0016f1d",
       "ab52310",
       "8104943",
@@ -131,9 +132,9 @@
     "tokens": "app/globals.css @theme"
   },
   "summary": {
-    "total": 37,
+    "total": 38,
     "done": 13,
-    "in_progress": 1,
+    "in_progress": 2,
     "backlog": 23
   },
   "tasks": [
@@ -456,6 +457,15 @@
       "log": "7d0eec0 (secret-leak + import-direction checks empty)",
       "verified": true,
       "vscode_match": true
+    },
+    {
+      "id": "PV-ICONS",
+      "title": "Codicons wiring + chrome icon swap",
+      "description": "Font installed+loaded; pending: TitleBar menu row, ActivityBar/Explorer swap, ext badges",
+      "file": null,
+      "status": "in_progress",
+      "owner": "agent",
+      "started": "2026-10-16"
     }
   ],
   "tracker_version": 1
