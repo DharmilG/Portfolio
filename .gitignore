@@ -26,8 +26,7 @@ coverage/
 .DS_Store
 Thumbs.db
 
-# Stray lockfiles (npm + package-lock.json is the standard here)
-pnpm-lock.yaml
+# Stray lockfiles (pnpm + pnpm-lock.yaml is the standard here)
 yarn.lock
 bun.lock
 
