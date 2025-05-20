@@ -21,7 +21,7 @@ Pick region near Supabase (e.g. `bom1` for India/SG DB). Nodejs runtime for all 
 
 ## Steps (first deploy)
 1. `npx create-next-app@latest portfolio --ts --tailwind --app --no-src` (Next 16, React 19, Tailwind 4).
-2. `npm i @supabase/supabase-js zustand shiki @xterm/xterm @octokit/rest @upstash/redis zod react-markdown remark-gfm rehype-highlight`.
+2. `pnpm add @supabase/supabase-js zustand shiki @xterm/xterm @octokit/rest @upstash/redis zod react-markdown remark-gfm rehype-highlight` (pnpm strictly).
 3. Supabase: run `04 §1 DDL` + `§2 RLS` + `§3 Storage` + `§4 Seed`. Verify `select * from sections;`.
 4. `vercel env add` all above, `vercel --prod`. Test `GET /api/projects` -> `{projects:[]}` then insert demo repo.
 5. Dashboard: upload `logo.png` to `avatars`, update `profiles.avatar_url`, insert real `projects` rows. Cron warms overnight; hit `/api/cron/sync` manually once with Bearer to warm now.
