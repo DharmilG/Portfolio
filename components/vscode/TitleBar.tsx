@@ -85,22 +85,6 @@ export const MENU_ITEMS: Menu[] = [
   },
 ];
 
-function VscodeLogo() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 100 100" aria-label="Visual Studio Code">
-      <path
-        fill="#0078d4"
-        d="M24 8l-16 8 44 34-44 34 16 8 60-42z"
-      />
-      <path
-        fill="#0078d4"
-        opacity="0.65"
-        d="M24 8l56 26-14 16 14 16-56 26-16-8 44-34-44-34z"
-      />
-    </svg>
-  );
-}
-
 type TitleBarProps = {
   onQuickOpen?: () => void;
   onCommand?: () => void;
@@ -149,9 +133,14 @@ export default function TitleBar({
       ref={barRef}
       className="flex h-9 shrink-0 items-center gap-1 rounded-vscode bg-vscode-side px-2 text-[13px] text-vscode-dim"
     >
-      <span className="px-1">
-        <VscodeLogo />
-      </span>
+      <img
+        src="/vscode-logo.svg"
+        width={16}
+        height={16}
+        alt="Visual Studio Code"
+        draggable={false}
+        className="ml-1 mr-2 shrink-0"
+      />
       <nav className="flex items-center" aria-label="Application menu">
         {MENU_ITEMS.map((m) => (
           <div key={m.menu} className="relative">
