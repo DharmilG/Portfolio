@@ -47,7 +47,7 @@ Git local (same store as Source Control §7):
 ## 4. Browser preview (`components/vscode/BrowserPreview.tsx`)
 
 - Trigger: tab icon `split-right` when `projects.preview_url != null`, or Run icon, or terminal `open --preview <repo>`, or palette `Open Preview`.
-- Layout: second editor group split right, url bar (readonly input + reload + `Open in new tab`), iframe `flex-1 bg-white rounded-b-[8px]`.
+- Layout: second editor group split right, url bar (readonly input + reload + `Open in new tab`), iframe `flex-1 bg-white` (flush, square).
 - Iframe: `sandbox="allow-scripts allow-same-origin allow-forms allow-popups"`, `allow="clipboard-read"`, full scroll/click navigation works iff target allows framing.
 - Embed fix (your own Vercel apps): remove `X-Frame-Options: DENY`, set `Content-Security-Policy: frame-ancestors https://<portfolio>.vercel.app`. If `preview_embeddable=false` or `onError/load timeout 8s` -> fallback card `Preview blocked by site — [Open in new tab]`.
 - State: `previewUrl, history[], reloadKey` in Zustand `previewSlice`, `RELOAD_PREVIEW` from terminal.
