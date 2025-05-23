@@ -28,6 +28,6 @@ Pick region near Supabase (e.g. `bom1` for India/SG DB). Nodejs runtime for all 
 6. Custom domain + `frame-ancestors` on your preview apps to allow iframe embed.
 
 ## Roadmap (updated: history + fake-git are MVP, not V2)
-- **MVP (now):** rounded shell + `profile.json` + Explorer + Shiki + local edit + fake commits + real paginated commits + terminal + markdown split + iframe preview + palette + cache + cron.
+- **MVP (now):** flush shell + `profile.json` + Explorer + Shiki + local edit + fake commits + real paginated commits + terminal + markdown split + iframe preview + palette + cache + cron.
 - **V1:** search across repos, `log --graph` full SVG, light theme, `View more` infinite, OG images, web-vitals 90+.
 - **V2:** multi-branch switcher (data from `github_cache.branch` list), shareable deep-links `/Projects/repo/path?line=12`, i18n, guestbook via Supabase inserts (authed only).
