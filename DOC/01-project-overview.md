@@ -1,6 +1,6 @@
 # 01 — Project Overview (Detailed)
 
-> Portfolio that looks and behaves exactly like modern VS Code (1.90+, 8px rounded workbench, Command Center pill).
+> Portfolio that looks and behaves exactly like modern VS Code (1.90+, flush chrome, 5px control radius).
 > Stack: Next.js 16 App Router + Tailwind 4 + Supabase + Upstash Redis + Vercel. Shiki viewer (not Monaco).
 
 ## Goal
@@ -11,7 +11,7 @@ Interactive developer portfolio where visitors browse real project code, preview
 - **Owner (you):** adds a project with 1 Supabase insert (`repo_owner, repo_name, visible, preview_url`). Cron + lazy sync fetches tree + meta + README + real commits automatically. No redeploy, no custom admin.
 
 ## Scope MVP (locked)
-- VS Code shell: TitleBar pill, ActivityBar (Explorer/Search/Source Control/Run/Extensions + bottom avatar/gear), Sidebar Explorer, Tabs + breadcrumb, Editor (Shiki), bottom Terminal, StatusBar, Command Palette.
+- VS Code shell: TitleBar (menu row + Command Center), ActivityBar (Explorer/Search/Source Control/Run/Extensions + bottom avatar/gear), Sidebar Explorer, Tabs + breadcrumb, Editor (Shiki), bottom Terminal, StatusBar, Command Palette.
 - Sections as folders from DB: `About/ Experience/ Projects/<repo>/ Skills/ Contact/ tmp/`.
 - Projects: allowlisted GitHub repos via `projects` table (`owner/name`). Tree in 1 req (`recursive=1`), blobs lazy on open, meta + languages header, real commits paginated (`per_page=10, page`, `View more`).
 - Profile: bottom-left logo (`profiles.avatar_url`) -> `profile.json`. Gear hover -> `Settings/Appearance/Profile/Reset local edits`.
@@ -29,4 +29,4 @@ Interactive developer portfolio where visitors browse real project code, preview
 - Caps: tree 5000 entries, blob 512KB, binary blocklist, proxy 20KB/8s, commit msg 200 chars.
 
 ## Success criteria
-- Pixel-parity rounded Dark Modern, open-Explorer -> code in <1s (cache HIT), add-repo via 1 insert visible after cron/first-visit, edit -> commit -> tree in <3 clicks, Lighthouse 90+, zero `GITHUB_PAT` exposure.
+- Pixel-parity Dark Modern chrome, open-Explorer -> code in <1s (cache HIT), add-repo via 1 insert visible after cron/first-visit, edit -> commit -> tree in <3 clicks, Lighthouse 90+, zero `GITHUB_PAT` exposure.
