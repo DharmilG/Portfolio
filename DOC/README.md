@@ -5,7 +5,7 @@ Viewer: Shiki (not Monaco). Terminal: xterm UI + client parser. No custom admin 
 Rule: `view = localEdits[path] ?? cached`. Visitors use 0 GitHub quota. 1 Supabase insert = 1 new project.
 
 Status (all detailed, consistent):
-- [x] 01-project-overview.md — rounded UI, local edit + fake git, free-tier, 1-row flow
+- [x] 01-project-overview.md — flush UI, local edit + fake git, free-tier, 1-row flow
 - [x] 02-requirements.md — 15 functional, parity checklist, caps
 - [x] 03-architecture.md — flow, structure, Zustand slices
 - [x] 04-data-model.md — DDL + RLS + Storage + seeds + §8 local-only
