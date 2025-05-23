@@ -25,9 +25,9 @@ export default function PortfolioPage() {
   }, [setSections]);
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-2">
+    <div className="flex min-h-0 flex-1 flex-col">
       <TitleBar />
-      <div className="flex min-h-0 flex-1 gap-2">
+      <div className="flex min-h-0 flex-1">
         <ActivityBar active={view} onSelect={setView} />
         <SideBar>
           {view === "explorer" ? (
@@ -40,7 +40,7 @@ export default function PortfolioPage() {
             </p>
           )}
         </SideBar>
-        <div className="flex min-h-0 flex-1 items-center justify-center rounded-vscode bg-vscode-tab text-sm text-vscode-dim">
+        <div className="flex min-h-0 flex-1 items-center justify-center bg-vscode-tab text-sm text-vscode-dim">
           Open a file from the Explorer
         </div>
       </div>
