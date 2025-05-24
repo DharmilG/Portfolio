@@ -87,14 +87,43 @@ export const MENU_ITEMS: Menu[] = [
 
 type TitleBarProps = {
   onQuickOpen?: () => void;
-  onCommand?: () => void;
   onMenuAction?: (action: string) => void;
   onNavigate?: (dir: -1 | 1) => void;
 };
 
+function ControlButton({
+  icon,
+  label,
+  onClick,
+  align = "center",
+}: {
+  icon: string;
+  label: string;
+  onClick?: () => void;
+  align?: "center" | "right";
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={label}
+      className="group relative rounded p-1 hover:bg-vscode-list-hover hover:text-vscode-fg"
+    >
+      <i className={`codicon codicon-${icon}`} />
+      <span
+        role="tooltip"
+        className={`invisible absolute top-full z-30 mt-1 whitespace-nowrap rounded-control border border-vscode-widget-border bg-vscode-widget-bg px-2 py-1 text-xs text-vscode-fg shadow-vscode group-hover:visible ${
+          align === "right" ? "right-0" : "left-1/2 -translate-x-1/2"
+        }`}
+      >
+        {label}
+      </span>
+    </button>
+  );
+}
+
 export default function TitleBar({
   onQuickOpen,
-  onCommand,
   onMenuAction,
   onNavigate,
 }: TitleBarProps) {
@@ -208,30 +237,32 @@ export default function TitleBar({
         <i className="codicon codicon-search" aria-hidden="true" />
         <span className="truncate">Portfolio</span>
       </button>
-      <button
-        type="button"
-        onClick={onCommand}
-        className="rounded p-1 hover:bg-vscode-list-hover hover:text-vscode-fg"
-        aria-label="Split editor right"
-      >
-        <i className="codicon codicon-split-horizontal" />
-      </button>
-      <button
-        type="button"
-        onClick={onCommand}
-        className="rounded p-1 hover:bg-vscode-list-hover hover:text-vscode-fg"
-        aria-label="Toggle sidebar"
-      >
-        <i className="codicon codicon-layout-sidebar-left" />
-      </button>
-      <button
-        type="button"
-        onClick={onCommand}
-        className="rounded p-1 hover:bg-vscode-list-hover hover:text-vscode-fg"
-        aria-label="Toggle panel"
-      >
-        <i className="codicon codicon-layout-panel" />
-      </button>
+      <ControlButton
+        icon="layout"
+        label="Customize Layout"
+        onClick={() => fire("customize-layout")}
+      />
+      <ControlButton
+        icon="layout-sidebar-left"
+        label="Toggle Primary Side Bar (Ctrl+B)"
+        onClick={() => fire("toggle-sidebar")}
+      />
+      <ControlButton
+        icon="layout-panel"
+        label="Toggle Panel (Ctrl+J)"
+        onClick={() => fire("toggle-panel")}
+      />
+      <ControlButton
+        icon="layout-sidebar-right"
+        label="Toggle Secondary Side Bar (Ctrl+Alt+B)"
+        onClick={() => fire("toggle-secondary-sidebar")}
+      />
+      <ControlButton
+        icon="globe"
+        label="Open Browser Preview"
+        onClick={() => fire("open-preview")}
+        align="right"
+      />
       <div
         className="flex items-center text-vscode-dim"
         title="Window controls are decorative in a browser"
