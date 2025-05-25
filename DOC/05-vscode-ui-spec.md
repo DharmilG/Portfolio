@@ -74,7 +74,7 @@ Accent usage: active tab top-border 1px accent, Activity active icon + left 2px 
 
 ## 3. TitleBar (36px, bg `--color-vscode-titlebar` #191a1b, square)
 
-Left: VS Code logo (`/vscode-logo.svg`, 16px) + menu row (`File Edit Selection View Go Run Terminal Help`, real dropdowns). Center: Command Center — `rounded-control bg-vscode-command-bg border 1px #2b2b2b`, max 600px, `⌕ Portfolio`, click -> `Ctrl+P`, hover text white. Right: back/forward (history), layout controls (split editor, toggle sidebar/panel), decorative window controls `— ▢ ✕`.
+Left: VS Code logo (`/vscode-logo.svg`, 16px) + menu row (`File Edit Selection View Go Run Terminal Help`, real dropdowns). Center: Command Center — `rounded-control bg-vscode-command-bg border 1px #2b2b2b`, max 600px, `⌕ Portfolio`, click -> `Ctrl+P`, hover text white. Right: back/forward (history), layout controls — Customize Layout (`layout`), Toggle Primary Side Bar (`layout-sidebar-left`, wired, Ctrl+B), Toggle Panel (`layout-panel`), Toggle Secondary Side Bar (`layout-sidebar-right`), Browser Preview (`globe`) — all with hover tooltips, decorative window controls `— ▢ ✕`.
 
 ## 4. ActivityBar (48px, flush, 1px right hairline)
 
