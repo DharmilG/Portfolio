@@ -25,7 +25,7 @@ export default function SideBar({
           className="rounded px-1 hover:bg-vscode-list-hover hover:text-vscode-fg"
           aria-label="Explorer options"
         >
-          ...
+          <i className="codicon codicon-more" />
         </button>
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto">{children}</div>
