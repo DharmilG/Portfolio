@@ -7,10 +7,13 @@
     "next_up": "PV-ICONS: ActivityBar + Explorer codicon swap",
     "pending_verifications": [
       "visual: flush chrome + title bar controls (order, glyphs, tooltips) vs real VS Code",
-      "npm run dev with 1 real section row"
+      "Explorer icon eyepass once section/project rows exist (Studio)"
     ],
-    "tip": "bdc5c41",
+    "tip": "f5f5ffb",
     "unpushed": [
+      "f5f5ffb",
+      "fcb9648",
+      "b773be5",
       "bdc5c41",
       "cbaf6e4",
       "0064fa9",
@@ -496,12 +499,12 @@
     {
       "id": "PV-ICONS",
       "title": "Codicons wiring + chrome icon swap",
-      "description": "Font + menu row + official logo + title bar control group; pending: ActivityBar/Explorer swap, ext badges",
+      "description": "Font + menu row + official logo + title bar controls + Explorer codicons; pending: ActivityBar swap",
       "file": null,
       "status": "in_progress",
       "owner": "agent",
       "started": "2026-10-16",
-      "log": "font 1de5eeb + menubar b34c58e + logo 1830b8a + title bar controls 0064fa9 (customize/secondary/globe + tooltips) + sidebar toggle cbaf6e4 (Ctrl+B, activity icon) + docs bdc5c41 (tsc clean, markup 5/5 codicons + 5 tooltips; ActivityBar/Explorer swap next)"
+      "log": "font 1de5eeb + menubar b34c58e + logo 1830b8a + title bar controls 0064fa9 + sidebar toggle cbaf6e4 + Explorer glyphs fcb9648 (chevrons/folders/per-type files, ext text dropped) + header f5f5ffb (codicon-more; tsc clean, glyph audit 0, 12/12 font classes verified; ActivityBar swap next)"
     },
     {
       "id": "PV-PNPM",
