@@ -1,8 +1,11 @@
 "use client";
 
 // ActivityBar — 48px icon rail (store-connected for badge only; rest via props).
-// Glyphs are VS Code codicons. See DOC/05 §4, skills rounded-workbench + vscode-tokens + local-git.
+// 2025-refresh look: active item = white icon + rounded pill bg (no left bar).
+// Shared primitives: IconButton + Badge + Codicon. See DOC/05 §4.
 import { dirtyCount, useStore } from "@/lib/store";
+import Badge from "./Badge";
+import IconButton from "./IconButton";
 
 export type ActivityId = "explorer" | "search" | "scm" | "run" | "extensions";
 
@@ -14,12 +17,6 @@ type ActivityBarProps = {
   avatarUrl?: string | null;
   userInitial?: string;
 };
-
-// codicon.css pins its font-size with an unlayered `font` shorthand, which
-// beats Tailwind size utilities — so glyph size goes inline (24px = VS Code rail).
-function Codicon({ name }: { name: string }) {
-  return <i className={`codicon codicon-${name}`} style={{ fontSize: 24 }} />;
-}
 
 const TOP: { id: ActivityId; label: string; icon: string }[] = [
   { id: "explorer", label: "Explorer", icon: "files" },
@@ -52,30 +49,21 @@ export default function ActivityBar({
       className="flex w-12 shrink-0 flex-col items-center gap-1 border-r border-vscode-border bg-vscode-side py-2 text-vscode-dim"
       aria-label="Activity Bar"
     >
-      {TOP.map((item) => {
-        const isActive = item.id === active;
-        return (
-          <button
-            key={item.id}
-            type="button"
-            title={item.label}
-            onClick={() => onSelect?.(item.id)}
-            className={`relative flex h-10 w-10 items-center justify-center rounded hover:text-vscode-fg ${
-              isActive ? "text-vscode-fg" : ""
-            }`}
-          >
-            {isActive ? (
-              <span className="absolute left-0 h-6 w-0.5 rounded bg-vscode-accent" />
-            ) : null}
-            <Codicon name={item.icon} />
-            {item.id === "scm" && badge > 0 ? (
-              <span className="absolute bottom-1 right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-vscode-badge-bg px-1 text-[10px] font-semibold text-vscode-badge-fg">
-                {badge}
-              </span>
-            ) : null}
-          </button>
-        );
-      })}
+      {TOP.map((item) => (
+        <IconButton
+          key={item.id}
+          icon={item.icon}
+          label={item.label}
+          size="lg"
+          active={item.id === active}
+          tooltip="off"
+          onClick={() => onSelect?.(item.id)}
+        >
+          {item.id === "scm" && badge > 0 ? (
+            <Badge count={badge} className="absolute bottom-1 right-1" />
+          ) : null}
+        </IconButton>
+      ))}
       <div className="mt-auto flex flex-col items-center gap-2">
         <button
           type="button"
@@ -91,13 +79,7 @@ export default function ActivityBar({
           )}
         </button>
         <div className="group relative">
-          <button
-            type="button"
-            title="Settings"
-            className="flex h-8 w-8 items-center justify-center rounded hover:bg-vscode-list-hover hover:text-vscode-fg"
-          >
-            <Codicon name="gear" />
-          </button>
+          <IconButton icon="gear" label="Settings" size="md" tooltip="off" />
           <div className="invisible absolute bottom-0 left-10 z-10 w-44 rounded-control border border-vscode-border bg-vscode-widget-bg py-1 shadow-vscode group-hover:visible">
             {GEAR_MENU.map((m) => (
               <button
