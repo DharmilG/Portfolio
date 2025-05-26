@@ -4,13 +4,16 @@
   "pushed_count": 0,
   "session": {
     "branch": "main",
-    "next_up": "PV-ICONS: ActivityBar + Explorer codicon swap",
+    "next_up": "PV-C-STATUSBAR: StatusBar (24px accent + main* + Ln/Col)",
     "pending_verifications": [
-      "visual: flush chrome + title bar controls (order, glyphs, tooltips) vs real VS Code",
+      "visual: chrome vs real VS Code (flush surfaces, title bar controls, ActivityBar + Explorer glyphs)",
       "Explorer icon eyepass once section/project rows exist (Studio)"
     ],
-    "tip": "f5f5ffb",
+    "tip": "c601b15",
     "unpushed": [
+      "c601b15",
+      "0c663ae",
+      "bbd43ea",
       "f5f5ffb",
       "fcb9648",
       "b773be5",
@@ -171,8 +174,8 @@
   },
   "summary": {
     "total": 40,
-    "done": 15,
-    "in_progress": 2,
+    "done": 16,
+    "in_progress": 1,
     "backlog": 23
   },
   "tasks": [
@@ -499,12 +502,14 @@
     {
       "id": "PV-ICONS",
       "title": "Codicons wiring + chrome icon swap",
-      "description": "Font + menu row + official logo + title bar controls + Explorer codicons; pending: ActivityBar swap",
+      "description": "Codicon font + menu row + official logo + title bar controls + Explorer glyphs + ActivityBar glyphs",
       "file": null,
-      "status": "in_progress",
+      "status": "done",
       "owner": "agent",
       "started": "2026-10-16",
-      "log": "font 1de5eeb + menubar b34c58e + logo 1830b8a + title bar controls 0064fa9 + sidebar toggle cbaf6e4 + Explorer glyphs fcb9648 (chevrons/folders/per-type files, ext text dropped) + header f5f5ffb (codicon-more; tsc clean, glyph audit 0, 12/12 font classes verified; ActivityBar swap next)"
+      "log": "font 1de5eeb + menubar b34c58e + logo 1830b8a + title bar controls 0064fa9 + sidebar toggle cbaf6e4 + Explorer glyphs fcb9648 (chevrons/folders/per-type files, ext text dropped) + header f5f5ffb (codicon-more; tsc clean, glyph audit 0, 12/12 font classes verified) + ActivityBar codicons 0c663ae (files/search/source-control/debug-alt/extensions/gear at 24px inline; hand-drawn svg Icon deleted; tsc clean, 6/6 font classes, boot markup verified)",
+      "finished": "2026-10-16",
+      "verified": true
     },
     {
       "id": "PV-PNPM",
