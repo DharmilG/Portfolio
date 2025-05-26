@@ -54,6 +54,10 @@
   --color-vscode-term-green: #23d18b;
   --color-vscode-term-blue: #3b8eea;
 
+  /* === Activity Bar states (2025 refresh: pill, no left bar) === */
+  --color-vscode-activity-active-bg: #ffffff1a;
+  --color-vscode-activity-hover-bg: #ffffff0d;
+
   /* === Radii, Fonts & Elevation === */
   --radius-control: 5px;
   --radius-tab: 6px;
