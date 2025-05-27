@@ -4,13 +4,20 @@
   "pushed_count": 0,
   "session": {
     "branch": "main",
-    "next_up": "PV-C-STATUSBAR: StatusBar (24px accent + main* + Ln/Col)",
+    "next_up": "PV-C-TABS change 2: editor tab strip (plan awaiting Proceed)",
     "pending_verifications": [
-      "visual: chrome vs real VS Code (flush surfaces, title bar controls, ActivityBar + Explorer glyphs)",
+      "visual: chrome vs real VS Code (flush surfaces, title bar controls, ActivityBar glyphs + active pill/badge, Explorer glyphs)",
       "Explorer icon eyepass once section/project rows exist (Studio)"
     ],
-    "tip": "c601b15",
+    "tip": "178744f",
     "unpushed": [
+      "178744f",
+      "798e5b0",
+      "8d95918",
+      "daed507",
+      "de651e7",
+      "4aa7ff8",
+      "f509775",
       "c601b15",
       "0c663ae",
       "bbd43ea",
@@ -173,9 +180,9 @@
     "tokens": "app/globals.css @theme"
   },
   "summary": {
-    "total": 40,
+    "total": 41,
     "done": 16,
-    "in_progress": 1,
+    "in_progress": 2,
     "backlog": 23
   },
   "tasks": [
@@ -510,6 +517,16 @@
       "log": "font 1de5eeb + menubar b34c58e + logo 1830b8a + title bar controls 0064fa9 + sidebar toggle cbaf6e4 + Explorer glyphs fcb9648 (chevrons/folders/per-type files, ext text dropped) + header f5f5ffb (codicon-more; tsc clean, glyph audit 0, 12/12 font classes verified) + ActivityBar codicons 0c663ae (files/search/source-control/debug-alt/extensions/gear at 24px inline; hand-drawn svg Icon deleted; tsc clean, 6/6 font classes, boot markup verified)",
       "finished": "2026-10-16",
       "verified": true
+    },
+    {
+      "description": "Change 1 done: ActivityBar active pill + shared Codicon/IconButton/Badge + activity tokens. Change 2 next: editor tab strip (--radius-tab) + store wiring; then reuse-pass swaps (TitleBar/Explorer/SideBar onto primitives).",
+      "file": null,
+      "id": "PV-UI-REFRESH",
+      "status": "in_progress",
+      "title": "New VS Code refresh look (pills, rounded tabs)",
+      "owner": "agent",
+      "started": "2026-10-16",
+      "log": "primitives 4aa7ff8+de651e7+daed507, tokens 8d95918, ActivityBar pill 798e5b0 (tsc clean, boot markup: pill classes live, old left bar gone; change 2 plan presented)"
     },
     {
       "id": "PV-PNPM",
