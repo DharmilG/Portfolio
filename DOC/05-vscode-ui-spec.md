@@ -58,6 +58,8 @@ Mobile <768px: Activity 48px stays, Sidebar becomes overlay drawer, Editor full-
   --color-vscode-line-highlight: #282828;
   --color-vscode-badge-bg: #0078d4;
   --color-vscode-badge-fg: #ffffff;
+  --color-vscode-activity-active-bg: #ffffff1a; /* active pill (2025 refresh) */
+  --color-vscode-activity-hover-bg: #ffffff0d;
   --radius-control: 5px; /* Command Center, menus, widgets — no pills */
   --radius-tab: 6px;
   --font-vscode-ui: "Segoe WPC", "Segoe UI", system-ui, sans-serif;
@@ -70,7 +72,7 @@ Mobile <768px: Activity 48px stays, Sidebar becomes overlay drawer, Editor full-
 /* Floating widgets only: border-radius var(--radius-control) + var(--shadow-vscode). */
 ```
 
-Accent usage: active tab top-border 1px accent, Activity active icon + left 2px accent bar, StatusBar bg accent (white text), focus outlines `1px solid var(--color-vscode-accent)`.
+Accent usage: active tab top-border 1px accent, Activity active icon = white + rounded pill bg `--color-vscode-activity-active-bg` (no left bar), StatusBar bg accent (white text), focus outlines `1px solid var(--color-vscode-accent)`.
 
 ## 3. TitleBar (36px, bg `--color-vscode-titlebar` #191a1b, square)
 
@@ -78,7 +80,7 @@ Left: VS Code logo (`/vscode-logo.svg`, 16px) + menu row (`File Edit Selection V
 
 ## 4. ActivityBar (48px, flush, 1px right hairline)
 
-Top icons (24px, dim -> white on active, tooltip on hover): Explorer `files`, Search `search` (filters Explorer client-side), Source Control `source-control` with count badge `len(dirty)+len(localCommits)` blue circle, Run `debug-alt` (opens preview), Extensions `extensions` (dummy grid + `2` badge).
+Top icons (24px, dim -> white on active = rounded pill bg `--color-vscode-activity-active-bg` via shared `IconButton`, tooltip on hover): Explorer `files`, Search `search` (filters Explorer client-side), Source Control `source-control` with count badge `len(dirty)+len(localCommits)` blue circle (shared `Badge`, 18px), Run `debug-alt` (opens preview), Extensions `extensions` (dummy grid + `2` badge).
 Bottom: avatar 28px rounded-full `profiles.avatar_url` (your logo) -> click opens `profile.json` tab. Gear 20px below -> hover opens menu `Settings (opens settings.json) | Appearance (theme switch dark/light) | Profile (opens profile.json) | Reset local edits`.
 
 ## 5. Sidebar Explorer (280px)
