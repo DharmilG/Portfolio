@@ -1,22 +1,25 @@
-# Skill: flat-chrome (dir `rounded-workbench` kept for link stability)
+# Skill: workbench chrome (dir `rounded-workbench` kept for link stability)
 
-VS Code chrome is flush and square. This supersedes the earlier
-"floating rounded cards on #0f0f0f" look (reverted 2026-10-16 while
-matching real VS Code screenshots).
+User screenshots are authority; the user does visual sign-off.
 
-- Shell: `flex h-screen` — no gaps, no padding; regions touch the viewport.
-- Structural surfaces (TitleBar, ActivityBar, SideBar, editor, StatusBar):
-  square corners; separated by `1px` `border-vscode-border` (#2b2b2b)
-  hairlines, never gutters.
-- TitleBar: 36px, `bg-vscode-titlebar` (#191a1b).
-- Fixed chrome: ActivityBar 48px, Sidebar 280px, Tabs 35px, Breadcrumb 22px,
-  StatusBar 24px, Panel 280px.
-- Radii exist only for controls: `rounded-control` (5px) — Command Center,
-  menus, tooltips, floating widgets. No pills anywhere.
-- Command Center: 5px radius, `1px` `#2b2b2b` border, `#242424` fill,
-  max 600px wide, centered.
+## Current: floating rounded sections (2026-10 refresh)
 
-Good: flush regions with `border-r border-vscode-border` separators; radii
-and colors only via @theme tokens.
-Bad: rounded structural panels, gaps between regions, pill shapes,
-per-component radius or hex values.
+- Shell: `flex h-screen`; TitleBar flush top, StatusBar flush bottom (square,
+  full-width). Between them: a gutter backdrop (`bg-vscode-gutter`) with
+  5px gap + 5px padding; each major region is a rounded card.
+- Card shell = `Section` primitive: `rounded-section` (8px), 1px
+  `border-vscode-border`, `overflow-hidden` so inner square corners clip.
+- Primary side bar is ONE card: ActivityBar + SideBar fused (`PrimarySideBar`).
+  The rail keeps `border-r` as the internal divider; the pane drops its outer
+  border. No gutter between rail and pane.
+- Fixed sizes unchanged: ActivityBar 48px, Sidebar 280px, Tabs 35px,
+  Breadcrumb 22px, StatusBar 24px, Panel 280px.
+- Radii/colors only via @theme tokens. Controls keep `rounded-control` (5px):
+  Command Center (1px #2b2b2b border, #242424 fill, max 600px, centered),
+  menus, tooltips, floating widgets.
+
+## Superseded: flush chrome (2026-10-16)
+
+Square regions with hairlines and no gaps matched VS Code screenshots at the
+time (`PV-WORKBENCH-FLUSH`); replaced by the floating-sections look above
+when current screenshots showed gutters + rounded cards.
