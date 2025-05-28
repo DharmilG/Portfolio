@@ -4,13 +4,21 @@
   "pushed_count": 0,
   "session": {
     "branch": "main",
-    "next_up": "PV-C-TABS change 2: editor tab strip (plan awaiting Proceed)",
+    "next_up": "PV-C-TABS change 2: editor tab strip (planned, awaiting Proceed)",
     "pending_verifications": [
-      "visual: chrome vs real VS Code (flush surfaces, title bar controls, ActivityBar glyphs + active pill/badge, Explorer glyphs)",
+      "visual: chrome vs current VS Code (floating sections + gutters, title bar controls, ActivityBar pill/badge, Explorer glyphs)",
       "Explorer icon eyepass once section/project rows exist (Studio)"
     ],
-    "tip": "178744f",
+    "tip": "ccd74c3",
     "unpushed": [
+      "ccd74c3",
+      "c6a3a93",
+      "05546be",
+      "17527d3",
+      "647623d",
+      "b793171",
+      "1d3b9f8",
+      "b6df7a2",
       "178744f",
       "798e5b0",
       "8d95918",
@@ -180,8 +188,8 @@
     "tokens": "app/globals.css @theme"
   },
   "summary": {
-    "total": 41,
-    "done": 16,
+    "total": 42,
+    "done": 17,
     "in_progress": 2,
     "backlog": 23
   },
@@ -527,6 +535,18 @@
       "owner": "agent",
       "started": "2026-10-16",
       "log": "primitives 4aa7ff8+de651e7+daed507, tokens 8d95918, ActivityBar pill 798e5b0 (tsc clean, boot markup: pill classes live, old left bar gone; change 2 plan presented)"
+    },
+    {
+      "description": "Floating rounded sections per current VS Code screenshots (supersedes flush look): gutter grid + fused rail/pane card + editor card. Panel shell + StatusBar follow with their components.",
+      "file": null,
+      "id": "PV-UI-SECTIONS",
+      "status": "done",
+      "title": "Floating rounded sections + gutters",
+      "owner": "agent",
+      "started": "2026-10-16",
+      "finished": "2026-10-16",
+      "log": "tokens 1d3b9f8 (gutter #0f0f0f, radius-section 8px) + Section b793171 + PrimarySideBar 647623d + SideBar 17527d3 (outer border dropped; rail keeps internal hairline) + grid 05546be + skill c6a3a93 + DOC/05 ccd74c3 (tsc clean, boot markup: gutter/round/gap/fused label live, double border gone)",
+      "verified": true
     },
     {
       "id": "PV-PNPM",
