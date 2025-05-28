@@ -55,7 +55,7 @@ export default function PortfolioPage() {
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <TitleBar onMenuAction={handleAction} />
-      <div className="flex min-h-0 flex-1 gap-[5px] bg-vscode-gutter p-[5px]">
+      <div className="flex min-h-0 flex-1 gap-[5px] bg-vscode-titlebar p-[5px]">
         {showSidebar ? (
           <PrimarySideBar active={view} onSelect={handleSelectView}>
             {view === "explorer" ? (
