@@ -4,13 +4,19 @@
   "pushed_count": 0,
   "session": {
     "branch": "main",
-    "next_up": "PV-C-TABS change 2: editor tab strip (planned, awaiting Proceed)",
+    "next_up": "PV-UI-REFINE Part B: rail icon nudge (planned, awaiting Proceed)",
     "pending_verifications": [
-      "visual: chrome vs current VS Code (floating sections + gutters, title bar controls, ActivityBar pill/badge, Explorer glyphs)",
+      "visual: chrome vs current VS Code (floating sections on titlebar base, title bar controls, ActivityBar pill/badge, Explorer glyphs)",
       "Explorer icon eyepass once section/project rows exist (Studio)"
     ],
-    "tip": "ccd74c3",
+    "tip": "1ea3d3e",
     "unpushed": [
+      "1ea3d3e",
+      "c5d990a",
+      "bcb4905",
+      "9f8e104",
+      "2e4bf5b",
+      "8f95070",
       "ccd74c3",
       "c6a3a93",
       "05546be",
@@ -188,9 +194,9 @@
     "tokens": "app/globals.css @theme"
   },
   "summary": {
-    "total": 42,
+    "total": 43,
     "done": 17,
-    "in_progress": 2,
+    "in_progress": 3,
     "backlog": 23
   },
   "tasks": [
@@ -547,6 +553,16 @@
       "finished": "2026-10-16",
       "log": "tokens 1d3b9f8 (gutter #0f0f0f, radius-section 8px) + Section b793171 + PrimarySideBar 647623d + SideBar 17527d3 (outer border dropped; rail keeps internal hairline) + grid 05546be + skill c6a3a93 + DOC/05 ccd74c3 (tsc clean, boot markup: gutter/round/gap/fused label live, double border gone)",
       "verified": true
+    },
+    {
+      "description": "Part A done: gutter reuses titlebar base (token deleted). Part B planned: rail icons nudge up (py-2 -> pb-2) to align active pill with sidebar card top.",
+      "file": null,
+      "id": "PV-UI-REFINE",
+      "status": "in_progress",
+      "title": "Gutter base + rail alignment refine",
+      "owner": "agent",
+      "started": "2026-10-16",
+      "log": "Part A: grid 2e4bf5b (bg-vscode-titlebar) + token drop 9f8e104 + Section comment bcb4905 + skill c5d990a + DOC/05 1ea3d3e (tsc clean, gutter refs 0, boot: grid on titlebar base; Part B planned, awaiting Proceed)"
     },
     {
       "id": "PV-PNPM",
