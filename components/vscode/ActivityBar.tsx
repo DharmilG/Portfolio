@@ -46,7 +46,7 @@ export default function ActivityBar({
 
   return (
     <nav
-      className="flex w-12 shrink-0 flex-col items-center gap-1 border-r border-vscode-border bg-vscode-side py-2 text-vscode-dim"
+      className="flex w-12 shrink-0 flex-col items-center gap-1 border-r border-vscode-border bg-vscode-side pb-2 text-vscode-dim"
       aria-label="Activity Bar"
     >
       {TOP.map((item) => (
