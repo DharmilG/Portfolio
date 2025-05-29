@@ -5,7 +5,7 @@ User screenshots are authority; the user does visual sign-off.
 ## Current: floating rounded sections (2026-10 refresh)
 
 - Shell: `flex h-screen`; TitleBar flush top, StatusBar flush bottom (square,
-  full-width). Between them: a gutter backdrop (`bg-vscode-gutter`) with
+  full-width). Between them: a gutter backdrop (`bg-vscode-titlebar`, the workbench base) with
   5px gap + 5px padding; each major region is a rounded card.
 - Card shell = `Section` primitive: `rounded-section` (8px), 1px
   `border-vscode-border`, `overflow-hidden` so inner square corners clip.
