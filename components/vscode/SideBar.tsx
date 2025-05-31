@@ -11,13 +11,13 @@ type SideBarProps = {
 };
 
 export default function SideBar({
-  title = "EXPLORER",
+  title = "Explorer",
   onOverflow,
   children,
 }: SideBarProps) {
   return (
     <aside className="flex w-70 shrink-0 flex-col bg-vscode-side text-vscode-fg">
-      <div className="flex h-9 shrink-0 items-center justify-between px-4 text-[11px] tracking-wide text-vscode-dim">
+      <div className="flex h-9 shrink-0 items-center justify-between px-4 text-[11px] font-medium tracking-normal text-vscode-dim">
         <span>{title}</span>
         <button
           type="button"
