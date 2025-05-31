@@ -84,7 +84,7 @@ Bottom: avatar 28px rounded-full `profiles.avatar_url` (your logo) -> click open
 
 ## 5. Sidebar Explorer (280px)
 
-Header `EXPLORER ...` + `...` menu (New File in tmp, Refresh from cache, Collapse All).
+Header `Explorer` + `...` menu (New File in tmp, Refresh from cache, Collapse All).
 Sections as folders from `04`: `About/ Experience/ Projects/<repo>/ Skills/ Contact/ tmp/` (tmp dimmed italic + `ephemeral` tag).
 Row: 28px, indent 12px/level, chevron + `vscode-icons` by ext + `resolveName(): uiRenames ?? title_override ?? repo_name` + `M` green badge if dirty + `●` if tmp unsaved. Right-click: `Rename (session only) -> uiRenames`, `Open Preview (if preview_url)`, `Discard local changes`.
 `Projects/<repo>/` expand -> `GET /api/repo/tree`, skeleton shimmer rows while loading, README auto-open.
