@@ -40,6 +40,7 @@ Mobile <768px: Activity 48px stays, Sidebar becomes overlay drawer, Editor full-
   --color-vscode-fg-active: #ffffff;
   --color-vscode-dim: #858585;
   --color-vscode-muted: #9d9d9d;
+  --color-vscode-emphasis: #bfbfbf; /* sidebar header + static root folder */
   --color-vscode-accent: #0078d4;
   --color-vscode-accent-hover: #026ec1;
   --color-vscode-dot: #e2c08d; /* dirty ● */
@@ -85,6 +86,7 @@ Bottom: avatar 28px rounded-full `profiles.avatar_url` (your logo) -> click open
 ## 5. Sidebar Explorer (280px)
 
 Header `Explorer` + `...` menu (New File in tmp, Refresh from cache, Collapse All).
+Static workspace root `Dharmil Gajjar` (always present, name in `--color-vscode-emphasis`, no rename affordance) with DB sections nested one level deeper.
 Sections as folders from `04`: `About/ Experience/ Projects/<repo>/ Skills/ Contact/ tmp/` (tmp dimmed italic + `ephemeral` tag).
 Row: 28px, indent 12px/level, chevron + `vscode-icons` by ext + `resolveName(): uiRenames ?? title_override ?? repo_name` + `M` green badge if dirty + `●` if tmp unsaved. Right-click: `Rename (session only) -> uiRenames`, `Open Preview (if preview_url)`, `Discard local changes`.
 `Projects/<repo>/` expand -> `GET /api/repo/tree`, skeleton shimmer rows while loading, README auto-open.
