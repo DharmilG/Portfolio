@@ -12,6 +12,7 @@ import Codicon from "./Codicon";
 type ExplorerProps = {
   onOpenFile?: (path: string) => void;
   onRename?: (path: string, name: string | null) => void;
+  filter?: string;
 };
 
 // Static workspace root — always present, never renamed, never dirty.
@@ -25,7 +26,11 @@ export function resolveName(
   return renames[fullPath] ?? fallback;
 }
 
-export default function Explorer({ onOpenFile, onRename }: ExplorerProps) {
+export default function Explorer({
+  onOpenFile,
+  onRename,
+  filter = "",
+}: ExplorerProps) {
   const sections = useStore((s) => s.sections);
   const projects = useStore((s) => s.projects);
   const trees = useStore((s) => s.trees);
@@ -35,7 +40,6 @@ export default function Explorer({ onOpenFile, onRename }: ExplorerProps) {
     [ROOT_NAME]: true,
     Projects: true,
   });
-  const [filter, setFilter] = useState("");
   const [renaming, setRenaming] = useState<string | null>(null);
 
   const toggle = (key: string) =>
@@ -58,26 +62,14 @@ export default function Explorer({ onOpenFile, onRename }: ExplorerProps) {
 
   return (
     <div className="py-1 text-[13px]">
-      <div className="px-3 pb-1">
-        <input
-          value={filter}
-          onChange={(e) => setFilter(e.target.value)}
-          placeholder="Filter explorer"
-          aria-label="Filter explorer"
-          className="h-7 w-full rounded bg-vscode-input-bg px-2 text-xs text-vscode-fg placeholder:text-vscode-dim focus:outline-none focus:ring-1 focus:ring-vscode-accent"
-        />
-      </div>
       {showRoot ? (
         <div>
           <div
             className="flex h-7 cursor-pointer items-center gap-1 px-2 hover:bg-vscode-list-hover"
             onClick={() => toggle(ROOT_NAME)}
           >
-            <span className="flex w-4 shrink-0 justify-center text-vscode-dim">
+            <span className="flex w-4 shrink-0 items-center justify-center text-vscode-dim">
               <Codicon name={rootOpen ? "chevron-down" : "chevron-right"} />
-            </span>
-            <span className="text-vscode-dim">
-              <Codicon name={rootOpen ? "folder-opened" : "folder"} />
             </span>
             <span className="truncate text-vscode-emphasis">{ROOT_NAME}</span>
           </div>
@@ -99,14 +91,9 @@ export default function Explorer({ onOpenFile, onRename }: ExplorerProps) {
                       onClick={() => toggle(key)}
                       onDoubleClick={() => setRenaming(key)}
                     >
-                      <span className="flex w-4 shrink-0 justify-center text-vscode-dim">
+                      <span className="flex w-4 shrink-0 items-center justify-center text-vscode-dim">
                         <Codicon
                           name={open ? "chevron-down" : "chevron-right"}
-                        />
-                      </span>
-                      <span className="text-vscode-dim">
-                        <Codicon
-                          name={open ? "folder-opened" : "folder"}
                         />
                       </span>
                       {renaming === key ? (
@@ -151,17 +138,10 @@ export default function Explorer({ onOpenFile, onRename }: ExplorerProps) {
                                 onClick={() => toggle(rkey)}
                                 onDoubleClick={() => setRenaming(rkey)}
                               >
-                                <span className="flex w-4 shrink-0 justify-center text-vscode-dim">
+                                <span className="flex w-4 shrink-0 items-center justify-center text-vscode-dim">
                                   <Codicon
                                     name={
                                       ropen ? "chevron-down" : "chevron-right"
-                                    }
-                                  />
-                                </span>
-                                <span className="text-vscode-dim">
-                                  <Codicon
-                                    name={
-                                      ropen ? "folder-opened" : "folder"
                                     }
                                   />
                                 </span>
