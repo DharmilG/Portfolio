@@ -69,7 +69,10 @@ export default function Explorer({
             onClick={() => toggle(ROOT_NAME)}
           >
             <span className="flex w-4 shrink-0 items-center justify-center text-vscode-dim">
-              <Codicon name={rootOpen ? "chevron-down" : "chevron-right"} />
+              <Codicon
+                name={rootOpen ? "chevron-down" : "chevron-right"}
+                className="translate-y-px"
+              />
             </span>
             <span className="truncate text-vscode-emphasis">{ROOT_NAME}</span>
           </div>
@@ -94,6 +97,7 @@ export default function Explorer({
                       <span className="flex w-4 shrink-0 items-center justify-center text-vscode-dim">
                         <Codicon
                           name={open ? "chevron-down" : "chevron-right"}
+                          className="translate-y-px"
                         />
                       </span>
                       {renaming === key ? (
@@ -143,6 +147,7 @@ export default function Explorer({
                                     name={
                                       ropen ? "chevron-down" : "chevron-right"
                                     }
+                                    className="translate-y-px"
                                   />
                                 </span>
                                 {renaming === rkey ? (
