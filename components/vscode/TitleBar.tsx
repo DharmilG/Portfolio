@@ -4,6 +4,7 @@
 // Menus are data (MENU_ITEMS); the component only emits action ids.
 // See DOC/05 §3, skills vscode-tokens + dumb-depth.
 import { useEffect, useRef, useState } from "react";
+import IconButton from "@/components/vscode/IconButton";
 
 export type MenuItem =
   | { separator: true }
@@ -90,37 +91,6 @@ type TitleBarProps = {
   onMenuAction?: (action: string) => void;
   onNavigate?: (dir: -1 | 1) => void;
 };
-
-function ControlButton({
-  icon,
-  label,
-  onClick,
-  align = "center",
-}: {
-  icon: string;
-  label: string;
-  onClick?: () => void;
-  align?: "center" | "right";
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-label={label}
-      className="group relative rounded p-1 hover:bg-vscode-list-hover hover:text-vscode-fg"
-    >
-      <i className={`codicon codicon-${icon}`} />
-      <span
-        role="tooltip"
-        className={`invisible absolute top-full z-30 mt-1 whitespace-nowrap rounded-control border border-vscode-widget-border bg-vscode-widget-bg px-2 py-1 text-xs text-vscode-fg shadow-vscode group-hover:visible ${
-          align === "right" ? "right-0" : "left-1/2 -translate-x-1/2"
-        }`}
-      >
-        {label}
-      </span>
-    </button>
-  );
-}
 
 export default function TitleBar({
   onQuickOpen,
@@ -209,22 +179,18 @@ export default function TitleBar({
         ))}
       </nav>
       <div className="flex items-center">
-        <button
-          type="button"
+        <IconButton
+          icon="chevron-left"
+          label="Go back"
+          tooltip="off"
           onClick={() => go(-1)}
-          className="rounded p-1 hover:bg-vscode-list-hover hover:text-vscode-fg"
-          aria-label="Go back"
-        >
-          <i className="codicon codicon-chevron-left" />
-        </button>
-        <button
-          type="button"
+        />
+        <IconButton
+          icon="chevron-right"
+          label="Go forward"
+          tooltip="off"
           onClick={() => go(1)}
-          className="rounded p-1 hover:bg-vscode-list-hover hover:text-vscode-fg"
-          aria-label="Go forward"
-        >
-          <i className="codicon codicon-chevron-right" />
-        </button>
+        />
       </div>
       <button
         type="button"
@@ -237,31 +203,31 @@ export default function TitleBar({
         <i className="codicon codicon-search" aria-hidden="true" />
         <span className="truncate">Portfolio</span>
       </button>
-      <ControlButton
+      <IconButton
         icon="layout"
         label="Customize Layout"
         onClick={() => fire("customize-layout")}
       />
-      <ControlButton
+      <IconButton
         icon="layout-sidebar-left"
         label="Toggle Primary Side Bar (Ctrl+B)"
         onClick={() => fire("toggle-sidebar")}
       />
-      <ControlButton
+      <IconButton
         icon="layout-panel"
         label="Toggle Panel (Ctrl+J)"
         onClick={() => fire("toggle-panel")}
       />
-      <ControlButton
+      <IconButton
         icon="layout-sidebar-right"
         label="Toggle Secondary Side Bar (Ctrl+Alt+B)"
         onClick={() => fire("toggle-secondary-sidebar")}
       />
-      <ControlButton
+      <IconButton
         icon="globe"
         label="Open Browser Preview"
         onClick={() => fire("open-preview")}
-        align="right"
+        tooltip="right"
       />
       <div
         className="flex items-center text-vscode-dim"
