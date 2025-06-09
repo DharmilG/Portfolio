@@ -8,6 +8,7 @@ import { useState } from "react";
 import { isDirty, useStore } from "@/lib/store";
 import { fileIcon } from "@/lib/fileIcons";
 import Codicon from "./Codicon";
+import RenameInput from "./RenameInput";
 
 type ExplorerProps = {
   onOpenFile?: (path: string) => void;
@@ -101,18 +102,11 @@ export default function Explorer({
                         />
                       </span>
                       {renaming === key ? (
-                        <input
-                          autoFocus
+                        <RenameInput
                           defaultValue={title}
-                          aria-label="Rename folder"
-                          onBlur={(e) => commitRename(key, e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter")
-                              commitRename(key, e.currentTarget.value);
-                            if (e.key === "Escape") setRenaming(null);
-                          }}
-                          onClick={(e) => e.stopPropagation()}
-                          className="h-5 w-full rounded bg-vscode-input-bg px-1 text-xs text-vscode-fg focus:outline-none focus:ring-1 focus:ring-vscode-accent"
+                          label="Rename folder"
+                          onCommit={(v) => commitRename(key, v ?? "")}
+                          onCancel={() => setRenaming(null)}
                         />
                       ) : (
                         <span
@@ -151,24 +145,11 @@ export default function Explorer({
                                   />
                                 </span>
                                 {renaming === rkey ? (
-                                  <input
-                                    autoFocus
+                                  <RenameInput
                                     defaultValue={name}
-                                    aria-label="Rename project"
-                                    onBlur={(e) =>
-                                      commitRename(rkey, e.target.value)
-                                    }
-                                    onKeyDown={(e) => {
-                                      if (e.key === "Enter")
-                                        commitRename(
-                                          rkey,
-                                          e.currentTarget.value,
-                                        );
-                                      if (e.key === "Escape")
-                                        setRenaming(null);
-                                    }}
-                                    onClick={(e) => e.stopPropagation()}
-                                    className="h-5 w-full rounded bg-vscode-input-bg px-1 text-xs text-vscode-fg focus:outline-none focus:ring-1 focus:ring-vscode-accent"
+                                    label="Rename project"
+                                    onCommit={(v) => commitRename(rkey, v ?? "")}
+                                    onCancel={() => setRenaming(null)}
                                   />
                                 ) : (
                                   <span className="truncate">{name}</span>
