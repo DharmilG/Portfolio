@@ -6,6 +6,7 @@
 import { dirtyCount, useStore } from "@/lib/store";
 import Badge from "./Badge";
 import IconButton from "./IconButton";
+import Menu from "./Menu";
 
 export type ActivityId = "explorer" | "search" | "scm" | "run" | "extensions";
 
@@ -32,6 +33,8 @@ const GEAR_MENU = [
   { id: "profile", label: "Profile" },
   { id: "reset", label: "Reset local edits" },
 ] as const;
+
+type GearAction = (typeof GEAR_MENU)[number]["id"];
 
 export default function ActivityBar({
   active = "explorer",
@@ -80,18 +83,13 @@ export default function ActivityBar({
         </button>
         <div className="group relative">
           <IconButton icon="gear" label="Settings" size="md" tooltip="off" />
-          <div className="invisible absolute bottom-0 left-10 z-10 w-44 rounded-control border border-vscode-border bg-vscode-widget-bg py-1 shadow-vscode group-hover:visible">
-            {GEAR_MENU.map((m) => (
-              <button
-                key={m.id}
-                type="button"
-                onClick={() => onSettings?.(m.id)}
-                className="block w-full px-3 py-1.5 text-left text-xs text-vscode-fg hover:bg-vscode-list-hover"
-              >
-                {m.label}
-              </button>
-            ))}
-          </div>
+          <Menu
+            items={GEAR_MENU}
+            onAction={(id) => onSettings?.(id as GearAction)}
+            density="compact"
+            label="Settings"
+            className="invisible absolute bottom-0 left-10 z-10 w-44 group-hover:visible"
+          />
         </div>
       </div>
     </nav>
