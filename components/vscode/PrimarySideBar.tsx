@@ -6,16 +6,20 @@
 import type { ComponentProps, ReactNode } from "react";
 import ActivityBar from "./ActivityBar";
 import Section from "./Section";
-import SideBar from "./SideBar";
+import SideBar, { type ViewAction } from "./SideBar";
 
 type PrimarySideBarProps = ComponentProps<typeof ActivityBar> & {
   title?: string;
+  actions?: ViewAction[];
+  onAction?: (id: string) => void;
   onOverflow?: () => void;
   children?: ReactNode;
 };
 
 export default function PrimarySideBar({
   title,
+  actions,
+  onAction,
   onOverflow,
   children,
   ...activity
@@ -27,7 +31,12 @@ export default function PrimarySideBar({
       className="shrink-0 bg-vscode-side"
     >
       <ActivityBar {...activity} />
-      <SideBar title={title} onOverflow={onOverflow}>
+      <SideBar
+        title={title}
+        actions={actions}
+        onAction={onAction}
+        onOverflow={onOverflow}
+      >
         {children}
       </SideBar>
     </Section>
