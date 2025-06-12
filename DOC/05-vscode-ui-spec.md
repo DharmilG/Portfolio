@@ -85,8 +85,8 @@ Bottom: avatar 28px rounded-full `profiles.avatar_url` (your logo) -> click open
 
 ## 5. Sidebar Explorer (280px)
 
-Header `Explorer` + title toolbar (left→right: `new-file`/`new-folder`/`refresh`/`collapse-all` 28px actions with VS Code tooltips, then `...` overflow; actions emit ids, page owns behavior) + `...` menu (New File in tmp, Refresh from cache, Collapse All; `...` shows shared `Tooltip`: `Views and More Actions...`).
-Static workspace root `Dharmil Gajjar` (always present, name in `--color-vscode-emphasis`, no rename affordance) with DB sections nested one level deeper.
+Header `Explorer` + `...` overflow button (shared `Tooltip`: `Views and More Actions...`).
+Static workspace root `Dharmil Gajjar` (always present, name in `--color-vscode-emphasis`, no rename affordance) — its row carries the view actions right-aligned (`new-file`/`new-folder`/`refresh`/`collapse-all` as 28px `ViewActionButton`s with VS Code tooltips; emit ids, page owns behavior) — with DB sections nested one level deeper.
 Sections as folders from `04`: `About/ Experience/ Projects/<repo>/ Skills/ Contact/ tmp/` (tmp dimmed italic + `ephemeral` tag).
 Folder rows: chevron + name only (no folder icon, chevron vertically centered). Row: 28px, indent 12px/level, chevron + `vscode-icons` by ext + `resolveName(): uiRenames ?? title_override ?? repo_name` + `M` green badge if dirty + `●` if tmp unsaved. Right-click: `Rename (session only) -> uiRenames`, `Open Preview (if preview_url)`, `Discard local changes`.
 `Projects/<repo>/` expand -> `GET /api/repo/tree`, skeleton shimmer rows while loading, README auto-open.
