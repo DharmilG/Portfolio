@@ -118,7 +118,7 @@ export const useStore = create<State>()(
       activeTabId: null,
       // Default-open roots (mirrors Explorer ROOT_NAME). Session-only:
       // expanded is intentionally absent from persist partialize below.
-      expanded: { "Dharmil Gajjar": true, Projects: true },
+      expanded: { "Dharmil Gajjar": true, Projects: true, tmp: true },
       openTab: (t) =>
         set((s) => {
           const id = `${t.kind}:${t.path}`;
