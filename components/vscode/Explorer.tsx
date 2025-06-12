@@ -44,6 +44,46 @@ export function resolveName(
   return renames[fullPath] ?? fallback;
 }
 
+type TmpNode = {
+  name: string;
+  path: string;
+  file: boolean;
+  children?: TmpNode[];
+};
+
+// tmpFs keys ("tmp/a", "tmp/New Folder/.gitkeep") -> nested rows for the
+// tmp folder (folders first, then files, alphabetical per level).
+function buildTmpTree(keys: string[]): TmpNode[] {
+  const root: TmpNode[] = [];
+  for (const key of keys) {
+    const parts = key.split("/").slice(1);
+    let level = root;
+    let prefix = "tmp";
+    parts.forEach((part, i) => {
+      prefix = `${prefix}/${part}`;
+      const last = i === parts.length - 1;
+      let node = level.find((n) => n.name === part);
+      if (!node) {
+        node = { name: part, path: prefix, file: last };
+        level.push(node);
+      }
+      if (node.file && !last) return; // can't nest under a file
+      if (!last) {
+        node.children = node.children ?? [];
+        level = node.children;
+      }
+    });
+  }
+  const sortNodes = (nodes: TmpNode[]): TmpNode[] => {
+    nodes.sort((a, b) =>
+      a.file === b.file ? a.name.localeCompare(b.name) : a.file ? 1 : -1,
+    );
+    nodes.forEach((n) => n.children && sortNodes(n.children));
+    return nodes;
+  };
+  return sortNodes(root);
+}
+
 export default function Explorer({
   onOpenFile,
   onRename,
@@ -55,6 +95,7 @@ export default function Explorer({
   const trees = useStore((s) => s.trees);
   const renames = useStore((s) => s.renames);
   const edits = useStore((s) => s.edits);
+  const tmpFs = useStore((s) => s.tmpFs);
   const expanded = useStore((s) => s.expanded);
   const toggleExpanded = useStore((s) => s.toggleExpanded);
   const [renaming, setRenaming] = useState<string | null>(null);
@@ -68,6 +109,54 @@ export default function Explorer({
     sections.length === 0 ||
     match(ROOT_NAME) ||
     sections.some((sec) => match(resolveName(sec.slug, renames, sec.title)));
+
+  const tmpKeys = Object.keys(tmpFs);
+  const hasTmp = tmpKeys.length > 0;
+  const tmpNodes = buildTmpTree(tmpKeys);
+  const hasTmpSection = sections.some((s) => s.slug === "tmp");
+
+  // Rows for the tmp subtree (depth 0 = children of the tmp folder row).
+  const renderTmpNodes = (nodes: TmpNode[], depth: number) =>
+    nodes.map((n) => {
+      const indent = depth === 0 ? "pl-10" : "pl-14";
+      if (!n.file) {
+        const open = expanded[n.path] ?? false;
+        return (
+          <div key={n.path}>
+            <div
+              className={`flex h-7 cursor-pointer items-center gap-1 pr-2 hover:bg-vscode-list-hover ${indent}`}
+              onClick={() => toggleExpanded(n.path)}
+            >
+              <span className="flex w-4 shrink-0 items-center justify-center text-vscode-dim">
+                <Codicon
+                  name={open ? "chevron-down" : "chevron-right"}
+                  className="translate-y-px"
+                />
+              </span>
+              <span className="truncate">{n.name}</span>
+            </div>
+            {open ? renderTmpNodes(n.children ?? [], depth + 1) : null}
+          </div>
+        );
+      }
+      return (
+        <div
+          key={n.path}
+          className={`flex h-7 cursor-pointer items-center gap-1 pr-2 hover:bg-vscode-list-hover ${indent}`}
+          onClick={() => onOpenFile?.(n.path)}
+        >
+          <span className="text-vscode-dim">
+            <Codicon name={fileIcon(n.name)} />
+          </span>
+          <span className="truncate">{n.name}</span>
+          {isDirty(edits, n.path) ? (
+            <span className="ml-auto text-[10px] font-semibold text-vscode-added">
+              M
+            </span>
+          ) : null}
+        </div>
+      );
+    });
 
   const commitRename = (fullPath: string, value: string) => {
     onRename?.(fullPath, value.trim() === "" ? null : value.trim());
@@ -103,7 +192,7 @@ export default function Explorer({
             </div>
           </div>
           {rootOpen ? (
-            sections.length === 0 ? (
+            sections.length === 0 && !hasTmp ? (
               <p className="py-1 pl-6 pr-2 text-xs text-vscode-dim">
                 No folders yet — add rows in Supabase Studio.
               </p>
@@ -226,10 +315,30 @@ export default function Explorer({
                         })}
                       </div>
                     ) : null}
+                    {open && sec.slug === "tmp"
+                      ? renderTmpNodes(tmpNodes, 0)
+                      : null}
                   </div>
                 );
               })
             )
+          ) : null}
+          {rootOpen && hasTmp && !hasTmpSection ? (
+            <div>
+              <div
+                className="flex h-7 cursor-pointer items-center gap-1 pl-6 pr-2 hover:bg-vscode-list-hover"
+                onClick={() => toggleExpanded("tmp")}
+              >
+                <span className="flex w-4 shrink-0 items-center justify-center text-vscode-dim">
+                  <Codicon
+                    name={expanded.tmp ? "chevron-down" : "chevron-right"}
+                    className="translate-y-px"
+                  />
+                </span>
+                <span className="truncate italic opacity-60">tmp</span>
+              </div>
+              {expanded.tmp ? renderTmpNodes(tmpNodes, 0) : null}
+            </div>
           ) : null}
         </div>
       ) : null}
