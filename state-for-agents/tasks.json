@@ -9,8 +9,15 @@
       "visual: chrome vs current VS Code (floating sections on titlebar base, title bar controls, ActivityBar pill/badge, Explorer glyphs + static root)",
       "Explorer icon eyepass once section/project rows exist (Studio)"
     ],
-    "tip": "cb2b4d2",
+    "tip": "66671b4",
     "unpushed": [
+      "66671b4",
+      "609ce85",
+      "be77fe1",
+      "dd282e4",
+      "e9266c5",
+      "32ea058",
+      "2ebd33f",
       "cb2b4d2",
       "5058bf0",
       "849abc8",
@@ -232,7 +239,7 @@
       "144e580",
       "5bb34c7"
     ],
-    "last_updated": "2026-10-16"
+    "last_updated": "2026-10-17"
   },
   "source_of_truth": {
     "code": "E:/Portfolio (branch main, no origin)",
@@ -662,7 +669,7 @@
       "verified": true
     },
     {
-      "description": "Explorer title toolbar (new-file/new-folder/refresh/collapse + overflow, VS Code tooltips); expansion lifted to a session-only store slice; page wires refresh (real), collapse (real), tmp new file/folder (store writes, UI follows with tabs).",
+      "description": "Explorer view actions on the workspace-root row (new-file/new-folder/refresh/collapse + header overflow, VS Code tooltips, shared ViewActionButton); expansion lifted to a session-only store slice; page wires refresh (real), collapse (real), tmp new file/folder (store writes, UI follows with tabs).",
       "file": null,
       "id": "PV-UI-VIEWACTIONS",
       "status": "done",
@@ -670,7 +677,7 @@
       "owner": "agent",
       "started": "2026-10-16",
       "finished": "2026-10-16",
-      "log": "toolbar e34715c (EXPLORER_ACTIONS, 28px boxes, bottom-center tips) + forward 51ca198 + store e49e297 (expanded/toggleExpanded/collapseAll, unpersisted) + Explorer 849abc8 (useState dropped) + page 5058bf0 (loadSections/nextFreeKey/handleViewAction) + DOC/05 cb2b4d2 (tsc clean, 4/4 font classes, boot: all buttons + tips + root open)",
+      "log": "toolbar e34715c (EXPLORER_ACTIONS, 28px boxes, bottom-center tips) + forward 51ca198 + store e49e297 (expanded/toggleExpanded/collapseAll, unpersisted) + Explorer 849abc8 (useState dropped) + page 5058bf0 (loadSections/nextFreeKey/handleViewAction) + DOC/05 cb2b4d2 (tsc clean, 4/4 font classes, boot: all buttons + tips + root open); relocated to root row: ViewActionButton 32ea058 + Explorer e9266c5 (EXPLORER_ACTIONS + onAction prop) + page dd282e4 (handler moves to Explorer) + PrimarySideBar be77fe1 + SideBar 609ce85 (header keeps only overflow) + DOC/05 66671b4 (tsc clean; boot: order overflow<root<new-file, each glyph x1)",
       "verified": true
     },
     {
