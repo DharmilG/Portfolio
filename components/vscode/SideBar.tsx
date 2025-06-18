@@ -31,7 +31,11 @@ export default function SideBar({
           />
         </div>
       </div>
-      <div className="min-h-0 flex-1 overflow-y-auto">{children}</div>
+      {/* overflow-x hidden: absolutely-positioned tooltips are invisible
+          phantom overflow and must never create a horizontal scrollbar. */}
+      <div className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto">
+        {children}
+      </div>
     </aside>
   );
 }
