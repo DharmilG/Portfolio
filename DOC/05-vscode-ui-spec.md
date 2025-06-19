@@ -30,11 +30,12 @@ Mobile <768px: Activity 48px stays, Sidebar becomes overlay drawer, Editor full-
 @import "tailwindcss";
 @theme {
   --color-vscode-bg: #1e1e1e;
+  --color-vscode-editor: #121314; /* opened-file surface (active tab merges into it) */
   --color-vscode-side: #181818;
   --color-vscode-titlebar: #191a1b;
   --color-vscode-tab: #181818;
   --color-vscode-tab-hover: #1f1f1f;
-  --color-vscode-tab-active: #1e1e1e;
+  --color-vscode-tab-active: #121314; /* = --color-vscode-editor (merge) */
   --color-vscode-border: #2b2b2b;
   --color-vscode-fg: #cccccc;
   --color-vscode-fg-active: #ffffff;
@@ -87,14 +88,13 @@ Bottom: avatar 28px rounded-full `profiles.avatar_url` (your logo) -> click open
 
 Header `Explorer` + `...` overflow button (shared `Tooltip`: `Views and More Actions...`).
 Static workspace root `Dharmil Gajjar` (always present, name in `--color-vscode-emphasis`, no rename affordance) — its row carries the view actions right-aligned (`new-file`/`new-folder`/`refresh`/`collapse-all` as 28px `ViewActionButton`s with VS Code tooltips; emit ids, page owns behavior) — with DB sections nested one level deeper.
-Sections as folders from `04`: `About/ Experience/ Projects/<repo>/ Skills/ Contact/ tmp/` (tmp dimmed italic). `tmp/` renders live `tmpFs` entries (New File/New Folder; folders first at `pl-10`, files `pl-14`); a synthetic dimmed `tmp` folder appears when no Studio row exists; tmp open by default.
+Sections as folders from `04`: `About/ Experience/ Projects/<repo>/ Skills/ Contact/` + pinned `tmp` scratch node (local-only `tmpFs`; renders when non-empty, open by default, dimmed italic; DB sections with slug `tmp` are ignored): files `untitled-N` + folders `New Folder N/` with `.gitkeep` inside, rows open/focus tabs like repo files.
 Folder rows: chevron + name only (no folder icon, chevron vertically centered). Row: 28px, indent 12px/level, chevron + `vscode-icons` by ext + `resolveName(): uiRenames ?? title_override ?? repo_name` + `M` green badge if dirty + `●` if tmp unsaved. Right-click: `Rename (session only) -> uiRenames`, `Open Preview (if preview_url)`, `Discard local changes`.
 `Projects/<repo>/` expand -> `GET /api/repo/tree`, skeleton shimmer rows while loading, README auto-open.
 
 ## 6. Editor (core: read + local edit + split)
 
-Tab bar 33px rail (`bg-vscode-tab`; 32px tiles flush on the base, 1px headroom): `--radius-tab` top corners; active tab `bg-tab-active` (= editor bg -> seamless merge) with concave `--radius-tab` bottom fillets per VS Code 1.142 "connected tabs": corner squares (`size-[var(--radius-tab)]`, `rounded-br/bl-full`) whose 1px hairline border traces the arc into the rail rule, cove filled by `box-shadow` (offset = spread = radius/2, colour = tile bg), `clip-path: inset(0)` cuts the spill; cap-edge hairline hugs top + sides, stops at fillet height (no accent line).
-Rail bottom rule = absolute `bg-vscode-border` hairline beneath the tiles (interrupted by the active tab + fillets). Tile: icon + name + `●` 8px dirty dot (`--color-vscode-dot`) swapping to a 12px `x` on hover, `x` persistent on active; 16px close hit area (`rounded-control` hover chip). Right: split-right icon (markdown/browser preview), `...` (Copy path, Reveal in Explorer, Open raw).
+Tab bar 35px band (`--color-vscode-tab`, hidden when no tabs): tiles icon + name + `●` dirty dot (`--color-vscode-dot`) or `x` on hover, `--radius-tab` top corners, active tab `bg-tab-active` (= `--color-vscode-editor` #121314) only (no top accent line — merges into the opened-file surface). Right: split-right icon (markdown/browser preview), `...` (Copy path, Reveal in Explorer, Open raw).
 Breadcrumb 22px dim: `Projects > <repo> > src > page.tsx`.
 Viewport:
 - Default read: Shiki Dark Modern + line numbers (gutter 48px, active line highlight on hover), minimap fake gradient bar right (decorative, 80px).
