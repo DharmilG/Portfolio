@@ -4,15 +4,23 @@
   "pushed_count": 0,
   "session": {
     "branch": "main",
-    "next_up": "PV-C-TABS remainder: breadcrumb + right-side split/... actions (1.142 connected tab shape live)",
+    "next_up": "PV-C-TABS remainder: 22px Breadcrumb + right-side split/... actions (35px band + #121314 live)",
     "pending_verifications": [
-      "visual: chrome vs current VS Code (floating sections on titlebar base, title bar controls, ActivityBar pill/badge, Explorer glyphs + static root)",
-      "visual: tab shape vs VS Code screenshot (1.142 connected tabs: concave fillets merge into editor, interrupted bottom rule, no accent line, active keeps x)",
-      "tmp tree: click New File -> tmp row + tab (user click-test; tmpFs persists in browser localStorage)",
+      "visual: chrome vs current VS Code (floating sections on titlebar base, title bar controls, ActivityBar pill/badge, Explorer glyphs + static root; sidebar shows no horizontal scrollbar)",
+      "visual: tab shape vs VS Code screenshot (35px flush band, active tab #121314 merges into the opened-file surface, no accent line, sharp bottom corners)",
+      "tmp tree: click New File -> tmp row + tab (tmpFs persists in browser localStorage)",
       "Explorer icon eyepass once section/project rows exist (Studio)"
     ],
-    "tip": "77e5c79",
+    "tip": "a5662ca",
     "unpushed": [
+      "a5662ca",
+      "68dd351",
+      "d87aab3",
+      "142ab67",
+      "aea723d",
+      "108d102",
+      "7909ed3",
+      "5e155d8",
       "77e5c79",
       "0d52742",
       "4ca1052",
@@ -439,14 +447,14 @@
       "vscode_match": true
     },
     {
-      "description": "33px rail tabs + 22px breadcrumb + split icons (Tabs.tsx + Breadcrumb.tsx, per DOC/05 §6)",
+      "description": "35px band tabs + 22px breadcrumb + split icons (Tabs.tsx + Breadcrumb.tsx, per DOC/05 §6)",
       "file": "components/vscode/Tabs.tsx",
       "id": "PV-C-TABS",
       "status": "in_progress",
       "title": "Tabs + breadcrumb",
       "owner": "agent",
       "started": "2026-10-17",
-      "log": "tile 809d4be + strip c49db41 + page wiring 6571507 (user click-test drove shape pass: accent line out, 6px outward bottom fillets, active keeps x) 7b9e4ca; 1.142 connected shape: Tab 4ca1052 (concave --radius-tab fillets via corner-square pseudos: border arc + shadow fill + clip-path, 32px tile, cap-edge hairline, 16px close at 12px glyph) + Tabs 0d52742 (33px rail, bottom rule under tiles) + DOC 77e5c79 (tsc clean; live CSS emission verified: size/shadow calc/clip-path/rounded-full); remainder: breadcrumb + right-side split/... actions"
+      "log": "tile 809d4be + strip c49db41 + page wiring 6571507 (user click-test drove shape pass: accent line out, 6px outward bottom fillets, active keeps x) 7b9e4ca; 1.142 connected shape: Tab 4ca1052 (concave --radius-tab fillets via corner-square pseudos: border arc + shadow fill + clip-path, 32px tile, cap-edge hairline, 16px close at 12px glyph) + Tabs 0d52742 (33px rail, bottom rule under tiles) + DOC 77e5c79 (tsc clean; live CSS emission verified: size/shadow calc/clip-path/rounded-full); remainder: breadcrumb + right-side split/... actions; redo (user call): Tab 5e155d8 (accent line out, sharp bottom corners) + Tabs 7909ed3 (35px flush band) + store 108d102 (tmp default-open) + Explorer aea723d (pinned tmp scratch tree, DB slug tmp filtered) + globals 142ab67 (--color-vscode-editor #121314; active tab merges into opened-file surface) + page d87aab3 (tmp reveal guards + bg-vscode-editor) + SideBar 68dd351 (overflow-x-hidden: no phantom h-scrollbar from invisible tooltips) + DOC a5662ca; remainder: breadcrumb + right-side split/... actions"
     },
     {
       "description": "Shiki + textarea overlay + Ctrl+S local (components/vscode/FileViewer.tsx, per DOC/05 §6)",
@@ -705,7 +713,7 @@
       "owner": "agent",
       "started": "2026-10-17",
       "finished": "2026-10-17",
-      "log": "store 8ca455a (tmp default-open) + Explorer 59dff47 (buildTmpTree + rows + synthetic tmp + empty-state guard; pl-10/pl-14 ladder) + DOC/05 58c6d17 (tsc clean; boot: 200, No folders yet on SSR, CSS rounded-tl/tr-full + -left/-right-1.5 live, accent refs 0)",
+      "log": "store 8ca455a (tmp default-open) + Explorer 59dff47 (buildTmpTree + rows + synthetic tmp + empty-state guard; pl-10/pl-14 ladder) + DOC/05 58c6d17 (tsc clean; boot: 200, No folders yet on SSR, CSS rounded-tl/tr-full + -left/-right-1.5 live, accent refs 0); rework (user call): Explorer aea723d (pinned synthetic node above sections, DB tmp slug ignored) + store 108d102 (default-open) + page d87aab3 (reveal on New File/New Folder)",
       "verified": true
     },
     {
