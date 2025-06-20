@@ -4,15 +4,20 @@
   "pushed_count": 0,
   "session": {
     "branch": "main",
-    "next_up": "PV-C-TABS remainder: 22px Breadcrumb + right-side split/... actions (35px band + #121314 live)",
+    "next_up": "PV-C-TABS remainder: tab-strip right-side split/... actions; then PV-C-FILEVIEWER (Shiki + textarea + Ctrl+S)",
     "pending_verifications": [
       "visual: chrome vs current VS Code (floating sections on titlebar base, title bar controls, ActivityBar pill/badge, Explorer glyphs + static root; sidebar shows no horizontal scrollbar)",
       "visual: tab shape vs VS Code screenshot (35px flush band, active tab #121314 merges into the opened-file surface, no accent line, sharp bottom corners)",
+      "breadcrumb: open a file -> 22px strip under the tabs (folders #9d9d9d, file #cccccc + icon); click a folder crumb -> quick-pick lists that level (drill-in; picking a file opens its tab; Esc/click-away closes)",
       "tmp tree: click New File -> tmp row + tab (tmpFs persists in browser localStorage)",
       "Explorer icon eyepass once section/project rows exist (Studio)"
     ],
-    "tip": "a5662ca",
+    "tip": "f216f1e",
     "unpushed": [
+      "f216f1e",
+      "6418068",
+      "8f36ffb",
+      "c01a502",
       "a5662ca",
       "68dd351",
       "d87aab3",
@@ -454,7 +459,7 @@
       "title": "Tabs + breadcrumb",
       "owner": "agent",
       "started": "2026-10-17",
-      "log": "tile 809d4be + strip c49db41 + page wiring 6571507 (user click-test drove shape pass: accent line out, 6px outward bottom fillets, active keeps x) 7b9e4ca; 1.142 connected shape: Tab 4ca1052 (concave --radius-tab fillets via corner-square pseudos: border arc + shadow fill + clip-path, 32px tile, cap-edge hairline, 16px close at 12px glyph) + Tabs 0d52742 (33px rail, bottom rule under tiles) + DOC 77e5c79 (tsc clean; live CSS emission verified: size/shadow calc/clip-path/rounded-full); remainder: breadcrumb + right-side split/... actions; redo (user call): Tab 5e155d8 (accent line out, sharp bottom corners) + Tabs 7909ed3 (35px flush band) + store 108d102 (tmp default-open) + Explorer aea723d (pinned tmp scratch tree, DB slug tmp filtered) + globals 142ab67 (--color-vscode-editor #121314; active tab merges into opened-file surface) + page d87aab3 (tmp reveal guards + bg-vscode-editor) + SideBar 68dd351 (overflow-x-hidden: no phantom h-scrollbar from invisible tooltips) + DOC a5662ca; remainder: breadcrumb + right-side split/... actions"
+      "log": "tile 809d4be + strip c49db41 + page wiring 6571507 (user click-test drove shape pass: accent line out, 6px outward bottom fillets, active keeps x) 7b9e4ca; 1.142 connected shape: Tab 4ca1052 (concave --radius-tab fillets via corner-square pseudos: border arc + shadow fill + clip-path, 32px tile, cap-edge hairline, 16px close at 12px glyph) + Tabs 0d52742 (33px rail, bottom rule under tiles) + DOC 77e5c79 (tsc clean; live CSS emission verified: size/shadow calc/clip-path/rounded-full); remainder: breadcrumb + right-side split/... actions; redo (user call): Tab 5e155d8 (accent line out, sharp bottom corners) + Tabs 7909ed3 (35px flush band) + store 108d102 (tmp default-open) + Explorer aea723d (pinned tmp scratch tree, DB slug tmp filtered) + globals 142ab67 (--color-vscode-editor #121314; active tab merges into opened-file surface) + page d87aab3 (tmp reveal guards + bg-vscode-editor) + SideBar 68dd351 (overflow-x-hidden: no phantom h-scrollbar from invisible tooltips) + DOC a5662ca; breadcrumb: Menu c01a502 (optional per-item icons) + Breadcrumb 8f36ffb (22px strip, Explorer-hierarchy crumbs with shared rename keys, quick-pick drill-in children, file-crumb symbols deferred to a provider) + page 6418068 (mount) + DOC f216f1e; remainder: right-side split/... actions"
     },
     {
       "description": "Shiki + textarea overlay + Ctrl+S local (components/vscode/FileViewer.tsx, per DOC/05 §6)",
