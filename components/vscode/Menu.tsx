@@ -2,9 +2,19 @@
 // callers own triggers (click state, hover wrappers) and placement via className.
 // Densities reproduce today's two menu styles exactly ("menu": title-bar menus,
 // "compact": gear menu) — converge them only with explicit visual sign-off.
+// Optional per-item icon (file-type glyphs in breadcrumb pickers); icon-less
+// items render exactly as before.
+import Codicon from "./Codicon";
+
 export type MenuItem =
   | { separator: true }
-  | { id?: string; label: string; hint?: string; disabled?: boolean };
+  | {
+      id?: string;
+      label: string;
+      hint?: string;
+      disabled?: boolean;
+      icon?: string;
+    };
 
 type MenuProps = {
   items: readonly MenuItem[];
@@ -49,8 +59,15 @@ export default function Menu({
             onClick={() => {
               if (!item.disabled && item.id) onAction?.(item.id);
             }}
-            className={`block w-full text-left text-vscode-fg disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent ${DENSITY_ITEM[density]}`}
+            className={`${
+              item.icon ? "flex items-center gap-2" : "block"
+            } w-full text-left text-vscode-fg disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent ${DENSITY_ITEM[density]}`}
           >
+            {item.icon ? (
+              <span className="shrink-0 text-vscode-dim">
+                <Codicon name={item.icon} />
+              </span>
+            ) : null}
             {item.label}
           </button>
         ),
