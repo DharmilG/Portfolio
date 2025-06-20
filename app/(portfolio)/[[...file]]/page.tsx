@@ -4,6 +4,7 @@
 // Partial PV-PAGE-PORTFOLIO: mounts built components, fetches sections live.
 import { useEffect, useState } from "react";
 import { type ActivityId } from "@/components/vscode/ActivityBar";
+import Breadcrumb from "@/components/vscode/Breadcrumb";
 import Explorer from "@/components/vscode/Explorer";
 import PrimarySideBar from "@/components/vscode/PrimarySideBar";
 import Section from "@/components/vscode/Section";
@@ -122,6 +123,7 @@ export default function PortfolioPage() {
         ) : null}
         <Section className="flex-1 bg-vscode-editor">
           <Tabs />
+          <Breadcrumb onOpenFile={openCodeTab} />
           {!hasTabs ? (
             <div className="flex min-h-0 flex-1 items-center justify-center text-sm text-vscode-dim">
               Open a file from the Explorer
