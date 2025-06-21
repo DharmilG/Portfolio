@@ -2,8 +2,8 @@
 // callers own triggers (click state, hover wrappers) and placement via className.
 // Densities reproduce today's two menu styles exactly ("menu": title-bar menus,
 // "compact": gear menu) — converge them only with explicit visual sign-off.
-// Optional per-item icon (file-type glyphs in breadcrumb pickers); icon-less
-// items render exactly as before.
+// Optional per-item icon (file-type glyphs in breadcrumb pickers) + active
+// row highlight (quick-pick current item); plain items render as before.
 import Codicon from "./Codicon";
 
 export type MenuItem =
@@ -14,6 +14,7 @@ export type MenuItem =
       hint?: string;
       disabled?: boolean;
       icon?: string;
+      active?: boolean;
     };
 
 type MenuProps = {
@@ -61,7 +62,11 @@ export default function Menu({
             }}
             className={`${
               item.icon ? "flex items-center gap-2" : "block"
-            } w-full text-left text-vscode-fg disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent ${DENSITY_ITEM[density]}`}
+            } w-full text-left ${
+              item.active
+                ? "bg-vscode-list-active text-vscode-fg-active"
+                : "text-vscode-fg"
+            } disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent ${DENSITY_ITEM[density]}`}
           >
             {item.icon ? (
               <span className="shrink-0 text-vscode-dim">
