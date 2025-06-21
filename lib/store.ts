@@ -75,6 +75,10 @@ type State = {
   toggleExpanded: (key: string) => void;
   collapseAll: () => void;
 
+  selectedPath: string | null;
+  revealNonce: number;
+  selectPath: (path: string | null) => void;
+
   edits: Record<string, string>;
   commits: LocalCommit[];
   renames: Record<string, string>;
@@ -101,6 +105,45 @@ type State = {
   setMode: (m: "dark" | "light") => void;
 };
 
+// Static workspace root — always present, never renamed, never dirty.
+export const ROOT_NAME = "Dharmil Gajjar";
+
+// autoReveal (DOC/05 §5) — ancestor expansion keys for a file path:
+// root → section → repo/tmp dirs. Repo-dir keys are emitted ahead of nested
+// rows (PV-UI-REPOTREE) so reveal works unchanged when they land.
+function ancestorKeys(path: string): string[] {
+  const parts = path.split("/");
+  const keys = [ROOT_NAME];
+  if (parts[0] === "Projects" && parts.length >= 3) {
+    keys.push("projects", `Projects/${parts[1]}/${parts[2]}`);
+    for (let i = 4; i < parts.length; i++) {
+      keys.push(
+        `Projects/${parts[1]}/${parts[2]}/${parts.slice(3, i).join("/")}`,
+      );
+    }
+  } else if (parts[0] === "tmp") {
+    keys.push("tmp");
+    if (parts.length >= 3) keys.push(`tmp/${parts[1]}`);
+  } else if (parts.length >= 2) {
+    keys.push(parts[0]);
+  }
+  return keys;
+}
+
+// One set() per action: merge ancestor expansion + selection + scroll nonce.
+function revealed(
+  s: { expanded: Record<string, boolean>; revealNonce: number },
+  path: string,
+): {
+  expanded: Record<string, boolean>;
+  selectedPath: string;
+  revealNonce: number;
+} {
+  const expanded = { ...s.expanded };
+  for (const k of ancestorKeys(path)) expanded[k] = true;
+  return { expanded, selectedPath: path, revealNonce: s.revealNonce + 1 };
+}
+
 export const useStore = create<State>()(
   persist(
     (set) => ({
@@ -124,10 +167,13 @@ export const useStore = create<State>()(
         set((s) => {
           const id = `${t.kind}:${t.path}`;
           const tab = { ...t, id };
+          // autoReveal: opening a file reveals + selects it in the Explorer
+          // (browser previews hold URLs — nothing to reveal).
+          const reveal = t.kind === "browser" ? {} : revealed(s, t.path);
           if (s.tabs.some((x) => x.id === id)) {
-            return { activeTabId: id };
+            return { activeTabId: id, ...reveal };
           }
-          return { tabs: [...s.tabs, tab], activeTabId: id };
+          return { tabs: [...s.tabs, tab], activeTabId: id, ...reveal };
         }),
       closeTab: (id) =>
         set((s) => {
@@ -138,12 +184,26 @@ export const useStore = create<State>()(
               : s.activeTabId;
           return { tabs, activeTabId };
         }),
-      setActiveTab: (activeTabId) => set({ activeTabId }),
+      setActiveTab: (activeTabId) =>
+        set((s) => {
+          const tab = s.tabs.find((x) => x.id === activeTabId);
+          return {
+            activeTabId,
+            // Tab clicks reveal too (VS Code autoReveal on active change).
+            ...(tab && tab.kind !== "browser" ? revealed(s, tab.path) : {}),
+          };
+        }),
       toggleExpanded: (key) =>
         set((s) => ({
           expanded: { ...s.expanded, [key]: !s.expanded[key] },
         })),
       collapseAll: () => set({ expanded: {} }),
+
+      // Explorer selection + autoReveal scroll trigger (session-only, like
+      // expanded — intentionally absent from persist partialize).
+      selectedPath: null,
+      revealNonce: 0,
+      selectPath: (selectedPath) => set({ selectedPath }),
 
       edits: {},
       commits: [],
