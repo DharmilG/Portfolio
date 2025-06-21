@@ -50,6 +50,7 @@ Mobile <768px: Activity 48px stays, Sidebar becomes overlay drawer, Editor full-
   --color-vscode-warning: #cca700;
   --color-vscode-list-hover: #2a2d2e;
   --color-vscode-list-active: #04395e;
+  --color-vscode-list-inactive: #37373d; /* tree selection while unfocused */
   --color-vscode-input-bg: #3c3c3c;
   --color-vscode-command-bg: #242424;
   --color-vscode-widget-bg: #252526;
@@ -89,16 +90,17 @@ Bottom: avatar 28px rounded-full `profiles.avatar_url` (your logo) -> click open
 Header `Explorer` + `...` overflow button (shared `Tooltip`: `Views and More Actions...`).
 Static workspace root `Dharmil Gajjar` (always present, name in `--color-vscode-emphasis`, no rename affordance) — its row carries the view actions right-aligned (`new-file`/`new-folder`/`refresh`/`collapse-all` as 28px `ViewActionButton`s with VS Code tooltips; emit ids, page owns behavior) — with DB sections nested one level deeper.
 Sections as folders from `04`: `About/ Experience/ Projects/<repo>/ Skills/ Contact/` + pinned `tmp` scratch node (local-only `tmpFs`; renders when non-empty, open by default, dimmed italic; DB sections with slug `tmp` are ignored): files `untitled-N` + folders `New Folder N/` with `.gitkeep` inside, rows open/focus tabs like repo files.
-Folder rows: chevron + name only (no folder icon, chevron vertically centered). Row: 28px, indent 12px/level, chevron + `vscode-icons` by ext + `resolveName(): uiRenames ?? title_override ?? repo_name` + `M` green badge if dirty + `●` if tmp unsaved. Right-click: `Rename (session only) -> uiRenames`, `Open Preview (if preview_url)`, `Discard local changes`.
+Folder rows: chevron + name only (no folder icon, chevron vertically centered). Row: 28px, indent 12px/level, chevron + `vscode-icons` by ext + `resolveName(): uiRenames ?? title_override ?? repo_name` + `M` green badge if dirty + `●` if tmp unsaved. Right-click: `Rename (session only) -> uiRenames`, `Open Preview (if preview_url)`, `Discard local changes`. Rows are shared `TreeRow`s (`data-path` each): clicking selects (folders too); opening/activating a file auto-reveals it (autoReveal in `lib/store` — expand ancestors, scroll into view, select). Selection renders blue `list-active` while the tree has focus, gray `list-inactive` otherwise.
 `Projects/<repo>/` expand -> `GET /api/repo/tree`, skeleton shimmer rows while loading, README auto-open.
 
 ## 6. Editor (core: read + local edit + split)
 
 Tab bar 35px band (`--color-vscode-tab`, hidden when no tabs): tiles icon + name + `●` dirty dot (`--color-vscode-dot`) or `x` on hover, `--radius-tab` top corners, active tab `bg-tab-active` (= `--color-vscode-editor` #121314) only (no top accent line — merges into the opened-file surface). Right: split-right icon (markdown/browser preview), `...` (Copy path, Reveal in Explorer, Open raw).
-Breadcrumb 22px dim: `Projects > <repo> > src > page.tsx`. Folder crumbs open a
-quick-pick dropdown of that level's children (drill-in like VS Code; picking a
-file opens it; empty folders = no-op). The file crumb's symbols picker waits
-for a symbol provider.
+Breadcrumb 22px dim: `Projects > <repo> > src > page.tsx`. Any crumb opens a
+quick-pick of that level's siblings (VS Code: "dropdown with that level's
+siblings") — the active path's row highlighted `list-active`, folders drill in
+place, picking a file opens it + the Explorer auto-reveals/selects it; empty
+folders = no-op. The file crumb's symbols picker waits for a symbol provider.
 Viewport:
 - Default read: Shiki Dark Modern + line numbers (gutter 48px, active line highlight on hover), minimap fake gradient bar right (decorative, 80px).
 - Edit mode: `dblclick / pencil / Ctrl+E` swaps to `textarea` overlay (same font/metrics, transparent caret accent). Header banner `Editing locally — not pushed (Esc to view)`. `Ctrl+S` -> `localEdits[path]=value` + toast `Saved locally`, `Esc` -> back to view. No server call (per `09 §8`).
