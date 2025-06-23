@@ -97,10 +97,13 @@ Folder rows: chevron + name only (no folder icon, chevron vertically centered). 
 
 Tab bar 35px band (`--color-vscode-tab`, hidden when no tabs): tiles icon + name + `●` dirty dot (`--color-vscode-dot`) or `x` on hover, `--radius-tab` top corners, active tab `bg-tab-active` (= `--color-vscode-editor` #121314) only (no top accent line — merges into the opened-file surface). Right: split-right icon (markdown/browser preview), `...` (Copy path, Reveal in Explorer, Open raw).
 Breadcrumb 22px dim: `Projects > <repo> > src > page.tsx`. Any crumb opens a
-quick-pick of that level's siblings (VS Code: "dropdown with that level's
-siblings") — the active path's row highlighted `list-active`, folders drill in
-place, picking a file opens it + the Explorer auto-reveals/selects it; empty
-folders = no-op. The file crumb's symbols picker waits for a symbol provider.
+quick-pick tree of that level's siblings (VS Code: "dropdown with that level's
+siblings"): the clicked node auto-expands in place with Explorer-style chevron
+toggles (▸/▾ folders, file glyphs — an icon on every row; rows 24px, content
+inset 5px + 16px per level; the focused row carries a 1px `--color-vscode-accent`
+outline and scrolls into view). Picking a file opens it + the Explorer
+auto-reveals/selects it; empty folders = no-op. The file crumb's symbols
+picker waits for a symbol provider.
 Viewport:
 - Default read: Shiki Dark Modern + line numbers (gutter 48px, active line highlight on hover), minimap fake gradient bar right (decorative, 80px).
 - Edit mode: `dblclick / pencil / Ctrl+E` swaps to `textarea` overlay (same font/metrics, transparent caret accent). Header banner `Editing locally — not pushed (Esc to view)`. `Ctrl+S` -> `localEdits[path]=value` + toast `Saved locally`, `Esc` -> back to view. No server call (per `09 §8`).
