@@ -1,6 +1,6 @@
 // lib/store.ts — single zustand store for the workbench.
 // Orchestration lives here; computation delegates to lib/localGit.ts (dumb-depth).
-// Only edits/commits/renames/tmpFs/mode persist (localStorage vscode-local-v1).
+// Only edits/commits/renames/tmpFs/mode/sidebarWidth persist (localStorage vscode-local-v1).
 // See DOC/03 (state), rule 03-local-only, skill local-git.
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
@@ -64,6 +64,9 @@ type State = {
   setProjects: (p: Project[]) => void;
   setTree: (repo: string, tree: TreeEntry[]) => void;
   setExplorerLoading: (b: boolean) => void;
+
+  sidebarWidth: number; // layout pref (sash, DOC/05 §3/§5) — persisted
+  setSidebarWidth: (w: number) => void;
 
   tabs: EditorTab[];
   activeTabId: string | null;
@@ -156,6 +159,9 @@ export const useStore = create<State>()(
       setTree: (repo, tree) =>
         set((s) => ({ trees: { ...s.trees, [repo]: tree } })),
       setExplorerLoading: (explorerLoading) => set({ explorerLoading }),
+
+      sidebarWidth: 280,
+      setSidebarWidth: (sidebarWidth) => set({ sidebarWidth }),
 
       tabs: [],
       activeTabId: null,
@@ -299,6 +305,7 @@ export const useStore = create<State>()(
         renames: s.renames,
         tmpFs: s.tmpFs,
         mode: s.mode,
+        sidebarWidth: s.sidebarWidth,
       }),
       skipHydration: true,
     },
