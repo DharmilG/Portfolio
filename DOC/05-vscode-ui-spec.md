@@ -21,6 +21,7 @@
 +----------------------------------------------------+
 Cards: `Section` primitive — `rounded-section` (8px), 1px #2b2b2b border,
 `overflow-hidden`; grid gap 5px + padding 5px on `bg-vscode-titlebar` (the workbench base).
+Sash (`Sash.tsx`): the 5px gutter right of the sidebar card is a drag grip — always-visible ⋮ (three 3px dots in `--color-vscode-dim`, accent while dragging, `col-resize` over the strip), drag resizes the pane live (min 170px, editor floor 320px), width persists (`sidebarWidth` in `vscode-local-v1`); the Panel + secondary bar reuse the grip.
 Mobile <768px: Activity 48px stays, Sidebar becomes overlay drawer, Editor full-width, Panel bottom-sheet.
 ```
 
@@ -85,7 +86,7 @@ Left: VS Code logo (`/vscode-logo.svg`, 16px) + menu row (`File Edit Selection V
 Top icons (24px, dim -> white on active = rounded pill bg `--color-vscode-activity-active-bg` via shared `IconButton`, tooltip on hover): Explorer `files`, Search `search` (filters Explorer client-side), Source Control `source-control` with count badge `len(dirty)+len(localCommits)` blue circle (shared `Badge`, 18px), Run `debug-alt` (opens preview), Extensions `extensions` (dummy grid + `2` badge).
 Bottom: avatar 28px rounded-full `profiles.avatar_url` (your logo) -> click opens `profile.json` tab. Gear 20px below -> hover opens menu (shared `Menu`, density `compact`) `Settings (opens settings.json) | Appearance (theme switch dark/light) | Profile (opens profile.json) | Reset local edits`.
 
-## 5. Sidebar Explorer (280px)
+## 5. Sidebar Explorer (280px default — sash-resizable, min 170px)
 
 Header `Explorer` + `...` overflow button (shared `Tooltip`: `Views and More Actions...`).
 Static workspace root `Dharmil Gajjar` (always present, name in `--color-vscode-emphasis`, no rename affordance) — its row carries the view actions right-aligned (`new-file`/`new-folder`/`refresh`/`collapse-all` as 28px `ViewActionButton`s with VS Code tooltips; emit ids, page owns behavior) — with DB sections nested one level deeper.
