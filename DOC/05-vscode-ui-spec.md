@@ -104,9 +104,10 @@ inset 5px + 16px per level; the focused row carries a 1px `--color-vscode-accent
 outline and scrolls into view). Picking a file opens it + the Explorer
 auto-reveals/selects it; empty folders = no-op. The file crumb's symbols
 picker waits for a symbol provider.
-Viewport:
-- Default read: Shiki Dark Modern + line numbers (gutter 48px, active line highlight on hover), minimap fake gradient bar right (decorative, 80px).
-- Edit mode: `dblclick / pencil / Ctrl+E` swaps to `textarea` overlay (same font/metrics, transparent caret accent). Header banner `Editing locally — not pushed (Esc to view)`. `Ctrl+S` -> `localEdits[path]=value` + toast `Saved locally`, `Esc` -> back to view. No server call (per `09 §8`).
+Viewport (content = `edits[path] ?? tmpFs[path] ?? blob cache` — the blob cache waits
+for `/api/repo/blob`, a dim placeholder line shows until then):
+- Default read: Shiki 1.x `dark-plus` (fine-grained core bundle + JS regex engine, no wasm/bundler config; exact Dark Modern token polish later) with sticky 48px number gutter, per-line hover highlight (`--color-vscode-line-highlight`, number brightens to `--color-vscode-fg`), minimap fake gradient bar right (decorative, 80px, `pointer-events-none`).
+- Edit mode: `dblclick / Ctrl+E` swaps an auto-grown `textarea` in (same font metrics, `wrap=off` — long lines scroll inside the field) with the number gutter kept aligned. Header banner `Editing locally — not pushed (Esc to view)`, caret `--color-vscode-accent`. `Ctrl+S` -> `localEdits[path]=value` (dirty `●` in tab + Explorer; toast `Saved locally` lands with `PV-UI-TOAST`), `Esc` -> back to view. No server call (per `09 §8`). Hover pencil button arrives with view-actions polish.
 - Split: `Ctrl+\` or preview icon opens second group: `MarkdownPreview` (`Ctrl+Shift+V` toggles for `.md`) or `BrowserPreview` (iframe + url bar + reload + `Open in new tab`, sandbox allow-scripts allow-same-origin).
 
 ## 7. Source Control (fun + interactive)
