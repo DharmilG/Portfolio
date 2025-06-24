@@ -4,17 +4,21 @@
   "pushed_count": 0,
   "session": {
     "branch": "main",
-    "next_up": "PV-C-TABS remainder: tab-strip right-side split/... actions; then PV-C-FILEVIEWER (Shiki + textarea + Ctrl+S)",
+    "next_up": "PV-C-TABS remainder: tab-strip right-side split/... actions; then PV-C-STATUSBAR (Ln/Col reads the FileViewer caret)",
     "pending_verifications": [
       "visual: chrome vs current VS Code (floating sections on titlebar base, title bar controls, ActivityBar pill/badge, Explorer glyphs + static root; sidebar shows no horizontal scrollbar)",
       "visual: tab shape vs VS Code screenshot (35px flush band, active tab #121314 merges into the opened-file surface, no accent line, sharp bottom corners)",
       "breadcrumb picker: click any crumb -> tree of that level with the clicked node auto-expanded in place; folder rows toggle with \u25b8/\u25be chevrons, file glyphs on files (an icon on every row); focused row 1px accent outline + scrolled into view; content inset 5px + 16px per level; picking a file opens its tab; Esc/click-away closes",
       "explorer autoReveal: open a file -> ancestors expand, row scrolls into view + selected (gray #37373d unfocused / blue #04395e when the tree is focused); tree row click selects; folder rows select on click",
       "tmp tree: click New File -> tmp row + tab (tmpFs persists in browser localStorage)",
-      "Explorer icon eyepass once section/project rows exist (Studio)"
+      "Explorer icon eyepass once section/project rows exist (Studio)",
+      "fileviewer: open a tmp file -> Shiki colors + 48px sticky gutter + hover line highlight (number brightens); long line -> horizontal scroll keeps the numbers pinned; dblclick/Ctrl+E -> textarea aligned with the gutter (no jump), type + Ctrl+S -> dirty dot in tab + Explorer, Esc -> view shows the edit, refresh persists; repo file without an edit -> dim placeholder line"
     ],
-    "tip": "6333c0a",
+    "tip": "7d86812",
     "unpushed": [
+      "7d86812",
+      "f8dfe1a",
+      "f7c27f2",
       "6333c0a",
       "396490f",
       "5b2e9c6",
@@ -285,9 +289,9 @@
     "tokens": "app/globals.css @theme"
   },
   "summary": {
-    "total": 50,
+    "total": 51,
     "done": 24,
-    "in_progress": 3,
+    "in_progress": 4,
     "backlog": 23
   },
   "tasks": [
@@ -476,8 +480,11 @@
       "description": "Shiki + textarea overlay + Ctrl+S local (components/vscode/FileViewer.tsx, per DOC/05 §6)",
       "file": "components/vscode/FileViewer.tsx",
       "id": "PV-C-FILEVIEWER",
-      "status": "backlog",
-      "title": "FileViewer"
+      "status": "in_progress",
+      "title": "FileViewer",
+      "owner": "agent",
+      "started": "2026-10-17",
+      "log": "FileViewer f7c27f2 (Shiki fine-grained core bundle + JS regex engine, theme dark-plus — no wasm; sticky 48px number gutter that brightens on hover, per-line hover highlight, decorative 80px minimap column; edit overlay dblclick/Ctrl+E: auto-grown textarea wrap=off with aligned gutter + banner, caret accent; Ctrl+S saveEdit -> dirty dot, Esc back; content edits ?? tmpFs ?? blob cache (dim placeholder until /api/repo/blob); key guards keep rename/menu fields untouched; no globals.css change needed — existing tokens/utilities only) + page f8dfe1a (mount; empty state only when no tabs) + DOC 7d86812 (tsc clean, boot 200/no overlay, live CSS probe: hover/group-hover/caret/selection/w-max/min-w-full emitted); remainder: hover pencil button, repo blob fetch, per-tab scroll memory, toast (PV-UI-TOAST), exact Dark Modern token polish"
     },
     {
       "description": "24px accent + main* + Ln/Col + local:k (components/vscode/StatusBar.tsx, per DOC/05 §8)",
@@ -738,6 +745,13 @@
       "id": "PV-UI-REPOTREE",
       "status": "backlog",
       "title": "Repo subfolder nesting (Explorer)"
+    },
+    {
+      "id": "PV-UI-TOAST",
+      "title": "Toast stack",
+      "description": "Bottom-right stacked toasts (VS Code notification style), mounted once in the page shell. First consumers: \"Saved locally\" after Ctrl+S in FileViewer edit mode (DOC/05 §6), \"Committed locally\" after a local commit (DOC/05 §7), dummy Install confirmations.",
+      "file": "components/vscode/Toast.tsx",
+      "status": "backlog"
     },
     {
       "id": "PV-PNPM",
