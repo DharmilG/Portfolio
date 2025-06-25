@@ -43,6 +43,7 @@ export default function PortfolioPage() {
   const hasTabs = useStore((s) => s.tabs.length > 0);
   const sidebarWidth = useStore((s) => s.sidebarWidth);
   const setSidebarWidth = useStore((s) => s.setSidebarWidth);
+  const revealPath = useStore((s) => s.revealPath);
   const [view, setView] = useState<ActivityId>("explorer");
   const [showSidebar, setShowSidebar] = useState(true);
   const [dragWidth, setDragWidth] = useState<number | null>(null);
@@ -128,6 +129,14 @@ export default function PortfolioPage() {
     }
   };
 
+  // Tab menu "Reveal in Explorer" (full parity): show the Explorer view +
+  // sidebar, then expand ancestors + select + scroll (store.revealPath).
+  const handleReveal = (path: string) => {
+    setView("explorer");
+    setShowSidebar(true);
+    revealPath(path);
+  };
+
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <TitleBar onMenuAction={handleAction} />
@@ -161,7 +170,7 @@ export default function PortfolioPage() {
           </div>
         ) : null}
         <Section className="flex-1 bg-vscode-editor">
-          <Tabs />
+          <Tabs onReveal={handleReveal} />
           <Breadcrumb onOpenFile={openCodeTab} />
           {hasTabs ? (
             <FileViewer />
