@@ -81,6 +81,7 @@ type State = {
   selectedPath: string | null;
   revealNonce: number;
   selectPath: (path: string | null) => void;
+  revealPath: (path: string) => void;
 
   edits: Record<string, string>;
   commits: LocalCommit[];
@@ -210,6 +211,9 @@ export const useStore = create<State>()(
       selectedPath: null,
       revealNonce: 0,
       selectPath: (selectedPath) => set({ selectedPath }),
+      // Full reveal (tab menu "Reveal in Explorer"): expand ancestors + select
+      // + scroll trigger, without touching tabs.
+      revealPath: (path) => set((s) => revealed(s, path)),
 
       edits: {},
       commits: [],
