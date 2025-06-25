@@ -12,10 +12,16 @@
       "explorer autoReveal: open a file -> ancestors expand, row scrolls into view + selected (gray #37373d unfocused / blue #04395e when the tree is focused); tree row click selects; folder rows select on click",
       "tmp tree: click New File -> tmp row + tab (tmpFs persists in browser localStorage)",
       "Explorer icon eyepass once section/project rows exist (Studio)",
-      "fileviewer: open a tmp file -> Shiki colors + 48px sticky gutter + hover line highlight (number brightens); long line -> horizontal scroll keeps the numbers pinned; dblclick/Ctrl+E -> textarea aligned with the gutter (no jump), type + Ctrl+S -> dirty dot in tab + Explorer, Esc -> view shows the edit, refresh persists; repo file without an edit -> dim placeholder line"
+      "fileviewer: open a tmp file -> Shiki colors + 48px sticky gutter + hover line highlight (number brightens); long line -> horizontal scroll keeps the numbers pinned; dblclick/Ctrl+E -> textarea aligned with the gutter (no jump), type + Ctrl+S -> dirty dot in tab + Explorer, Esc -> view shows the edit, refresh persists; repo file without an edit -> dim placeholder line",
+      "sash: ⋮ dots always visible in the 5px sidebar/editor gutter (3px, dim; hover brightens to emphasis); col-resize cursor over the strip; drag -> pane reflows live, dots turn accent, stops at 170px min and editor floor 320px; release -> width survives refresh + Ctrl+B toggle; idle layout has zero pixel shift"
     ],
-    "tip": "7d86812",
+    "tip": "83c929e",
     "unpushed": [
+      "83c929e",
+      "bf212d7",
+      "cd5ce2f",
+      "0bf2c5e",
+      "d25ae18",
       "7d86812",
       "f8dfe1a",
       "f7c27f2",
@@ -280,7 +286,7 @@
       "144e580",
       "5bb34c7"
     ],
-    "last_updated": "2026-10-17"
+    "last_updated": "2026-10-18"
   },
   "source_of_truth": {
     "code": "E:/Portfolio (branch main, no origin)",
@@ -289,9 +295,9 @@
     "tokens": "app/globals.css @theme"
   },
   "summary": {
-    "total": 51,
+    "total": 52,
     "done": 24,
-    "in_progress": 4,
+    "in_progress": 5,
     "backlog": 23
   },
   "tasks": [
@@ -752,6 +758,16 @@
       "description": "Bottom-right stacked toasts (VS Code notification style), mounted once in the page shell. First consumers: \"Saved locally\" after Ctrl+S in FileViewer edit mode (DOC/05 §6), \"Committed locally\" after a local commit (DOC/05 §7), dummy Install confirmations.",
       "file": "components/vscode/Toast.tsx",
       "status": "backlog"
+    },
+    {
+      "id": "PV-UI-SASH",
+      "title": "Sidebar sash",
+      "description": "5px workspace gutter as a drag grip: always-visible three-dot column (3px dots, dim; accent while dragging, col-resize). Drag resizes the sidebar pane live (min 170px, editor floor 320px), released width persists in vscode-local-v1; Ctrl+B hide/show keeps it. Shared component — Panel + secondary bar reuse it.",
+      "file": "components/vscode/Sash.tsx",
+      "status": "in_progress",
+      "owner": "agent",
+      "started": "2026-10-18",
+      "log": "store d25ae18 (sidebarWidth 280 default + setSidebarWidth + persist partialize) + Sash 0bf2c5e (pointer-capture drag, body cursor pinned during drag, clamp + onPreview/onCommit, role=separator) + SideBar cd5ce2f (inline width from store, w-70 out) + page bf212d7 (relative holder wraps PrimarySideBar, sash absolute -right-[5px] in the gap, ResizeObserver -> maxPane = rowWidth - 383) + DOC 83c929e (tsc clean, boot 200/no overlay, sash present in SSR, live CSS: -right-[5px] -> right:-5px, w/h-=[35]px, gap-[3px], cursor-col-resize, group-hover:bg-vscode-emphasis all emitted; zero pixel shift); awaiting user click-test; remainder: Panel/secondary bar reuse"
     },
     {
       "id": "PV-PNPM",
