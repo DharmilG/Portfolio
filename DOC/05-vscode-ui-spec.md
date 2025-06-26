@@ -96,7 +96,7 @@ Folder rows: chevron + name only (no folder icon, chevron vertically centered). 
 
 ## 6. Editor (core: read + local edit + split)
 
-Tab bar 35px band (`--color-vscode-tab`, hidden when no tabs): tiles icon + name + `●` dirty dot (`--color-vscode-dot`) or `x` on hover, `--radius-tab` top corners, active tab `bg-tab-active` (= `--color-vscode-editor` #121314) only (no top accent line — merges into the opened-file surface). Right: split-right icon (markdown/browser preview), `...` (Copy path, Reveal in Explorer, Open raw).
+Tab bar 35px band (`--color-vscode-tab`, hidden when no tabs): tiles icon + name + `●` dirty dot (`--color-vscode-dot`) or `x` on hover, `--radius-tab` top corners, active tab `bg-tab-active` (= `--color-vscode-editor` #121314) only (no top accent line — merges into the opened-file surface). Right: pinned actions rail (holds position while the tab run scrolls) — `More Actions...` `...` menu: `Copy path` (workspace path -> clipboard), `Reveal in Explorer` (full parity: shows the Explorer view + sidebar, expands ancestors, selects + scrolls; `store.revealPath`), `Open raw` (repo file -> `raw.githubusercontent.com/<owner>/<repo>/HEAD/<path>` in a new tab; dimmed for `tmp/` files); split-right icon lands with the preview components (`Ctrl+\`).
 Breadcrumb 22px dim: `Projects > <repo> > src > page.tsx`. Any crumb opens a
 quick-pick tree of that level's siblings (VS Code: "dropdown with that level's
 siblings"): the clicked node auto-expands in place with Explorer-style chevron
