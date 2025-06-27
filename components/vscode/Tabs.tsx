@@ -1,15 +1,19 @@
 "use client";
 
 // Tabs — editor tab strip (editor chrome). Maps store tabs -> Tab tiles;
-// hidden when no tabs. Labels follow uiRenames (resolveName), dirty from
-// local edits (isDirty). Right: pinned actions rail (stays put while the tab
-// run scrolls) — `...` menu: Copy path / Reveal in Explorer / Open raw
-// (repo file -> raw.githubusercontent.com/<owner>/<repo>/HEAD/<path>); the
-// split-right icon lands with the preview components. See DOC/05 §6.
+// hidden when no tabs. Labels follow uiRenames (resolveName); the status dot
+// follows unsaved buffers + local edits (hasChanges — green for new tmp files,
+// amber modified) with the M badge once edits are saved. Closing a tab with an
+// unsaved buffer asks first (Modal: Save / Don't Save / Cancel). Right: pinned
+// actions rail (stays put while the tab run scrolls) — `...` menu: Copy path /
+// Reveal in Explorer / Open raw (repo file ->
+// raw.githubusercontent.com/<owner>/<repo>/HEAD/<path>); the split-right icon
+// lands with the preview components. See DOC/05 §6.
 import { useEffect, useRef, useState } from "react";
-import { isDirty, useStore } from "@/lib/store";
+import { hasChanges, useStore } from "@/lib/store";
 import { resolveName } from "./Explorer";
 import Menu, { type MenuItem } from "./Menu";
+import Modal from "./Modal";
 import Tab from "./Tab";
 import ViewActionButton from "./ViewActionButton";
 
@@ -31,10 +35,14 @@ export default function Tabs({ onReveal }: TabsProps) {
   const activeTabId = useStore((s) => s.activeTabId);
   const edits = useStore((s) => s.edits);
   const renames = useStore((s) => s.renames);
+  const drafts = useStore((s) => s.drafts);
   const setActiveTab = useStore((s) => s.setActiveTab);
   const closeTab = useStore((s) => s.closeTab);
+  const saveDraft = useStore((s) => s.saveDraft);
+  const discardDraft = useStore((s) => s.discardDraft);
 
   const [menuOpen, setMenuOpen] = useState(false);
+  const [pendingClose, setPendingClose] = useState<string | null>(null);
   const bandRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -54,6 +62,34 @@ export default function Tabs({ onReveal }: TabsProps) {
   }, [menuOpen]);
 
   if (tabs.length === 0) return null;
+
+  // Per-tab decorations: new tmp files tint green, saved edits tint amber.
+  const statusFor = (path: string): "new" | "modified" | null =>
+    path.startsWith("tmp/")
+      ? "new"
+      : edits[path] !== undefined
+        ? "modified"
+        : null;
+
+  // Closing a tab with an unsaved buffer asks first (Modal below); locally
+  // saved edits survive in the store, so they close silently.
+  const requestClose = (id: string) => {
+    const t = tabs.find((x) => x.id === id);
+    if (t && drafts[t.path] !== undefined) setPendingClose(id);
+    else closeTab(id);
+  };
+
+  const pendingTab = tabs.find((x) => x.id === pendingClose) ?? null;
+  const resolveClose = (choice: string) => {
+    const id = pendingClose;
+    setPendingClose(null);
+    if (!id || choice === "cancel") return;
+    const t = tabs.find((x) => x.id === id);
+    if (!t) return;
+    if (choice === "save") saveDraft(t.path);
+    else if (choice === "discard") discardDraft(t.path);
+    closeTab(id);
+  };
 
   const active = tabs.find((t) => t.id === activeTabId) ?? null;
   const rawUrl =
@@ -92,9 +128,10 @@ export default function Tabs({ onReveal }: TabsProps) {
             key={t.id}
             name={resolveName(t.path, renames, t.path.split("/").pop() ?? t.path)}
             active={t.id === activeTabId}
-            dirty={isDirty(edits, t.path)}
+            dirty={hasChanges(t.path, edits, drafts)}
+            status={statusFor(t.path)}
             onSelect={() => setActiveTab(t.id)}
-            onClose={() => closeTab(t.id)}
+            onClose={() => requestClose(t.id)}
           />
         ))}
       </div>
@@ -113,6 +150,22 @@ export default function Tabs({ onReveal }: TabsProps) {
           density="compact"
           label="Editor actions"
           className="absolute right-1 top-full z-20 min-w-44"
+        />
+      ) : null}
+      {pendingTab ? (
+        <Modal
+          message={`Do you want to save the changes you made to ${resolveName(
+            pendingTab.path,
+            renames,
+            pendingTab.path.split("/").pop() ?? pendingTab.path,
+          )}?`}
+          buttons={[
+            { id: "discard", label: "Don't Save" },
+            { id: "cancel", label: "Cancel" },
+            { id: "save", label: "Save", primary: true },
+          ]}
+          onAction={resolveClose}
+          onCancel={() => setPendingClose(null)}
         />
       ) : null}
     </div>
