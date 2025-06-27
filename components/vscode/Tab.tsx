@@ -2,9 +2,11 @@
 
 // Tab — one editor tab tile (editor chrome). Presentational: the parent owns
 // select/close behavior. File-type glyph + truncated name + trailing zone:
-// dirty dot (--color-vscode-dot) swaps to the close x while the tile is
-// hovered; clean tiles reveal x on hover. Corners use --radius-tab (top only —
-// the tile sits on the editor group header band). See DOC/05 §6.
+// `dirty` swaps the close x for a status dot (hover swaps back to x for
+// closing); `status` colors the dot + name (--color-vscode-modified amber for
+// edited files, --color-vscode-added green for new tmp files) and shows the M
+// badge just left of the dot/close button. Corners use --radius-tab (top only
+// — the tile sits on the editor group header band). See DOC/05 §6.
 import { fileIcon } from "@/lib/fileIcons";
 import Codicon from "./Codicon";
 
@@ -12,6 +14,7 @@ type TabProps = {
   name: string;
   active?: boolean;
   dirty?: boolean;
+  status?: "new" | "modified" | null;
   onSelect?: () => void;
   onClose?: () => void;
 };
@@ -20,9 +23,16 @@ export default function Tab({
   name,
   active = false,
   dirty = false,
+  status = null,
   onSelect,
   onClose,
 }: TabProps) {
+  const nameTone =
+    status === "new"
+      ? "text-vscode-added"
+      : status === "modified"
+        ? "text-vscode-modified"
+        : "";
   return (
     <div
       role="tab"
@@ -41,32 +51,43 @@ export default function Tab({
       }`}
     >
       <Codicon name={fileIcon(name)} />
-      <span className="min-w-0 flex-1 truncate">{name}</span>
-      <button
-        type="button"
-        title="Close"
-        aria-label={`Close ${name}`}
-        onClick={(e) => {
-          e.stopPropagation();
-          onClose?.();
-        }}
-        className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-control hover:bg-vscode-activity-active-bg focus-visible:opacity-100 ${
-          dirty ? "" : "opacity-0 group-hover:opacity-100"
-        }`}
-      >
-        {dirty ? (
-          <>
-            <span className="h-2 w-2 rounded-full bg-vscode-dot group-hover:hidden" />
-            <Codicon
-              name="close"
-              size={14}
-              className="hidden group-hover:block"
-            />
-          </>
-        ) : (
-          <Codicon name="close" size={14} />
-        )}
-      </button>
+      <span className={`min-w-0 flex-1 truncate ${nameTone}`}>{name}</span>
+      <span className="flex shrink-0 items-center gap-1">
+        {status === "modified" ? (
+          <span className="text-[10px] font-semibold leading-none text-vscode-modified">
+            M
+          </span>
+        ) : null}
+        <button
+          type="button"
+          title="Close"
+          aria-label={`Close ${name}`}
+          onClick={(e) => {
+            e.stopPropagation();
+            onClose?.();
+          }}
+          className={`flex h-5 w-5 items-center justify-center rounded-control hover:bg-vscode-activity-active-bg focus-visible:opacity-100 ${
+            dirty ? "" : "opacity-0 group-hover:opacity-100"
+          }`}
+        >
+          {dirty ? (
+            <>
+              <span
+                className={`h-2 w-2 rounded-full group-hover:hidden ${
+                  status === "new" ? "bg-vscode-added" : "bg-vscode-modified"
+                }`}
+              />
+              <Codicon
+                name="close"
+                size={14}
+                className="hidden group-hover:block"
+              />
+            </>
+          ) : (
+            <Codicon name="close" size={14} />
+          )}
+        </button>
+      </span>
     </div>
   );
 }
