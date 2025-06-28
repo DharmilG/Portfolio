@@ -6,7 +6,9 @@
 // Rows are shared TreeRows: selection follows autoReveal (openTab/setActiveTab
 // in lib/store), ancestors expand + the view scrolls to revealed rows via
 // revealNonce; selection renders blue only while the tree has focus.
-// Dirty/rename overlays are local-only (rule 03-local-only).
+// File decorations follow git conventions: amber name + M badge once edits
+// are saved; new tmp files tint green (untracked). Rename/edits overlays are
+// local-only (rule 03-local-only).
 // See DOC/05 §5, skills vscode-tokens + local-git.
 import { useEffect, useRef, useState } from "react";
 import { fileIcon } from "@/lib/fileIcons";
@@ -107,7 +109,6 @@ export default function Explorer({
 
   const tmpFileRow = (k: string, indent: string) => {
     const fname = resolveName(k, renames, k.split("/").pop() ?? k);
-    const dirty = isDirty(edits, k);
     return (
       <TreeRow
         key={k}
@@ -120,12 +121,7 @@ export default function Explorer({
         <span className="text-vscode-dim">
           <Codicon name={fileIcon(fname)} />
         </span>
-        <span className="truncate">{fname}</span>
-        {dirty ? (
-          <span className="ml-auto text-[10px] font-semibold text-vscode-added">
-            M
-          </span>
-        ) : null}
+        <span className="truncate text-vscode-added">{fname}</span>
       </TreeRow>
     );
   };
@@ -347,11 +343,17 @@ export default function Explorer({
                                               name={fileIcon(fname)}
                                             />
                                           </span>
-                                          <span className="truncate">
+                                          <span
+                                            className={`truncate ${
+                                              dirty
+                                                ? "text-vscode-modified"
+                                                : ""
+                                            }`}
+                                          >
                                             {fname}
                                           </span>
                                           {dirty ? (
-                                            <span className="ml-auto text-[10px] font-semibold text-vscode-added">
+                                            <span className="ml-auto text-[10px] font-semibold text-vscode-modified">
                                               M
                                             </span>
                                           ) : null}
