@@ -45,8 +45,9 @@ Mobile <768px: Activity 48px stays, Sidebar becomes overlay drawer, Editor full-
   --color-vscode-emphasis: #bfbfbf; /* sidebar header + static root folder */
   --color-vscode-accent: #0078d4;
   --color-vscode-accent-hover: #026ec1;
-  --color-vscode-dot: #e2c08d; /* dirty ● */
-  --color-vscode-added: #73c991; /* M badge */
+  --color-vscode-dot: #e2c08d; /* dirty ● (legacy amber; tabs use the two below) */
+  --color-vscode-modified: #e5ba7d; /* edited: M badge + names + dots */
+  --color-vscode-added: #73c991; /* new: tmp file names + dots */
   --color-vscode-error: #f14c4c;
   --color-vscode-warning: #cca700;
   --color-vscode-list-hover: #2a2d2e;
@@ -67,10 +68,14 @@ Mobile <768px: Activity 48px stays, Sidebar becomes overlay drawer, Editor full-
   --radius-section: 8px; /* workbench section cards */
   --font-vscode-ui: "Segoe WPC", "Segoe UI", system-ui, sans-serif;
   --font-vscode-code: "Cascadia Code", "JetBrains Mono", Consolas, monospace;
+  --font-vscode-term: "Fira Code", "Cascadia Code", Consolas, monospace;
   --shadow-vscode: 0 8px 24px rgb(0 0 0 / 0.45);
 }
-.font-ui { font-family: var(--font-vscode-ui); font-size: 13px; }
-.font-code { font-family: var(--font-vscode-code); font-size: 14px; line-height: 1.6; }
+/* Real faces ship with the app: @fontsource/cascadia-code (editor) +
+   @fontsource/fira-code (terminal), imported in app/layout.tsx. */
+@utility font-code { font-family: var(--font-vscode-code); font-size: 14px; line-height: 1.6; }
+@utility font-term { font-family: var(--font-vscode-term); font-size: 13px; line-height: 1.5; }
+/* UI text uses the theme utility `font-vscode-ui` on body — no separate class. */
 /* Shell is flush (no backdrop). Separators: 1px solid var(--color-vscode-border). */
 /* Floating widgets only: border-radius var(--radius-control) + var(--shadow-vscode). */
 ```
@@ -91,12 +96,12 @@ Bottom: avatar 28px rounded-full `profiles.avatar_url` (your logo) -> click open
 Header `Explorer` + `...` overflow button (shared `Tooltip`: `Views and More Actions...`).
 Static workspace root `Dharmil Gajjar` (always present, name in `--color-vscode-emphasis`, no rename affordance) — its row carries the view actions right-aligned (`new-file`/`new-folder`/`refresh`/`collapse-all` as 28px `ViewActionButton`s with VS Code tooltips; emit ids, page owns behavior) — with DB sections nested one level deeper.
 Sections as folders from `04`: `About/ Experience/ Projects/<repo>/ Skills/ Contact/` + pinned `tmp` scratch node (local-only `tmpFs`; renders when non-empty, open by default, dimmed italic; DB sections with slug `tmp` are ignored): files `untitled-N` + folders `New Folder N/` with `.gitkeep` inside, rows open/focus tabs like repo files.
-Folder rows: chevron + name only (no folder icon, chevron vertically centered). Row: 28px, indent 12px/level, chevron + `vscode-icons` by ext + `resolveName(): uiRenames ?? title_override ?? repo_name` + `M` green badge if dirty + `●` if tmp unsaved. Right-click: `Rename (session only) -> uiRenames`, `Open Preview (if preview_url)`, `Discard local changes`. Rows are shared `TreeRow`s (`data-path` each): clicking selects (folders too); opening/activating a file auto-reveals it (autoReveal in `lib/store` — expand ancestors, scroll into view, select). Selection renders blue `list-active` while the tree has focus, gray `list-inactive` otherwise.
+Folder rows: chevron + name only (no folder icon, chevron vertically centered). Row: 28px, indent 12px/level, chevron + `vscode-icons` by ext + `resolveName(): uiRenames ?? title_override ?? repo_name`. Decorations (git conventions): edited existing files get an amber name + `M` badge (`--color-vscode-modified`, once `Ctrl+S` saved the buffer); new `tmp/` files tint green (`--color-vscode-added`, untracked — no badge). Right-click: `Rename (session only) -> uiRenames`, `Open Preview (if preview_url)`, `Discard local changes`. Rows are shared `TreeRow`s (`data-path` each): clicking selects (folders too); opening/activating a file auto-reveals it (autoReveal in `lib/store` — expand ancestors, scroll into view, select). Selection renders blue `list-active` while the tree has focus, gray `list-inactive` otherwise.
 `Projects/<repo>/` expand -> `GET /api/repo/tree`, skeleton shimmer rows while loading, README auto-open.
 
 ## 6. Editor (core: read + local edit + split)
 
-Tab bar 35px band (`--color-vscode-tab`, hidden when no tabs): tiles icon + name + `●` dirty dot (`--color-vscode-dot`) or `x` on hover, `--radius-tab` top corners, active tab `bg-tab-active` (= `--color-vscode-editor` #121314) only (no top accent line — merges into the opened-file surface). Right: pinned actions rail (holds position while the tab run scrolls) — `More Actions...` `...` menu: `Copy path` (workspace path -> clipboard), `Reveal in Explorer` (full parity: shows the Explorer view + sidebar, expands ancestors, selects + scrolls; `store.revealPath`), `Open raw` (repo file -> `raw.githubusercontent.com/<owner>/<repo>/HEAD/<path>` in a new tab; dimmed for `tmp/` files); split-right icon lands with the preview components (`Ctrl+\`).
+Tab bar 35px band (`--color-vscode-tab`, hidden when no tabs): tiles icon + name + status dot — `●` whenever the tab has an unsaved buffer (`drafts`) or saved edits, swapping to `x` on tile hover. Dot + name tint green for new `tmp/` files (`--color-vscode-added`) and amber (`--color-vscode-modified`) for edited files; edited files also show an `M` badge just left of the dot/`x`. `--radius-tab` top corners, active tab `bg-tab-active` (= `--color-vscode-editor` #121314) only (no top accent line — merges into the opened-file surface). Closing a tab with an unsaved buffer raises the confirm dialog (`Modal.tsx`: `Do you want to save the changes you made to <name>?` — `Don't Save` / `Cancel` / `Save`; `Esc` = Cancel, locally saved edits close silently). Right: pinned actions rail (holds position while the tab run scrolls) — `More Actions...` `...` menu: `Copy path` (workspace path -> clipboard), `Reveal in Explorer` (full parity: shows the Explorer view + sidebar, expands ancestors, selects + scrolls; `store.revealPath`), `Open raw` (repo file -> `raw.githubusercontent.com/<owner>/<repo>/HEAD/<path>` in a new tab; dimmed for `tmp/` files); split-right icon lands with the preview components (`Ctrl+\`).
 Breadcrumb 22px dim: `Projects > <repo> > src > page.tsx`. Any crumb opens a
 quick-pick tree of that level's siblings (VS Code: "dropdown with that level's
 siblings"): the clicked node auto-expands in place with Explorer-style chevron
@@ -105,10 +110,11 @@ inset 5px + 16px per level; the focused row carries a 1px `--color-vscode-accent
 outline and scrolls into view). Picking a file opens it + the Explorer
 auto-reveals/selects it; empty folders = no-op. The file crumb's symbols
 picker waits for a symbol provider.
-Viewport (content = `edits[path] ?? tmpFs[path] ?? blob cache` — the blob cache waits
-for `/api/repo/blob`, a dim placeholder line shows until then):
-- Default read: Shiki 1.x `dark-plus` (fine-grained core bundle + JS regex engine, no wasm/bundler config; exact Dark Modern token polish later) with sticky 48px number gutter, per-line hover highlight (`--color-vscode-line-highlight`, number brightens to `--color-vscode-fg`), minimap fake gradient bar right (decorative, 80px, `pointer-events-none`).
-- Edit mode: `dblclick / Ctrl+E` swaps an auto-grown `textarea` in (same font metrics, `wrap=off` — long lines scroll inside the field) with the number gutter kept aligned. Header banner `Editing locally — not pushed (Esc to view)`, caret `--color-vscode-accent`. `Ctrl+S` -> `localEdits[path]=value` (dirty `●` in tab + Explorer; toast `Saved locally` lands with `PV-UI-TOAST`), `Esc` -> back to view. No server call (per `09 §8`). Hover pencil button arrives with view-actions polish.
+Viewport (content = `drafts[path] ?? edits[path] ?? tmpFs[path] ?? blob cache` — the
+buffer keeps showing after `Esc`; the blob cache waits for `/api/repo/blob`, a dim
+placeholder line shows until then):
+- Default read: Shiki 1.x `dark-plus` (fine-grained core bundle + JS regex engine, no wasm/bundler config; exact Dark Modern token polish later) with sticky 48px number gutter, per-line hover highlight (`--color-vscode-line-highlight`, number brightens to `--color-vscode-fg`), minimap fake gradient bar right (decorative, 80px, `pointer-events-none`). Code font: `font-code` = Cascadia Code 14px/1.6 (real face ships via `@fontsource/cascadia-code`); terminal will use `font-term` = Fira Code.
+- Edit mode: click any character in the code (`caretPositionFromPoint` maps it to a source offset; drag-selection never triggers) or `Ctrl+E` (caret at end) swaps an auto-grown `textarea` in (same font metrics, `wrap=off` — long lines scroll inside the field) with the number gutter kept aligned. Keystrokes land in the store as an unsaved buffer (`drafts[path]` — session-only, the tab dot shows live). Header banner `Editing locally — not pushed (Esc to view)`, caret `--color-vscode-accent`. `Ctrl+S` promotes the buffer into `localEdits[path]` (buffer clears, `M` badge appears; toast `Saved locally` lands with `PV-UI-TOAST`), `Esc` -> back to view with the buffer intact. No server call (per `09 §8`). Hover pencil button arrives with view-actions polish.
 - Split: `Ctrl+\` or preview icon opens second group: `MarkdownPreview` (`Ctrl+Shift+V` toggles for `.md`) or `BrowserPreview` (iframe + url bar + reload + `Open in new tab`, sandbox allow-scripts allow-same-origin).
 
 ## 7. Source Control (fun + interactive)
