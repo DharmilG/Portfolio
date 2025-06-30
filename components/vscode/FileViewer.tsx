@@ -1,17 +1,17 @@
 "use client";
 
 // FileViewer — editor viewport for code tabs (DOC/05 §6, skill shiki-readonly).
-// Read: Shiki-highlighted lines (fine-grained core bundle + JS regex engine —
-// no wasm/bundler config; theme dark-plus) with a sticky 48px number gutter,
-// per-line hover highlight (--color-vscode-line-highlight, number brightens)
-// and a decorative minimap column. Edit: click in the code (caret lands on the
-// clicked character) or Ctrl+E swaps an auto-grown textarea in (same font
-// metrics, wrap=off), gutter stays aligned; keystrokes land in the store as an
-// unsaved buffer (drafts[path] — the tab dot shows live). Ctrl+S promotes the
-// buffer into the saved-edits layer (M badge); Esc returns to view with the
-// buffer intact. Zero server calls (09 §8). Content: drafts[path] ??
-// edits[path] ?? tmpFs[path] ?? blob cache — the cache arrives with
-// /api/repo/blob (dim placeholder until then).
+// Seamless single surface (no read/edit modes): the Shiki-highlighted layer
+// (fine-grained core bundle + JS regex engine — no wasm/bundler config; theme
+// dark-plus) with a sticky 48px number gutter sits below a transparent-text
+// textarea that owns all input — colors stay while typing and the native
+// caret lands exactly where you click. The active line (caret line) gets
+// --color-vscode-line-highlight and its gutter number brightens. Keystrokes
+// land in the store as an unsaved buffer (drafts[path] — the tab dot shows
+// live); Ctrl+S promotes the buffer into the saved-edits layer (M badge).
+// Zero server calls (09 §8). Content: drafts[path] ?? edits[path] ??
+// tmpFs[path] ?? blob cache — the cache arrives with /api/repo/blob (dim
+// placeholder until then).
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { createHighlighterCore, getTokenStyleObject } from "shiki/core";
 import { createJavaScriptRegexEngine } from "shiki/engine/javascript";
@@ -77,51 +77,6 @@ function getHighlighter(): Promise<Highlighter> {
   return highlighterPromise;
 }
 
-// Source offset of every line start — click-to-caret math (DOC/05 §6).
-function lineStarts(content: string): number[] {
-  const starts = [0];
-  for (let i = 0; i < content.length; i++) {
-    if (content[i] === "\n") starts.push(i + 1);
-  }
-  return starts;
-}
-
-// Viewport point -> source offset. Null when the point misses the rendered
-// code rows (callers then put the caret at end-of-file).
-function offsetFromPoint(x: number, y: number, content: string): number | null {
-  type CaretDoc = Document & {
-    caretPositionFromPoint?: (
-      x: number,
-      y: number,
-    ) => { offsetNode: Node; offset: number } | null;
-    caretRangeFromPoint?: (x: number, y: number) => Range | null;
-  };
-  const doc = document as CaretDoc;
-  const pos = doc.caretPositionFromPoint?.(x, y);
-  const range = pos ? null : (doc.caretRangeFromPoint?.(x, y) ?? null);
-  const node: Node | null = pos?.offsetNode ?? range?.startContainer ?? null;
-  if (!node) return null;
-  const nodeOffset = pos?.offset ?? range?.startOffset ?? 0;
-  const el =
-    node.nodeType === Node.TEXT_NODE
-      ? node.parentElement
-      : (node as HTMLElement | null);
-  const row = el?.closest("[data-line]") as HTMLElement | null;
-  if (!row) return null;
-  const start: number | undefined = lineStarts(content)[Number(row.dataset.line)];
-  if (start === undefined) return null;
-  if (el?.closest("[data-gutter]")) return start;
-  const host = row.querySelector("[data-line-text]");
-  if (!host) return start;
-  const walker = document.createTreeWalker(host, NodeFilter.SHOW_TEXT);
-  let acc = 0;
-  for (let cur = walker.nextNode(); cur; cur = walker.nextNode()) {
-    if (cur === node) return start + acc + nodeOffset;
-    acc += cur.textContent?.length ?? 0;
-  }
-  return start;
-}
-
 export default function FileViewer() {
   const tabs = useStore((s) => s.tabs);
   const activeTabId = useStore((s) => s.activeTabId);
@@ -132,8 +87,7 @@ export default function FileViewer() {
   const saveDraft = useStore((s) => s.saveDraft);
 
   const [highlighter, setHighlighter] = useState<Highlighter | null>(null);
-  const [editing, setEditing] = useState(false);
-  const caretRef = useRef<number | null>(null);
+  const [caretLine, setCaretLine] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -150,14 +104,14 @@ export default function FileViewer() {
   const tab = tabs.find((t) => t.id === activeTabId);
   const path = tab?.kind === "code" ? tab.path : null;
 
-  // Switching tabs leaves edit mode (buffers persist; one click re-enters).
+  // Switching tabs resets the active-line highlight.
   useEffect(() => {
-    setEditing(false);
+    setCaretLine(0);
   }, [path]);
 
-  // Unsaved buffer first (view keeps showing what you typed after Esc), then
-  // the saved-edits layer, then tmp scratch, then the repo blob cache — the
-  // cache is always undefined until /api/repo/blob lands (placeholder shows).
+  // Unsaved buffer first (it persists until Ctrl+S), then the saved-edits
+  // layer, then tmp scratch, then the repo blob cache — the cache is always
+  // undefined until /api/repo/blob lands (placeholder shows instead).
   const cached: string | undefined = undefined;
   const content =
     path === null
@@ -177,20 +131,23 @@ export default function FileViewer() {
   const plainLines =
     tokens === null && content !== undefined ? content.split("\n") : null;
 
-  // Enter edit mode; caret is the clicked source offset (null = end-of-file).
-  const enterEdit = (offset: number | null = null) => {
-    if (content === undefined) return;
-    caretRef.current = offset;
-    setEditing(true);
+  // Caret line for the active-line highlight — synced on caret moves.
+  const syncCaretLine = () => {
+    const el = textareaRef.current;
+    if (!el) return;
+    let line = 0;
+    for (let i = 0; i < el.selectionStart; i++) {
+      if (el.value[i] === "\n") line++;
+    }
+    setCaretLine(line);
   };
 
-  // Ctrl+E toggles edit, Esc leaves it (buffer stays), Ctrl+S promotes the
-  // buffer into the saved-edits layer. Keystrokes aimed at other fields
-  // (rename, menus) are left alone.
+  // Ctrl+S promotes the buffer into the saved-edits layer. Keystrokes aimed
+  // at other fields (rename, menus) are left alone; a dialog (close
+  // confirmation) owns the keyboard while it is up.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (path === null) return;
-      // A dialog (close-confirmation) owns the keyboard while it is up.
       if (document.querySelector('[role="dialog"]')) return;
       const target = e.target as HTMLElement | null;
       const foreign =
@@ -198,114 +155,67 @@ export default function FileViewer() {
         (target instanceof HTMLTextAreaElement && target !== textareaRef.current);
       if (foreign) return;
       const mod = e.ctrlKey && !e.shiftKey && !e.altKey;
-      const key = e.key.toLowerCase();
-      if (mod && key === "e") {
-        e.preventDefault();
-        if (editing) setEditing(false);
-        else enterEdit(null);
-        return;
-      }
-      if (mod && key === "s") {
+      if (mod && e.key.toLowerCase() === "s") {
         e.preventDefault();
         if (drafts[path] !== undefined) saveDraft(path);
-        return;
       }
-      if (e.key === "Escape" && editing) setEditing(false);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [path, editing, content, drafts, saveDraft]);
+  }, [path, drafts, saveDraft]);
 
-  // Focus the field when edit mode opens; caret at the captured click offset
-  // when one exists, else at end-of-file.
-  useEffect(() => {
-    if (!editing) return;
-    const el = textareaRef.current;
-    if (!el) return;
-    el.focus();
-    const caret = caretRef.current;
-    caretRef.current = null;
-    const pos = Math.min(caret ?? el.value.length, el.value.length);
-    el.setSelectionRange(pos, pos);
-  }, [editing]);
-
-  // Auto-grow the textarea; the floor keeps short files filling the viewport.
+  // Auto-grow the textarea to the content height; the floor (viewport minus
+  // the wrapper's py-2) keeps short files filling the editor (the outer box
+  // scrolls both stacked layers together).
   useEffect(() => {
     const el = textareaRef.current;
-    if (!el || !editing) return;
+    if (!el || content === undefined) return;
     el.style.height = "auto";
-    const floor = scrollRef.current?.clientHeight ?? 0;
+    const floor = Math.max((scrollRef.current?.clientHeight ?? 0) - 16, 0);
     el.style.height = `${Math.max(el.scrollHeight, floor)}px`;
-  }, [editing, content]);
+  }, [content]);
 
   if (path === null) return null;
 
-  const lineRow = (key: number, body: ReactNode) => (
-    <div
-      key={key}
-      data-line={key}
-      className="group flex hover:bg-vscode-line-highlight"
-    >
-      <span
-        data-gutter
-        className="sticky left-0 z-10 w-12 shrink-0 select-none bg-vscode-editor pr-3 text-right text-vscode-dim group-hover:bg-vscode-line-highlight group-hover:text-vscode-fg"
+  const lineRow = (key: number, body: ReactNode) => {
+    const activeLine = key === caretLine;
+    return (
+      <div
+        key={key}
+        className={`flex ${activeLine ? "bg-vscode-line-highlight" : ""}`}
       >
-        {key + 1}
-      </span>
-      <span data-line-text className="whitespace-pre">
-        {body}
-      </span>
-    </div>
-  );
+        <span
+          className={`sticky left-0 z-10 w-12 shrink-0 select-none pr-3 text-right ${
+            activeLine
+              ? "bg-vscode-line-highlight text-vscode-fg"
+              : "bg-vscode-editor text-vscode-dim"
+          }`}
+        >
+          {key + 1}
+        </span>
+        <span className="whitespace-pre">{body}</span>
+      </div>
+    );
+  };
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
-      {editing ? (
-        <div className="flex h-7 shrink-0 items-center justify-between border-b border-vscode-border bg-vscode-side px-3">
-          <span className="text-xs text-vscode-dim">
-            Editing locally — not pushed
-          </span>
-          <span className="text-xs text-vscode-dim">Esc to view</span>
-        </div>
-      ) : null}
-      <div className="flex min-h-0 flex-1">
-        <div
-          ref={scrollRef}
-          className="min-h-0 flex-1 overflow-auto font-code selection:bg-vscode-selection"
-        >
-          {content === undefined ? (
-            <p className="px-12 py-6 text-xs text-vscode-dim">
-              Repo content arrives with the blob API (backend milestone).
-            </p>
-          ) : editing ? (
-            <div className="flex min-h-full w-full">
-              <div className="sticky left-0 z-10 w-12 shrink-0 select-none bg-vscode-editor pr-3 pt-2 text-right text-vscode-dim">
-                {content.split("\n").map((_, i) => (
-                  <div key={i}>{i + 1}</div>
-                ))}
-              </div>
-              <textarea
-                ref={textareaRef}
-                wrap="off"
-                spellCheck={false}
-                autoCapitalize="off"
-                autoCorrect="off"
-                value={content}
-                onChange={(e) => setDraft(path, e.target.value)}
-                className="flex-1 resize-none overflow-x-auto overflow-y-hidden bg-transparent pt-2 pb-2 font-code text-vscode-fg caret-vscode-accent selection:bg-vscode-selection focus:outline-none"
-              />
-            </div>
-          ) : (
+    <div className="flex min-h-0 flex-1">
+      <div
+        ref={scrollRef}
+        className="min-h-0 min-w-0 flex-1 overflow-auto font-code selection:bg-vscode-selection"
+      >
+        {content === undefined ? (
+          <p className="px-12 py-6 text-xs text-vscode-dim">
+            Repo content arrives with the blob API (backend milestone).
+          </p>
+        ) : (
+          <div className="grid w-max min-w-full py-2 pr-4">
+            {/* Painted first; the transparent textarea below-in-DOM sits on
+                top and owns pointer/keyboard input. */}
             <div
-              className="w-max min-w-full py-2 pr-4"
+              aria-hidden
+              className="pointer-events-none col-start-1 row-start-1 select-none"
               style={{ color: tokens?.fg }}
-              onClick={(e) => {
-                // Drag-selection (copy) never enters edit; a plain click does.
-                const sel = window.getSelection();
-                if (sel && !sel.isCollapsed) return;
-                enterEdit(offsetFromPoint(e.clientX, e.clientY, content));
-              }}
             >
               {tokens
                 ? tokens.tokens.map((line, i) =>
@@ -320,13 +230,29 @@ export default function FileViewer() {
                   )
                 : plainLines?.map((line, i) => lineRow(i, line))}
             </div>
-          )}
-        </div>
-        <div
-          aria-hidden
-          className="pointer-events-none w-20 shrink-0 bg-gradient-to-b from-white/[0.05] via-white/[0.02] to-transparent"
-        />
+            <textarea
+              ref={textareaRef}
+              wrap="off"
+              spellCheck={false}
+              autoCapitalize="off"
+              autoCorrect="off"
+              value={content}
+              aria-label={`Edit ${path}`}
+              onChange={(e) => {
+                setDraft(path, e.target.value);
+                syncCaretLine();
+              }}
+              onSelect={syncCaretLine}
+              onClick={syncCaretLine}
+              className="col-start-1 row-start-1 w-full resize-none overflow-hidden bg-transparent py-0 pl-12 pr-4 text-transparent caret-vscode-accent selection:bg-vscode-selection focus:outline-none"
+            />
+          </div>
+        )}
       </div>
+      <div
+        aria-hidden
+        className="pointer-events-none w-20 shrink-0 bg-gradient-to-b from-white/[0.05] via-white/[0.02] to-transparent"
+      />
     </div>
   );
 }
