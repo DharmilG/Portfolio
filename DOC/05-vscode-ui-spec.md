@@ -73,7 +73,7 @@ Mobile <768px: Activity 48px stays, Sidebar becomes overlay drawer, Editor full-
 }
 /* Real faces ship with the app: @fontsource/cascadia-code (editor) +
    @fontsource/fira-code (terminal), imported in app/layout.tsx. */
-@utility font-code { font-family: var(--font-vscode-code); font-size: 14px; line-height: 1.6; }
+@utility font-code { font-family: var(--font-vscode-code); font-size: 14px; line-height: 1.6; font-variant-ligatures: none; }
 @utility font-term { font-family: var(--font-vscode-term); font-size: 13px; line-height: 1.5; }
 /* UI text uses the theme utility `font-vscode-ui` on body — no separate class. */
 /* Shell is flush (no backdrop). Separators: 1px solid var(--color-vscode-border). */
@@ -111,10 +111,10 @@ outline and scrolls into view). Picking a file opens it + the Explorer
 auto-reveals/selects it; empty folders = no-op. The file crumb's symbols
 picker waits for a symbol provider.
 Viewport (content = `drafts[path] ?? edits[path] ?? tmpFs[path] ?? blob cache` — the
-buffer keeps showing after `Esc`; the blob cache waits for `/api/repo/blob`, a dim
+buffer persists until `Ctrl+S`; the blob cache waits for `/api/repo/blob`, a dim
 placeholder line shows until then):
-- Default read: Shiki 1.x `dark-plus` (fine-grained core bundle + JS regex engine, no wasm/bundler config; exact Dark Modern token polish later) with sticky 48px number gutter, per-line hover highlight (`--color-vscode-line-highlight`, number brightens to `--color-vscode-fg`), minimap fake gradient bar right (decorative, 80px, `pointer-events-none`). Code font: `font-code` = Cascadia Code 14px/1.6 (real face ships via `@fontsource/cascadia-code`); terminal will use `font-term` = Fira Code.
-- Edit mode: click any character in the code (`caretPositionFromPoint` maps it to a source offset; drag-selection never triggers) or `Ctrl+E` (caret at end) swaps an auto-grown `textarea` in (same font metrics, `wrap=off` — long lines scroll inside the field) with the number gutter kept aligned. Keystrokes land in the store as an unsaved buffer (`drafts[path]` — session-only, the tab dot shows live). Header banner `Editing locally — not pushed (Esc to view)`, caret `--color-vscode-accent`. `Ctrl+S` promotes the buffer into `localEdits[path]` (buffer clears, `M` badge appears; toast `Saved locally` lands with `PV-UI-TOAST`), `Esc` -> back to view with the buffer intact. No server call (per `09 §8`). Hover pencil button arrives with view-actions polish.
+- Seamless single surface — no read/edit modes: the Shiki 1.x `dark-plus` highlight layer (fine-grained core bundle + JS regex engine, no wasm/bundler config; exact Dark Modern token polish later) with a sticky 48px number gutter paints below a transparent-text `textarea` that owns all input (same metrics, `wrap=off`, ligatures off on both layers). Colors stay while typing, caret/selection/undo are native, clicks land the caret exactly. The active line (caret line) gets `--color-vscode-line-highlight` and its gutter number brightens to `--color-vscode-fg`. Minimap fake gradient bar right (decorative, 80px, `pointer-events-none`). Code font: `font-code` = Cascadia Code 14px/1.6 (real face ships via `@fontsource/cascadia-code`); terminal will use `font-term` = Fira Code.
+- Typing writes the session buffer (`drafts[path]` — session-only, the tab dot appears live; the buffer persists until saved). `Ctrl+S` promotes the buffer into `localEdits[path]` (buffer clears, amber `M` appears; toast `Saved locally` lands with `PV-UI-TOAST`). No banner, no mode toggle (`Ctrl+E` / `Esc` unbound). No server call (per `09 §8`).
 - Split: `Ctrl+\` or preview icon opens second group: `MarkdownPreview` (`Ctrl+Shift+V` toggles for `.md`) or `BrowserPreview` (iframe + url bar + reload + `Open in new tab`, sandbox allow-scripts allow-same-origin).
 
 ## 7. Source Control (fun + interactive)
@@ -132,7 +132,7 @@ Left: `$(git-branch) main*` (star if dirty), `$(error) 0 $(warning) 0`, `$(git-c
 
 ## 9. Command Palette + keybinds
 
-`Ctrl+P` quick open (fuzzy file list from tree+static), `Ctrl+Shift+P` commands (`Open Preview, Toggle Theme, Discard Edits, Focus Terminal`), `Ctrl+Shift+V` markdown split, ``Ctrl+` `` terminal, `Ctrl+B` sidebar, `Ctrl+S` local save, `Ctrl+E` edit toggle.
+`Ctrl+P` quick open (fuzzy file list from tree+static), `Ctrl+Shift+P` commands (`Open Preview, Toggle Theme, Discard Edits, Focus Terminal`), `Ctrl+Shift+V` markdown split, ``Ctrl+` `` terminal, `Ctrl+B` sidebar, `Ctrl+S` local save.
 
 Palette UI: centered 480px `rounded-control` + `--shadow-vscode`, input (not pill) + list 40px rows + `↑↓ Enter Esc`.
 
