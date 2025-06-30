@@ -5,7 +5,7 @@
 ## Functional
 1. Explorer renders `sections visible ORDER BY orders` + `projects visible AND folder_slug ORDER BY orders`. Name = `uiRenames ?? title_override ?? repo_name`.
 2. `Projects/<name>/` maps to `projects(repo_owner, repo_name)`. Expand -> `GET /api/repo/tree`, README auto-open, `M` badge if dirty.
-3. Click file -> tab (Shiki + breadcrumb + line numbers). `dblclick/pencil/Ctrl+E` -> textarea overlay. `Ctrl+S` -> `localEdits` only. `Esc` back to view. `●` dot + `M` + `main*` when dirty.
+3. Click file -> tab (Shiki + breadcrumb + line numbers), always editable (transparent textarea over the highlight layer — no modes). Typing -> session `drafts` buffer. `Ctrl+S` -> `localEdits` only. `●` dot (unsaved buffer) + `M` (saved edits) + `main*` when dirty.
 4. Avatar (logo) -> `profile.json` tab. Gear hover -> `Settings (settings.json) | Appearance (theme) | Profile | Reset local edits`.
 5. `Ctrl+P` quick open, `Ctrl+Shift+P` commands (open file, preview, theme, discard), `Ctrl+B` sidebar, ``Ctrl+` `` terminal.
 6. `.md` + `Ctrl+Shift+V`/split icon -> markdown split (`localEdits ?? cached`), live update on save.
