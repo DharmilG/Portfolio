@@ -78,6 +78,7 @@
   font-family: var(--font-vscode-code);
   font-size: 14px;
   line-height: 1.6;
+  font-variant-ligatures: none; /* metric parity between stacked editor layers */
 }
 
 @utility font-term {
