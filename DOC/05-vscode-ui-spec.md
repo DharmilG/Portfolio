@@ -21,7 +21,7 @@
 +----------------------------------------------------+
 Cards: `Section` primitive — `rounded-section` (8px), 1px #2b2b2b border,
 `overflow-hidden`; grid gap 5px + padding 5px on `bg-vscode-titlebar` (the workbench base).
-Sash (`Sash.tsx`): the 5px gutter right of the sidebar card is a drag grip — always-visible ⋮ (three 3px dots in `--color-vscode-dim`, accent while dragging, `col-resize` over the strip), drag resizes the pane live (min 170px, editor floor 320px), width persists (`sidebarWidth` in `vscode-local-v1`); the Panel + secondary bar reuse the grip.
+Sash (`Sash.tsx`): the 5px gutter right of the sidebar card is a drag grip — always-visible ⋮ (three 3px dots in `--color-vscode-dim`, brighten to `--color-vscode-emphasis` on hover and keep it through the drag, `col-resize` over the strip), drag resizes the pane live (min 170px, editor floor 320px: the live width rides session-only `sidebarPreview`, the released width persists as `sidebarWidth` in `vscode-local-v1`); the Panel + secondary bar reuse the grip.
 Mobile <768px: Activity 48px stays, Sidebar becomes overlay drawer, Editor full-width, Panel bottom-sheet.
 ```
 
