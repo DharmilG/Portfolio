@@ -16,11 +16,16 @@
       "tab decorations + close guard: dot swaps to x on tile hover; new tmp files tint green (dot + name), edited files amber (dot + name + M badge left of the dot); closing a tab with an unsaved buffer asks Do you want to save the changes you made to <name>? (Don't Save / Cancel / Save; Esc = Cancel); Save flushes the buffer then closes, Don't Save drops the buffer (earlier saved edits stay) and closes, tabs with only saved edits close silently; middle-click follows the same guard",
       "font tokens: editor = Cascadia Code, ligatures off (@fontsource; metric parity between the stacked layers); terminal token --font-vscode-term = Fira Code ready (face loads with PV-C-TERMINAL)",
       "explorer decorations: edited repo files -> amber name + amber M badge; new tmp files -> green names, no badge",
-      "sash: ⋮ dots always visible in the 5px sidebar/editor gutter (3px, dim; hover brightens to emphasis); col-resize cursor over the strip; drag -> pane reflows live, dots turn accent, stops at 170px min and editor floor 320px; release -> width survives refresh + Ctrl+B toggle; idle layout has zero pixel shift",
+      "sash: ⋮ dots always visible in the 5px sidebar/editor gutter (3px, dim #858585; hover AND drag -> emphasis #bfbfbf, never accent); col-resize cursor over the strip; drag -> pane reflows LIVE while dragging (session preview), stops at 170px min and editor floor 320px; release -> width persists (survives refresh + Ctrl+B toggle); idle layout has zero pixel shift",
       "tab actions: with tabs open the ... button sits pinned at the band's right (many tabs -> tab run scrolls, rail holds; few tabs -> no pixel shift); menu More Actions...: Copy path pastes the workspace path, Reveal in Explorer switches to the Explorer view + un-hides the sidebar + selects/scrolls the file, Open raw opens the raw.githubusercontent HEAD link for repo files and is dimmed for tmp files; Esc/click-away closes"
     ],
-    "tip": "544c038",
+    "tip": "b99e986",
     "unpushed": [
+      "b99e986",
+      "f5b38c1",
+      "d578071",
+      "a8dec20",
+      "a69ae29",
       "544c038",
       "61fd010",
       "dd66b47",
@@ -798,12 +803,12 @@
     {
       "id": "PV-UI-SASH",
       "title": "Sidebar sash",
-      "description": "5px workspace gutter as a drag grip: always-visible three-dot column (3px dots, dim; accent while dragging, col-resize). Drag resizes the sidebar pane live (min 170px, editor floor 320px), released width persists in vscode-local-v1; Ctrl+B hide/show keeps it. Shared component — Panel + secondary bar reuse it.",
+      "description": "5px workspace gutter as a drag grip: always-visible three-dot column (3px dots, dim; brighten to emphasis on hover and stay through the drag, col-resize). Drag resizes the sidebar pane live (min 170px, editor floor 320px), released width persists in vscode-local-v1; Ctrl+B hide/show keeps it. Shared component — Panel + secondary bar reuse it.",
       "file": "components/vscode/Sash.tsx",
       "status": "in_progress",
       "owner": "agent",
       "started": "2026-10-18",
-      "log": "store d25ae18 (sidebarWidth 280 default + setSidebarWidth + persist partialize) + Sash 0bf2c5e (pointer-capture drag, body cursor pinned during drag, clamp + onPreview/onCommit, role=separator) + SideBar cd5ce2f (inline width from store, w-70 out) + page bf212d7 (relative holder wraps PrimarySideBar, sash absolute -right-[5px] in the gap, ResizeObserver -> maxPane = rowWidth - 383) + DOC 83c929e (tsc clean, boot 200/no overlay, sash present in SSR, live CSS: -right-[5px] -> right:-5px, w/h-=[35]px, gap-[3px], cursor-col-resize, group-hover:bg-vscode-emphasis all emitted; zero pixel shift); awaiting user click-test; remainder: Panel/secondary bar reuse"
+      "log": "store d25ae18 (sidebarWidth 280 default + setSidebarWidth + persist partialize) + Sash 0bf2c5e (pointer-capture drag, body cursor pinned during drag, clamp + onPreview/onCommit, role=separator) + SideBar cd5ce2f (inline width from store, w-70 out) + page bf212d7 (relative holder wraps PrimarySideBar, sash absolute -right-[5px] in the gap, ResizeObserver -> maxPane = rowWidth - 383) + DOC 83c929e (tsc clean, boot 200/no overlay, sash present in SSR, live CSS: -right-[5px] -> right:-5px, w/h-=[35]px, gap-[3px], cursor-col-resize, group-hover:bg-vscode-emphasis all emitted; zero pixel shift); awaiting user click-test; remainder: Panel/secondary bar reuse; fix pass (user click-test: click must not turn the grip accent; drag must reflow live): Sash a69ae29 (drag keeps the hover emphasis — accent state removed) + store a8dec20 (sidebarPreview, session-only, absent from partialize) + SideBar d578071 (width = sidebarPreview ?? sidebarWidth) + page f5b38c1 (onPreview -> setSidebarPreview, release commits then clears; local dragWidth deleted — root cause: the live preview width was computed but never rendered) + DOC b99e986 (tsc clean, boot 200/no overlay, live CSS: bg-vscode-emphasis + group-hover emitted; drag feel awaiting user click-test)"
     },
     {
       "id": "PV-PNPM",
