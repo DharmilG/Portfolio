@@ -10,6 +10,7 @@ import FileViewer from "@/components/vscode/FileViewer";
 import PrimarySideBar from "@/components/vscode/PrimarySideBar";
 import Sash from "@/components/vscode/Sash";
 import Section from "@/components/vscode/Section";
+import StatusBar from "@/components/vscode/StatusBar";
 import Tabs from "@/components/vscode/Tabs";
 import TitleBar from "@/components/vscode/TitleBar";
 import { supabase } from "@/lib/db";
@@ -138,6 +139,12 @@ export default function PortfolioPage() {
     revealPath(path);
   };
 
+  // StatusBar branch click: focus the Source Control view (sidebar shown).
+  const handleBranchClick = () => {
+    setView("scm");
+    setShowSidebar(true);
+  };
+
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <TitleBar onMenuAction={handleAction} />
@@ -182,6 +189,7 @@ export default function PortfolioPage() {
           )}
         </Section>
       </div>
+      <StatusBar onBranchClick={handleBranchClick} />
     </div>
   );
 }
