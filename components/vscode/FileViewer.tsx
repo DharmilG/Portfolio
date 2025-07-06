@@ -6,9 +6,10 @@
 // dark-plus) with a sticky 48px number gutter sits below a transparent-text
 // textarea that owns all input — colors stay while typing and the native
 // caret lands exactly where you click. The active line (caret line) gets
-// --color-vscode-line-highlight and its gutter number brightens. Keystrokes
-// land in the store as an unsaved buffer (drafts[path] — the tab dot shows
-// live); Ctrl+S promotes the buffer into the saved-edits layer (M badge).
+// --color-vscode-line-highlight and its gutter number brightens; the caret
+// (line+col) is pushed to the store for the StatusBar. Keystrokes land in
+// the store as an unsaved buffer (drafts[path] — the tab dot shows live);
+// Ctrl+S promotes the buffer into the saved-edits layer (M badge).
 // Zero server calls (09 §8). Content: drafts[path] ?? edits[path] ??
 // tmpFs[path] ?? blob cache — the cache arrives with /api/repo/blob (dim
 // placeholder until then).
@@ -30,39 +31,10 @@ import py from "shiki/langs/python.mjs";
 import sh from "shiki/langs/shellscript.mjs";
 import sql from "shiki/langs/sql.mjs";
 import dotenv from "shiki/langs/dotenv.mjs";
+import { langFor } from "@/lib/langs";
 import { useStore } from "@/lib/store";
 
 type Highlighter = Awaited<ReturnType<typeof createHighlighterCore>>;
-
-const LANG_BY_EXT: Record<string, string> = {
-  ts: "ts",
-  tsx: "tsx",
-  js: "js",
-  jsx: "jsx",
-  mjs: "js",
-  cjs: "js",
-  json: "json",
-  md: "md",
-  css: "css",
-  scss: "scss",
-  html: "html",
-  yml: "yml",
-  yaml: "yml",
-  py: "py",
-  sh: "sh",
-  bash: "sh",
-  zsh: "sh",
-  sql: "sql",
-  env: "dotenv",
-};
-
-function langFor(path: string): string {
-  const name = path.split("/").pop() ?? "";
-  if (name.startsWith(".env")) return "dotenv";
-  const dot = name.lastIndexOf(".");
-  if (dot < 1) return "text";
-  return LANG_BY_EXT[name.slice(dot + 1).toLowerCase()] ?? "text";
-}
 
 // One highlighter for the tab lifetime; grammars/themes are static imports so
 // the bundler ships exactly this set (the full `shiki` entry would ship all).
@@ -85,9 +57,10 @@ export default function FileViewer() {
   const drafts = useStore((s) => s.drafts);
   const setDraft = useStore((s) => s.setDraft);
   const saveDraft = useStore((s) => s.saveDraft);
+  const caret = useStore((s) => s.caret);
+  const setCaret = useStore((s) => s.setCaret);
 
   const [highlighter, setHighlighter] = useState<Highlighter | null>(null);
-  const [caretLine, setCaretLine] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -104,10 +77,10 @@ export default function FileViewer() {
   const tab = tabs.find((t) => t.id === activeTabId);
   const path = tab?.kind === "code" ? tab.path : null;
 
-  // Switching tabs resets the active-line highlight.
+  // Switching tabs resets the caret (active-line highlight + StatusBar Ln/Col).
   useEffect(() => {
-    setCaretLine(0);
-  }, [path]);
+    setCaret(0, 0);
+  }, [path, setCaret]);
 
   // Unsaved buffer first (it persists until Ctrl+S), then the saved-edits
   // layer, then tmp scratch, then the repo blob cache — the cache is always
@@ -131,15 +104,21 @@ export default function FileViewer() {
   const plainLines =
     tokens === null && content !== undefined ? content.split("\n") : null;
 
-  // Caret line for the active-line highlight — synced on caret moves.
-  const syncCaretLine = () => {
+  // Caret (line + col) for the active-line highlight and the StatusBar —
+  // synced on caret moves (typing, clicks, arrows).
+  const syncCaret = () => {
     const el = textareaRef.current;
     if (!el) return;
+    const pos = el.selectionStart;
     let line = 0;
-    for (let i = 0; i < el.selectionStart; i++) {
-      if (el.value[i] === "\n") line++;
+    let lineStart = 0;
+    for (let i = 0; i < pos; i++) {
+      if (el.value[i] === "\n") {
+        line++;
+        lineStart = i + 1;
+      }
     }
-    setCaretLine(line);
+    setCaret(line, pos - lineStart);
   };
 
   // Ctrl+S promotes the buffer into the saved-edits layer. Keystrokes aimed
@@ -178,7 +157,7 @@ export default function FileViewer() {
   if (path === null) return null;
 
   const lineRow = (key: number, body: ReactNode) => {
-    const activeLine = key === caretLine;
+    const activeLine = key === caret.line;
     return (
       <div
         key={key}
@@ -240,10 +219,10 @@ export default function FileViewer() {
               aria-label={`Edit ${path}`}
               onChange={(e) => {
                 setDraft(path, e.target.value);
-                syncCaretLine();
+                syncCaret();
               }}
-              onSelect={syncCaretLine}
-              onClick={syncCaretLine}
+              onSelect={syncCaret}
+              onClick={syncCaret}
               className="col-start-1 row-start-1 w-full resize-none overflow-hidden bg-transparent py-0 pl-12 pr-4 text-transparent caret-vscode-accent selection:bg-vscode-selection focus:outline-none"
             />
           </div>
