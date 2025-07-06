@@ -128,7 +128,7 @@ Panel replaces Explorer when git icon active:
 
 ## 8. StatusBar (24px, accent blue, flush)
 
-Left: `$(git-branch) main*` (star if dirty), `$(error) 0 $(warning) 0`, `$(git-commit) local:k`. Right: `Ln X, Col Y` (updates on textarea caret), `Spaces:2`, `UTF-8`, `TypeScript/Shiki lang`, `$(bell)` (opens dummy notifications: `Cache warmed 2h ago`). Click branch -> focuses Source Control.
+Left: `$(git-branch) main*` (star when uncommitted saved edits exist — the store `edits` layer; drafts don't star until `Ctrl+S`), `$(error) 0 $(warning) 0` (static for now), `$(git-commit) local:k` (k = local commits awaiting push). Right: `Ln X, Col Y` (1-based, live from the store `caret` that FileViewer pushes on caret moves), `Spaces: 2`, `UTF-8`, the active file's language (`langLabelFor` in `lib/langs.ts`), `$(bell)` (popover card — header + `Cache warmed 2h ago`; `Esc`/click-away closes; the toast stack lands with `PV-UI-TOAST`). Editor items (Ln/Col, Spaces, UTF-8, language) hide when no code tab is open; branch/problems/local/bell always show; hover darkens an item. Click branch -> focuses Source Control (`scm` view).
 
 ## 9. Command Palette + keybinds
 
