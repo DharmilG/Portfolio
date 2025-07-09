@@ -34,5 +34,5 @@
 - [ ] Tabs 35px + breadcrumb 22px + split groups
 - [ ] Source Control local lane + real list + commit input + confetti
 - [ ] Terminal 280px + `pwsh|bash` + history/complete
-- [ ] StatusBar 24px accent + `main*`, `0/0`, `Ln/Col`, `local:k`
+- [ ] StatusBar Dark Modern 22px `#181818` + `main*`, `0↓ k↑` sync, `ⓧ0 ⚠0`, `Ln/Col`, `Spaces/UTF-8/LF`, language, bell
 - [ ] Palette 480px + fuzzy + commands
