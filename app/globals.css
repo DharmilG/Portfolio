@@ -16,6 +16,8 @@
   --color-vscode-tab-hover: #1f1f1f;
   --color-vscode-tab-active: #121314; /* = --color-vscode-editor so the active tab merges */
   --color-vscode-border: #2b2b2b;
+  --color-vscode-statusbar: #181818; /* statusBar.background (Dark Modern) */
+  --color-vscode-statusbar-hover: #f1f1f133; /* statusBarItem.hoverBackground */
 
   /* === Typography & Hierarchy === */
   --color-vscode-fg: #cccccc;
