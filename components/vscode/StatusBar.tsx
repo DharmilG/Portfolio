@@ -1,36 +1,46 @@
 "use client";
 
-// StatusBar — 24px accent band, flush below the workbench (DOC/05 §8).
-// Left: branch (star when uncommitted saved edits exist; click focuses the
-// Source Control view), problem counts, and the local (unpushed) commit count.
-// Right: caret Ln/Col (live from the store, pushed by FileViewer), indentation,
-// encoding, the active file's language, and the notification bell (dummy
-// center: "Cache warmed 2h ago"). Editor items hide when no code tab is open;
-// the full toast stack lands with PV-UI-TOAST.
+// StatusBar — the Dark Modern band, flush below the workbench (DOC/05 §8).
+// Values from VS Code source: 22px tall, #181818 bg, #CCCCCC text, 1px top
+// #2B2B2B hairline, item hover #F1F1F133 + white text. Left: branch (label
+// gains `*` for working-tree changes — the saved-edits layer; the icon flips
+// to git-branch-changes), sync (`$(sync) 0↓ k↑` — k = local commits awaiting
+// push; icon-only at zero, exactly like core git), problem counts. Right:
+// caret Ln/Col (live from the store, pushed by FileViewer), indentation,
+// encoding, EOL, the active file's language (file icon + name), and the
+// notification bell (dummy center: "Cache warmed 2h ago"). Editor items hide
+// when no code tab is open; the full toast stack lands with PV-UI-TOAST.
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { dirtyCount, useStore } from "@/lib/store";
+import { fileIcon } from "@/lib/fileIcons";
 import { langLabelFor } from "@/lib/langs";
+import { dirtyCount, useStore } from "@/lib/store";
 import Codicon from "./Codicon";
 
 type StatusBarProps = {
   onBranchClick?: () => void;
 };
 
-// One status-bar item: flat, full height, hover darkens the accent. Buttons
-// are the clickable items (branch, bell); the rest are read-only spans.
+// One status-bar item: full height, real metrics (3px margins + 5px padding;
+// the first/last items drop the margins and use 8px padding), hover =
+// statusBarItem hover background + white text. Buttons are the clickable
+// items (branch, bell); the rest are read-only spans.
 function Item({
+  edge = false,
   open = false,
   onClick,
   label,
   children,
 }: {
+  edge?: boolean;
   open?: boolean;
   onClick?: () => void;
   label?: string;
   children: ReactNode;
 }) {
-  const cls = `flex h-full items-center gap-1 px-1.5 hover:bg-black/20 ${
-    open ? "bg-black/20" : ""
+  const cls = `flex h-full cursor-pointer items-center gap-1 ${
+    edge ? "px-2" : "mx-[3px] px-[5px]"
+  } hover:bg-vscode-statusbar-hover hover:text-vscode-fg-active ${
+    open ? "bg-vscode-statusbar-hover text-vscode-fg-active" : ""
   }`;
   if (onClick) {
     return (
@@ -75,22 +85,20 @@ export default function StatusBar({ onBranchClick }: StatusBarProps) {
   return (
     <footer
       aria-label="Status bar"
-      className="flex h-6 shrink-0 select-none items-center justify-between bg-vscode-accent px-1 text-xs text-white"
+      className="flex h-[22px] shrink-0 select-none items-center justify-between border-t border-vscode-border bg-vscode-statusbar text-xs text-vscode-fg tabular-nums"
     >
       <div className="flex h-full items-center">
-        <Item onClick={onBranchClick} label="main — focus Source Control">
-          <Codicon name="git-branch" size={12} />
+        <Item edge onClick={onBranchClick} label="main — focus Source Control">
+          <Codicon name={dirty ? "git-branch-changes" : "git-branch"} />
           <span>main{dirty ? "*" : ""}</span>
         </Item>
         <Item>
-          <Codicon name="error" size={12} />0
+          <Codicon name="sync" />
+          {localCommits > 0 ? <span>0↓ {localCommits}↑</span> : null}
         </Item>
         <Item>
-          <Codicon name="warning" size={12} />0
-        </Item>
-        <Item>
-          <Codicon name="git-commit" size={12} />
-          <span>local:{localCommits}</span>
+          <Codicon name="error" />0
+          <Codicon name="warning" />0
         </Item>
       </div>
       <div className="flex h-full items-center">
@@ -101,16 +109,21 @@ export default function StatusBar({ onBranchClick }: StatusBarProps) {
             </Item>
             <Item>Spaces: 2</Item>
             <Item>UTF-8</Item>
-            <Item>{langLabelFor(codeTab.path)}</Item>
+            <Item>LF</Item>
+            <Item>
+              <Codicon name={fileIcon(codeTab.path)} />
+              {langLabelFor(codeTab.path)}
+            </Item>
           </>
         ) : null}
         <span ref={bellRef} className="relative flex h-full">
           <Item
+            edge
             open={bellOpen}
             onClick={() => setBellOpen((v) => !v)}
             label="Notifications"
           >
-            <Codicon name="bell" size={12} />
+            <Codicon name="bell" />
           </Item>
           {bellOpen ? (
             <div className="absolute bottom-full right-0 z-20 mb-1 w-72 rounded-control border border-vscode-border bg-vscode-widget-bg text-vscode-fg shadow-vscode">
