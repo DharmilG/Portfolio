@@ -18,10 +18,13 @@
       "explorer decorations: edited repo files -> amber name + amber M badge; new tmp files -> green names, no badge",
       "sash: ⋮ dots always visible in the 5px sidebar/editor gutter (3px, dim #858585; hover AND drag -> emphasis #bfbfbf, never accent); col-resize cursor over the strip; drag -> pane reflows LIVE while dragging (session preview), stops at 170px min and editor floor 320px; release -> width persists (survives refresh + Ctrl+B toggle); idle layout has zero pixel shift",
       "tab actions: with tabs open the ... button sits pinned at the band's right (many tabs -> tab run scrolls, rail holds; few tabs -> no pixel shift); menu More Actions...: Copy path pastes the workspace path, Reveal in Explorer switches to the Explorer view + un-hides the sidebar + selects/scrolls the file, Open raw opens the raw.githubusercontent HEAD link for repo files and is dimmed for tmp files; Esc/click-away closes",
-      "statusbar: 24px accent band flush at the very bottom; left: main* (star appears after Ctrl+S, not while drafting), error/warning 0, local:k (live after a local commit - SCM milestone); right: Ln/Col live while typing/clicking in the editor (1-based), Spaces: 2, UTF-8, language label updates per file, editor items hide with no code tab; bell -> popover 'Cache warmed 2h ago' (Esc/outside click closes); branch click -> Source Control view in the sidebar; hover darkens items"
+      "statusbar v2 (Dark Modern realign): 22px dark band flush at the bottom (#181818 bg, #CCCCCC text, 1px top hairline #2B2B2B) — no more accent blue; hover an item -> #F1F1F133 bg + white text; left: branch main (main* + git-branch-changes icon once a saved edit exists), sync shows ⟳ alone at zero local commits (⟳ 0↓ k↑ once SCM adds commits), one problems entry ⓧ0 ⚠0; right: Ln/Col live while typing/clicking in the editor (1-based), Spaces: 2, UTF-8, LF, file-icon + language label per file, editor items hide with no code tab; bell -> popover 'Cache warmed 2h ago' (Esc/outside click closes); branch click -> Source Control view in the sidebar; numerals tabular across the bar"
     ],
-    "tip": "0eea741",
+    "tip": "80ecd56",
     "unpushed": [
+      "80ecd56",
+      "6857bb4",
+      "d92db67",
       "0eea741",
       "8205789",
       "62ac678",
@@ -332,8 +335,8 @@
   },
   "summary": {
     "total": 53,
-    "done": 26,
-    "in_progress": 5,
+    "done": 25,
+    "in_progress": 6,
     "backlog": 22
   },
   "tasks": [
@@ -529,16 +532,14 @@
       "log": "FileViewer f7c27f2 (Shiki fine-grained core bundle + JS regex engine, theme dark-plus — no wasm; sticky 48px number gutter that brightens on hover, per-line hover highlight, decorative 80px minimap column; edit overlay dblclick/Ctrl+E: auto-grown textarea wrap=off with aligned gutter + banner, caret accent; Ctrl+S saveEdit -> dirty dot, Esc back; content edits ?? tmpFs ?? blob cache (dim placeholder until /api/repo/blob); key guards keep rename/menu fields untouched; no globals.css change needed — existing tokens/utilities only) + page f8dfe1a (mount; empty state only when no tabs) + DOC 7d86812 (tsc clean, boot 200/no overlay, live CSS probe: hover/group-hover/caret/selection/w-max/min-w-full emitted); remainder: hover pencil button, repo blob fetch, per-tab scroll memory, toast (PV-UI-TOAST), exact Dark Modern token polish; 2nd pass (user ask: no dblclick, coding fonts, dot/M): deps 90ed4b3 (fontsource cascadia-code + fira-code) + layout 93f7a2d (faces) + globals 91621c4 (font-code/font-term now REAL @utility — before this font-code was never emitted and the editor fell back to the UI font; + --color-vscode-modified #e5ba7d) + store 6ee399d (drafts buffer layer + hasChanges) + FileViewer e081608 (click-to-edit: caretPositionFromPoint -> source offset via lineStarts walk, drag-select guard, store-backed buffer, Ctrl+S promotes via saveDraft, Esc keeps buffer, view renders buffer) + FileViewer 35b0726 (dialog owns the keyboard) + Explorer a3518ed (amber M + amber edited names, green tmp names) + DOC eb4fb10 (tsc clean, boot 200/no overlay, live CSS: font vars + .font-code + modified utilities emitted); remainder: hover pencil, blob fetch, per-tab scroll memory, PV-UI-TOAST, exact Dark Modern polish; 3rd pass (user call — seamless single mode): globals 87782c3 (font-variant-ligatures none for layer parity) + FileViewer 4d0ff2a (Shiki layer stacked under a transparent-text textarea: no read/edit modes, no banner, Ctrl+E/Esc unbound, native caret/selection/undo, active-line highlight + gutter brighten, click-to-offset helpers deleted) + DOC 05 dd66b47 + 01 61fd010 + 02 544c038 (tsc clean, boot 200/no overlay, live CSS: col-start-1/row-start-1/caret-vscode-accent/text-transparent/pl-12 emitted); remainder: blob fetch, per-tab scroll memory, PV-UI-TOAST, long-line caret-follow nudge, exact Dark Modern polish (hover pencil obsolete — always-editable); StatusBar pass: caret (line+col) pushed to the store + langFor extracted to lib/langs (dba9452/7135aea/e9fcba8)"
     },
     {
-      "description": "24px accent + main* + Ln/Col + local:k (components/vscode/StatusBar.tsx, per DOC/05 §8)",
+      "description": "Dark Modern 22px #181818 band + main* + sync 0↓ k↑ + Ln/Col/LF + language icon (components/vscode/StatusBar.tsx, per DOC/05 §8)",
       "file": "components/vscode/StatusBar.tsx",
       "id": "PV-C-STATUSBAR",
-      "status": "done",
+      "status": "in_progress",
       "title": "StatusBar",
       "owner": "agent",
       "started": "2026-10-18",
-      "finished": "2026-10-18",
-      "verified": true,
-      "log": "store dba9452 (caret slice, session-only) + lib/langs 7135aea (langFor moved out of FileViewer + display labels) + FileViewer e9fcba8 (syncCaret pushes line+col on caret moves; reset on tab switch; active-line highlight reads store caret) + StatusBar 62ac678 (24px accent band: branch+star (dirtyCount(edits)>0), error/warning 0, local:k (commits.length), Ln/Col 1-based, Spaces: 2, UTF-8, langLabelFor, bell popover with TitleBar click-away+Esc pattern; editor items hide without a code tab) + page 8205789 (mounted flush below the workspace row; branch click -> scm view) + DOC 0eea741 (tsc clean, boot 200/no overlay; SSR: 'Status bar'/'Notifications' aria-labels + all 5 codicons + 'local:<!-- -->0' inline; live CSS: bg-vscode-accent, hover:bg-black/20, bg-black/20, w-72, widget-bg, shadow-vscode emitted); remainder: none"
+      "log": "store dba9452 (caret slice, session-only) + lib/langs 7135aea (langFor moved out of FileViewer + display labels) + FileViewer e9fcba8 (syncCaret pushes line+col on caret moves; reset on tab switch; active-line highlight reads store caret) + StatusBar 62ac678 (24px accent band: branch+star (dirtyCount(edits)>0), error/warning 0, local:k (commits.length), Ln/Col 1-based, Spaces: 2, UTF-8, langLabelFor, bell popover with TitleBar click-away+Esc pattern; editor items hide without a code tab) + page 8205789 (mounted flush below the workspace row; branch click -> scm view) + DOC 0eea741 (tsc clean, boot 200/no overlay; SSR: 'Status bar'/'Notifications' aria-labels + all 5 codicons + 'local:<!-- -->0' inline; live CSS: bg-vscode-accent, hover:bg-black/20, bg-black/20, w-72, widget-bg, shadow-vscode emitted); remainder: none; v2 realign (user photo audit — the v1 accent-blue band was the stale Dark+ spec, not real 2026 Dark Modern; values pulled from VS Code source: dark_modern.json + statusbarpart.css + git extension statusbar.ts): tokens d92db67 (--color-vscode-statusbar #181818 + --color-vscode-statusbar-hover #F1F1F133) + StatusBar 6857bb4 (22px dark band #181818/#CCCCCC, 1px top hairline #2B2B2B, item hover #F1F1F133 + white text, exact label metrics: margin 3px / padding 5px with 8px inset at first/last item, tabular-nums, 16px codicons, footer px-0; sync item $(sync) 0↓ k↑ replaces the invented local:k — icon-only at k=0 exactly like core git's syncLabel; icon flips to git-branch-changes while main* shows; error/warning merged into ONE problems entry like the real markers item; +LF; file icon before the language label) + DOC 80ecd56 (tsc clean, boot 200/no overlay; SSR: Status bar/git-branch/sync/error/warning/bell/Notifications all found, local: gone; live CSS: statusbar token, bg-vscode-statusbar-hover, hover:bg-vscode-statusbar-hover, hover:text-vscode-fg-active, h-[22px], mx-[3px], px-[5px], tabular-nums emitted); remainder: none"
     },
     {
       "description": "Ctrl+P/K fuzzy open + commands (components/vscode/CommandPalette.tsx, per DOC/05 §9)",
