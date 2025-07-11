@@ -48,6 +48,19 @@
   --color-vscode-widget-bg: #252526;
   --color-vscode-widget-border: #454545;
 
+  /* === Quick Input / Command Palette (quickInput.css, dark_modern.json) === */
+  --color-vscode-quick-bg: #222222; /* quickInput.background */
+  --color-vscode-quick-border: #313131; /* widget.border (widget 1px frame) */
+  --color-vscode-quick-input-bg: #313131; /* input.background */
+  --color-vscode-quick-input-border: #3c3c3c; /* input.border (static — no focus ring) */
+  --color-vscode-quick-placeholder: #989898; /* input.placeholderForeground */
+  --color-vscode-quick-match: #2AAAFF; /* list.highlightForeground (bold match) */
+
+  /* === Keybinding chips (keybindingLabel defaults, dark) === */
+  --color-vscode-keybinding-bg: #8080802b; /* keybindingLabel.background, rgba(128,128,128,.17) */
+  --color-vscode-keybinding-border: #33333399; /* keybindingLabel.border, rgba(51,51,51,.6) */
+  --color-vscode-keybinding-border-bottom: #44444499; /* keybindingLabel.bottomBorder, rgba(68,68,68,.6) */
+
   /* === Editor Selection, Line Highlight & Scrollbars === */
   --color-vscode-selection: #264f78;
   --color-vscode-line-highlight: #282828;
@@ -68,6 +81,10 @@
   --radius-control: 5px;
   --radius-tab: 6px;
   --radius-section: 8px;
+  --radius-quick: 12px; /* quick-input widget (cornerRadius-xLarge) */
+  --radius-quick-input: 6px; /* quick-input field (cornerRadius-medium) */
+  --radius-quick-row: 3px; /* quick-input list rows */
+  --radius-keybinding: 3px; /* keybinding chips (keybindingLabel.css) */
   --font-vscode-ui: "Segoe WPC", "Segoe UI", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   --font-vscode-code: "Cascadia Code", "JetBrains Mono", Consolas, "Courier New", monospace;
   --font-vscode-term: "Fira Code", "Cascadia Code", Consolas, "Courier New", monospace;
