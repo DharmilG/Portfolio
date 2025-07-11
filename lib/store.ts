@@ -1,7 +1,8 @@
 // lib/store.ts — single zustand store for the workbench.
 // Orchestration lives here; computation delegates to lib/localGit.ts (dumb-depth).
 // Only edits/commits/renames/tmpFs/mode/sidebarWidth persist (localStorage
-// vscode-local-v1); drafts/expanded/selection are session-only (VS Code buffers).
+// vscode-local-v1); drafts/expanded/selection/view/sidebar/palette stay
+// session-only (VS Code buffers).
 // See DOC/03 (state), rule 03-local-only, skill local-git.
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
@@ -16,6 +17,13 @@ import {
 } from "./localGit";
 
 export type TabKind = "code" | "markdown" | "browser";
+
+// Activity views (ActivityBar icons) — the page, palette and commands share
+// this union (ActivityBar re-exports it for its props).
+export type ActivityId = "explorer" | "search" | "scm" | "run" | "extensions";
+
+// Command palette mode; the palette's `>` prefix maps to "commands".
+export type PaletteMode = "files" | "commands";
 
 export type EditorTab = {
   id: string;
@@ -70,6 +78,19 @@ type State = {
   sidebarPreview: number | null; // live sash drag width — session-only
   setSidebarWidth: (w: number) => void;
   setSidebarPreview: (w: number | null) => void;
+
+  // UI shell (session-only): active activity view + primary-sidebar
+  // visibility (ActivityBar icon, Ctrl+B, View menu, palette commands) and
+  // the command palette (paletteMode doubles as the open flag; null = closed).
+  view: ActivityId;
+  showSidebar: boolean;
+  paletteMode: PaletteMode | null;
+  selectView: (id: ActivityId) => void;
+  showView: (id: ActivityId) => void;
+  toggleSidebar: () => void;
+  openPalette: (mode?: PaletteMode) => void;
+  closePalette: () => void;
+  setPaletteMode: (mode: PaletteMode) => void;
 
   tabs: EditorTab[];
   activeTabId: string | null;
@@ -175,6 +196,23 @@ export const useStore = create<State>()(
       sidebarPreview: null, // not in partialize: the drag preview never persists
       setSidebarWidth: (sidebarWidth) => set({ sidebarWidth }),
       setSidebarPreview: (sidebarPreview) => set({ sidebarPreview }),
+
+      // UI shell defaults; none of these persist (absent from partialize).
+      view: "explorer",
+      showSidebar: true,
+      paletteMode: null,
+      // Icon semantics: the active icon toggles the sidebar, others switch + show.
+      selectView: (id) =>
+        set((s) =>
+          id === s.view
+            ? { showSidebar: !s.showSidebar }
+            : { view: id, showSidebar: true },
+        ),
+      showView: (id) => set({ view: id, showSidebar: true }),
+      toggleSidebar: () => set((s) => ({ showSidebar: !s.showSidebar })),
+      openPalette: (mode = "files") => set({ paletteMode: mode }),
+      closePalette: () => set({ paletteMode: null }),
+      setPaletteMode: (paletteMode) => set({ paletteMode }),
 
       tabs: [],
       activeTabId: null,
