@@ -1,10 +1,12 @@
 "use client";
 
 // Portfolio shell mount — workbench chrome + regions (panel fills in next).
-// Partial PV-PAGE-PORTFOLIO: mounts built components, fetches sections live.
+// View/sidebar/palette state lives in the store (session-only UI slice);
+// title-bar menus and the palette share lib/commands ids. Partial
+// PV-PAGE-PORTFOLIO: mounts built components, fetches sections live.
 import { useEffect, useRef, useState } from "react";
-import { type ActivityId } from "@/components/vscode/ActivityBar";
 import Breadcrumb from "@/components/vscode/Breadcrumb";
+import CommandPalette from "@/components/vscode/CommandPalette";
 import Explorer from "@/components/vscode/Explorer";
 import FileViewer from "@/components/vscode/FileViewer";
 import PrimarySideBar from "@/components/vscode/PrimarySideBar";
@@ -13,6 +15,7 @@ import Section from "@/components/vscode/Section";
 import StatusBar from "@/components/vscode/StatusBar";
 import Tabs from "@/components/vscode/Tabs";
 import TitleBar from "@/components/vscode/TitleBar";
+import { COMMANDS, newTextFile, nextFreeKey } from "@/lib/commands";
 import { supabase } from "@/lib/db";
 import { useStore } from "@/lib/store";
 
@@ -23,17 +26,6 @@ function loadSections() {
     .then(({ data }) => {
       if (data) useStore.getState().setSections(data);
     });
-}
-
-function nextFreeKey(
-  tmpFs: Record<string, string>,
-  first: string,
-  numbered: (n: number) => string,
-): string {
-  if (!tmpFs[first]) return first;
-  let n = 2;
-  while (tmpFs[numbered(n)]) n += 1;
-  return numbered(n);
 }
 
 function openCodeTab(path: string) {
@@ -47,8 +39,11 @@ export default function PortfolioPage() {
   const setSidebarWidth = useStore((s) => s.setSidebarWidth);
   const setSidebarPreview = useStore((s) => s.setSidebarPreview);
   const revealPath = useStore((s) => s.revealPath);
-  const [view, setView] = useState<ActivityId>("explorer");
-  const [showSidebar, setShowSidebar] = useState(true);
+  const view = useStore((s) => s.view);
+  const showSidebar = useStore((s) => s.showSidebar);
+  const selectView = useStore((s) => s.selectView);
+  const showView = useStore((s) => s.showView);
+  const openPalette = useStore((s) => s.openPalette);
   const [rowWidth, setRowWidth] = useState(0);
   const rowRef = useRef<HTMLDivElement>(null);
 
@@ -71,21 +66,29 @@ export default function PortfolioPage() {
     loadSections();
   }, []);
 
-  // Ctrl+B — toggle primary sidebar (VS Code default).
+  // Ctrl+B — toggle primary sidebar (VS Code default); a dialog owns the
+  // keyboard while it is up (Modal convention).
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.ctrlKey && !e.shiftKey && !e.altKey && e.key.toLowerCase() === "b") {
-        e.preventDefault();
-        setShowSidebar((s) => !s);
-      }
+      if (!(e.ctrlKey && !e.shiftKey && !e.altKey)) return;
+      if (e.key.toLowerCase() !== "b") return;
+      if (document.querySelector('[role="dialog"]')) return;
+      e.preventDefault();
+      useStore.getState().toggleSidebar();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
+  // Menu ids run through the shared command registry (TitleBar MENU_ITEMS
+  // carry command ids); ids without a live command keep the demo console note.
   const handleAction = (action: string) => {
-    if (action === "toggle-sidebar") setShowSidebar((s) => !s);
-    else console.info("menu action (wires with its feature):", action);
+    const cmd = COMMANDS.find((c) => c.id === action);
+    if (cmd && !cmd.disabled) {
+      cmd.run();
+      return;
+    }
+    console.info("menu action (wires with its feature):", action);
   };
 
   const handleViewAction = (id: string) => {
@@ -99,14 +102,7 @@ export default function PortfolioPage() {
       return;
     }
     if (id === "new-file") {
-      const path = nextFreeKey(
-        st.tmpFs,
-        "tmp/untitled-1",
-        (n) => `tmp/untitled-${n}`,
-      );
-      st.writeTmp(path, "");
-      if (!st.expanded["tmp"]) st.toggleExpanded("tmp");
-      openCodeTab(path);
+      newTextFile();
       return;
     }
     if (id === "new-folder") {
@@ -122,39 +118,31 @@ export default function PortfolioPage() {
     console.info("view action (wires with its feature):", id);
   };
 
-  // VS Code semantics: active activity icon toggles the sidebar; others switch + show.
-  const handleSelectView = (next: ActivityId) => {
-    if (next === view) setShowSidebar((s) => !s);
-    else {
-      setView(next);
-      setShowSidebar(true);
-    }
-  };
-
   // Tab menu "Reveal in Explorer" (full parity): show the Explorer view +
   // sidebar, then expand ancestors + select + scroll (store.revealPath).
   const handleReveal = (path: string) => {
-    setView("explorer");
-    setShowSidebar(true);
+    showView("explorer");
     revealPath(path);
   };
 
   // StatusBar branch click: focus the Source Control view (sidebar shown).
   const handleBranchClick = () => {
-    setView("scm");
-    setShowSidebar(true);
+    showView("scm");
   };
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <TitleBar onMenuAction={handleAction} />
+      <TitleBar
+        onMenuAction={handleAction}
+        onQuickOpen={() => openPalette("files")}
+      />
       <div
         ref={rowRef}
         className="flex min-h-0 flex-1 gap-[5px] bg-vscode-titlebar p-[5px]"
       >
         {showSidebar ? (
           <div className="relative flex shrink-0">
-            <PrimarySideBar active={view} onSelect={handleSelectView}>
+            <PrimarySideBar active={view} onSelect={selectView}>
               {view === "explorer" ? (
                 <Explorer onOpenFile={openCodeTab} onAction={handleViewAction} />
               ) : (
@@ -190,6 +178,7 @@ export default function PortfolioPage() {
         </Section>
       </div>
       <StatusBar onBranchClick={handleBranchClick} />
+      <CommandPalette />
     </div>
   );
 }
