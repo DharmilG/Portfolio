@@ -59,6 +59,15 @@ Mobile <768px: Activity 48px stays, Sidebar becomes overlay drawer, Editor full-
   --color-vscode-command-bg: #242424;
   --color-vscode-widget-bg: #252526;
   --color-vscode-widget-border: #454545;
+  --color-vscode-quick-bg: #222222; /* quickInput.background */
+  --color-vscode-quick-border: #313131; /* widget.border (widget 1px frame) */
+  --color-vscode-quick-input-bg: #313131; /* input.background */
+  --color-vscode-quick-input-border: #3c3c3c; /* input.border (static — no focus ring) */
+  --color-vscode-quick-placeholder: #989898; /* input.placeholderForeground */
+  --color-vscode-quick-match: #2AAAFF; /* list.highlightForeground (bold match) */
+  --color-vscode-keybinding-bg: #8080802b; /* keybindingLabel.background rgba(128,128,128,.17) */
+  --color-vscode-keybinding-border: #33333399; /* keybindingLabel.border rgba(51,51,51,.6) */
+  --color-vscode-keybinding-border-bottom: #44444499; /* keybindingLabel.bottomBorder rgba(68,68,68,.6) */
   --color-vscode-selection: #264f78;
   --color-vscode-line-highlight: #282828;
   --color-vscode-badge-bg: #0078d4;
@@ -68,6 +77,10 @@ Mobile <768px: Activity 48px stays, Sidebar becomes overlay drawer, Editor full-
   --radius-control: 5px; /* Command Center, menus, widgets — no pills */
   --radius-tab: 6px;
   --radius-section: 8px; /* workbench section cards */
+  --radius-quick: 12px; /* quick-input widget (cornerRadius-xLarge) */
+  --radius-quick-input: 6px; /* quick-input field (cornerRadius-medium) */
+  --radius-quick-row: 3px; /* quick-input list rows */
+  --radius-keybinding: 3px; /* keybinding chips (keybindingLabel.css) */
   --font-vscode-ui: "Segoe WPC", "Segoe UI", system-ui, sans-serif;
   --font-vscode-code: "Cascadia Code", "JetBrains Mono", Consolas, monospace;
   --font-vscode-term: "Fira Code", "Cascadia Code", Consolas, monospace;
@@ -79,7 +92,7 @@ Mobile <768px: Activity 48px stays, Sidebar becomes overlay drawer, Editor full-
 @utility font-term { font-family: var(--font-vscode-term); font-size: 13px; line-height: 1.5; }
 /* UI text uses the theme utility `font-vscode-ui` on body — no separate class. */
 /* Shell is flush (no backdrop). Separators: 1px solid var(--color-vscode-border). */
-/* Floating widgets only: border-radius var(--radius-control) + var(--shadow-vscode). */
+/* Floating widgets only: border-radius var(--radius-control) + var(--shadow-vscode); the quick input uses var(--radius-quick) (12px). */
 ```
 
 Accent usage: active tab top-border 1px accent, Activity active icon = white + rounded pill bg `--color-vscode-activity-active-bg` (no left bar), focus outlines `1px solid var(--color-vscode-accent)`; the StatusBar is plain Dark Modern (`#181818` bg, `#CCCCCC` text, `#F1F1F133` item hover — accent stays reserved for debug/remote item kinds, like VS Code).
@@ -134,9 +147,11 @@ Left: branch — `$(git-branch)` flips to `$(git-branch-changes)` and the label 
 
 ## 9. Command Palette + keybinds
 
-`Ctrl+P` quick open (fuzzy file list from tree+static), `Ctrl+Shift+P` commands (`Open Preview, Toggle Theme, Discard Edits, Focus Terminal`), `Ctrl+Shift+V` markdown split, ``Ctrl+` `` terminal, `Ctrl+B` sidebar, `Ctrl+S` local save.
+`Ctrl+P` quick open, `Ctrl+Shift+P` / `F1` commands, `Ctrl+B` sidebar, `Ctrl+S` local save (`Ctrl+Shift+V` markdown split + ``Ctrl+` `` terminal land with their components).
 
-Palette UI: centered 480px `rounded-control` + `--shadow-vscode`, input (not pill) + list 40px rows + `↑↓ Enter Esc`.
+Palette UI (VS Code 2026 source-true — `quickInput.css` + `quickInputController.ts`): floating widget `min(62vw, 600px)` centered, top = 36px titlebar offset, `--radius-quick` 12px, `bg` #222222 + 1px `widget.border` #313131, `--shadow-vscode`; header pad 6/6/4/6; input 26px `--radius-quick-input` 6px, `#313131` / `#3C3C3C` (static border — no focus ring); list cap `min(40vh, 440px)` (= min(0.4×height, 20×22px), list pb 7px), rows 22px `--radius-quick-row` 3px, side insets 6px (scrollable) + 6px (entry), icon 16px+6, label ml 5px; focus row `#04395E` + white (`list.activeSelection*`), hover `#2A2D2E` (`list.hoverBackground`), match bold `#2AAAFF` (`list.highlightForeground`); keybinding chips per `keybindingLabel` (bg rgba(128,128,128,.17), border rgba(51,51,51,.6) / bottom rgba(68,68,68,.6), 11px keys, 3px radius; focused/hover = transparent bg + currentColor @30%).
+
+Behavior: `>` prefix = commands mode (backspace past it returns to files); file mode lists open tabs (tab order) then tmp scratch + loaded repo trees A–Z, filtered by `lib/fuzzy` (subsequence + boundary/camel/consecutive bonuses, whitespace = multi-term AND, basename boost); commands mode lists `lib/commands.ts` (17; ids shared with the title-bar menus; Enter runs, mode-switch commands keep the palette open; discard-edits raises the confirm `Modal`). `↑↓` wrap, `Enter` runs & closes, `Esc` / click-away closes; the same shortcut while open keeps the palette and selects the query, the other one switches mode preserving the query suffix (`quickAccess.ts`). Empty states `No matching commands` / `No matching results`. Motion (250ms scale-in) deferred.
 
 ## 10. Search / Run / Extensions (dummy but alive)
 
