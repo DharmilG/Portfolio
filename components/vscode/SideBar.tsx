@@ -3,8 +3,9 @@
 // SideBar — panel shell, 280px default (Sash drags it live: session
 // `sidebarPreview` ?? the persisted width; DOC/05 §5).
 // Header shows the view title + the view-level overflow button
-// ("Views and More Actions..."); row/view actions live with their rows
-// (the Explorer root row carries its own, hover-revealed).
+// ("Views and More Actions..."); row/view actions live with their rows.
+// The aside carries group/pane — the whole pane is the hover scope for
+// those row actions, matching VS Code `.pane:hover > .pane-header > .actions`.
 // See DOC/05 §5, skills rounded-workbench + vscode-tokens.
 import type { ReactNode } from "react";
 import { useStore } from "@/lib/store";
@@ -26,7 +27,7 @@ export default function SideBar({
   return (
     <aside
       style={{ width: sidebarPreview ?? sidebarWidth }}
-      className="flex shrink-0 flex-col bg-vscode-side text-vscode-fg"
+      className="group/pane flex shrink-0 flex-col bg-vscode-side text-vscode-fg"
     >
       <div className="flex h-9 shrink-0 items-center justify-between pl-4 pr-[4px] text-[11px] font-medium tracking-normal text-vscode-emphasis">
         <span>{title}</span>
