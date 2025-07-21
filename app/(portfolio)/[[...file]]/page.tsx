@@ -68,15 +68,17 @@ export default function PortfolioPage() {
   // Sash max: keep the editor >= 320px in the workspace row
   // (10px padding + 48px activity rail + 5px gutter + 320px editor = 383px).
   const maxPane = Math.max(170, rowWidth - 383);
-  // Panel: keep >= 120px terminal and >= 200px editor; maximize is 60% of the
-  // workspace row (DOC/10 §1). rowHeight includes the 5px grid padding.
+  // Panel: keep >= 120px terminal and >= 200px editor; maximize toggles 60vh
+  // (DOC/10 §1). rowHeight includes the 5px grid padding.
   const maxPanel = rowHeight > 0 ? Math.max(170, rowHeight - 215) : 10000;
-  const panelPx = Math.min(
-    panelMaximized
-      ? Math.max(160, Math.round(rowHeight * 0.6))
-      : (panelPreview ?? panelHeight),
-    maxPanel,
-  );
+  const panelPx = Math.min(panelPreview ?? panelHeight, maxPanel);
+  const panelStyle = panelOpen
+    ? {
+        height: panelMaximized
+          ? `min(60vh, ${maxPanel}px)`
+          : `${panelPx}px`,
+      }
+    : undefined;
 
   useEffect(() => {
     const el = rowRef.current;
@@ -244,7 +246,7 @@ export default function PortfolioPage() {
               keeps terminal buffers on panel hide). */}
           <div
             className={panelOpen ? "shrink-0" : "hidden"}
-            style={panelOpen ? { height: panelPx } : undefined}
+            style={panelStyle}
           >
             <TerminalPanel />
           </div>
