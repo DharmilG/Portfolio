@@ -602,6 +602,16 @@ export default function TerminalPanel() {
 
       term.attachCustomKeyEventHandler((e) => {
         if (e.type !== "keydown") return true;
+        // Workbench chords stay with the window handler: xterm would otherwise
+        // consume Ctrl+J as LF / Ctrl+B as ^B and swallow the toggle.
+        if (
+          e.ctrlKey &&
+          !e.shiftKey &&
+          !e.altKey &&
+          (e.code === "KeyJ" || e.code === "KeyB" || e.code === "Backquote")
+        ) {
+          return false;
+        }
         if (e.ctrlKey && e.shiftKey && e.code === "KeyC") {
           if (term.hasSelection()) {
             void navigator.clipboard?.writeText(term.getSelection()).catch(() => {});
