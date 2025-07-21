@@ -14,14 +14,14 @@
 | [rail+sidebar: ONE rounded card] [editor: card]    |
 |  rail 48px + pane 280px, internal hairline only    |
 |  Tabs 35px / Breadcrumb 22px / Viewport inside     |
-|  the editor card; Panel (Terminal 280px) lands      |
-|  later as a third card under the editor            |
+|  the editor card; Panel is a third card under      |
+|  the editor (closed by default, 280px when open)   |
 | 5px gutter                                         |
 | StatusBar 22px (flush, full-width, square)         |
 +----------------------------------------------------+
 Cards: `Section` primitive — `rounded-section` (8px), 1px #2b2b2b border,
 `overflow-hidden`; grid gap 5px + padding 5px on `bg-vscode-titlebar` (the workbench base).
-Sash (`Sash.tsx`): the 5px gutter right of the sidebar card is a drag grip — always-visible ⋮ (three 3px dots in `--color-vscode-dim`, brighten to `--color-vscode-emphasis` on hover and keep it through the drag, `col-resize` over the strip), drag resizes the pane live (min 170px, editor floor 320px: the live width rides session-only `sidebarPreview`, the released width persists as `sidebarWidth` in `vscode-local-v1`); the Panel + secondary bar reuse the grip.
+Sash (`Sash.tsx`): the 5px gutter right of the sidebar card is a drag grip — always-visible ⋮ (three 3px dots in `--color-vscode-dim`, brighten to `--color-vscode-emphasis` on hover and keep it through the drag, `col-resize` over the strip), drag resizes the pane live (min 170px, editor floor 320px: the live width rides session-only `sidebarPreview`, the released width persists as `sidebarWidth` in `vscode-local-v1`); the Panel reuses the same grip horizontally (5px gutter, 120px min, 200px editor floor; the secondary bar is still pending).
 Mobile <768px: Activity 48px stays, Sidebar becomes overlay drawer, Editor full-width, Panel bottom-sheet.
 ```
 
@@ -99,7 +99,7 @@ Accent usage: active tab top-border 1px accent, Activity active icon = white + r
 
 ## 3. TitleBar (36px, bg `--color-vscode-titlebar` #191a1b, square)
 
-Left: VS Code logo (`/vscode-logo.svg`, 16px) + menu row (`File Edit Selection View Go Run Terminal Help`, real dropdowns via shared `Menu`, density `menu`). Center: Command Center — `rounded-control bg-vscode-command-bg border 1px #2b2b2b`, max 600px, `⌕ Portfolio`, click -> `Ctrl+P`, hover text white. Right: back/forward (history), layout controls — Customize Layout (`layout`), Toggle Primary Side Bar (`layout-sidebar-left`, wired, Ctrl+B), Toggle Panel (`layout-panel`), Toggle Secondary Side Bar (`layout-sidebar-right`), Browser Preview (`globe`) — all with hover tooltips, decorative window controls `— ▢ ✕`.
+Left: VS Code logo (`/vscode-logo.svg`, 16px) + menu row (`File Edit Selection View Go Run Terminal Help`, real dropdowns via shared `Menu`, density `menu`). Center: Command Center — `rounded-control bg-vscode-command-bg border 1px #2b2b2b`, max 600px, `⌕ Portfolio`, click -> `Ctrl+P`, hover text white. Right: back/forward (history), layout controls — Customize Layout (`layout`), Toggle Primary Side Bar (`layout-sidebar-left`, wired, Ctrl+B), Toggle Panel (`layout-panel`, wired, Ctrl+J), Toggle Secondary Side Bar (`layout-sidebar-right`), Browser Preview (`globe`) — all with hover tooltips, decorative window controls `— ▢ ✕`.
 
 ## 4. ActivityBar (48px, flush, 1px right hairline)
 
@@ -132,6 +132,10 @@ placeholder line shows until then):
 - Typing writes the session buffer (`drafts[path]` — session-only, the tab dot appears live; the buffer persists until saved). `Ctrl+S` promotes the buffer into `localEdits[path]` (buffer clears, amber `M` appears; toast `Saved locally` lands with `PV-UI-TOAST`). No banner, no mode toggle (`Ctrl+E` / `Esc` unbound). No server call (per `09 §8`).
 - Split: `Ctrl+\` or preview icon opens second group: `MarkdownPreview` (`Ctrl+Shift+V` toggles for `.md`) or `BrowserPreview` (iframe + url bar + reload + `Open in new tab`, sandbox allow-scripts allow-same-origin).
 
+### Bottom Panel — Terminal (PV-C-TERMINAL, as built)
+
+Third card under the editor column (5px gutter), **closed by default**; ``Ctrl+` `` / `Ctrl+J` toggle it, `Ctrl+B` still toggles the sidebar. Height 280px default, sash min 120px with a 200px editor floor, maximize 60vh (capped by the floor). Chrome/behavior detail lives in `DOC/10 §1`: 35px panel title (11px uppercase `TERMINAL`, 1px accent underline inset 2px, square 28px maximize/close), 22px terminal tab strip (12px labels, 1px separators, 1px accent active left border, 22px +/clear/trash), `#181818` surface, `#2b2b2b` border, 8px card radius, toolbar hover `#5a5d5e50`. xterm 5.5 + fit, Fira Code 13px/1, scrollback 1000, 20px left gutter, Dark Modern ANSI. Sessions seed `pwsh` then `bash`; panel/session state is session-only and the closed panel stays mounted so scrollback survives. TitleBar Terminal menu + palette share `new-terminal` / `clear-terminal`.
+
 ## 7. Source Control (fun + interactive)
 
 Panel replaces Explorer when the git icon is active; header title `Source Control` (per-view titles in the page). Values are VS Code 1.142 source-true (`scm.css`, `scmInput.ts`, `scmViewPane.ts`, `button.css`, `countBadge.css`, `git-repository.ts`, `dark_modern.json`).
@@ -152,11 +156,11 @@ Left: branch — `$(git-branch)` flips to `$(git-branch-changes)` and the label 
 
 ## 9. Command Palette + keybinds
 
-`Ctrl+P` quick open, `Ctrl+Shift+P` / `F1` commands, `Ctrl+B` sidebar, `Ctrl+S` local save (`Ctrl+Shift+V` markdown split + ``Ctrl+` `` terminal land with their components).
+`Ctrl+P` quick open, `Ctrl+Shift+P` / `F1` commands, `Ctrl+B` sidebar, `Ctrl+J` / ``Ctrl+` `` panel, `Ctrl+S` local save (`Ctrl+Shift+V` markdown split still lands with its component).
 
 Palette UI (VS Code 2026 source-true — `quickInput.css` + `quickInputController.ts`): floating widget `min(62vw, 600px)` centered, top = 36px titlebar offset, `--radius-quick` 12px, `bg` #222222 + 1px `widget.border` #313131, `--shadow-vscode`; header pad 6/6/4/6; input 26px `--radius-quick-input` 6px, `#313131` / `#3C3C3C` (static border — no focus ring); list cap `min(40vh, 440px)` (= min(0.4×height, 20×22px), list pb 7px), rows 22px `--radius-quick-row` 3px, side insets 6px (scrollable) + 6px (entry), icon 16px+6, label ml 5px; focus row `#04395E` + white (`list.activeSelection*`), hover `#2A2D2E` (`list.hoverBackground`), match bold `#2AAAFF` (`list.highlightForeground`); keybinding chips per `keybindingLabel` (bg rgba(128,128,128,.17), border rgba(51,51,51,.6) / bottom rgba(68,68,68,.6), 11px keys, 3px radius; focused/hover = transparent bg + currentColor @30%).
 
-Behavior: `>` prefix = commands mode (backspace past it returns to files); file mode lists open tabs (tab order) then tmp scratch + loaded repo trees A–Z, filtered by `lib/fuzzy` (subsequence + boundary/camel/consecutive bonuses, whitespace = multi-term AND, basename boost); commands mode lists `lib/commands.ts` (17; ids shared with the title-bar menus; Enter runs, mode-switch commands keep the palette open; discard-edits raises the confirm `Modal`). `↑↓` wrap, `Enter` runs & closes, `Esc` / click-away closes; the same shortcut while open keeps the palette and selects the query, the other one switches mode preserving the query suffix (`quickAccess.ts`). Empty states `No matching commands` / `No matching results`. Motion (250ms scale-in) deferred.
+Behavior: `>` prefix = commands mode (backspace past it returns to files); file mode lists open tabs (tab order) then tmp scratch + loaded repo trees A–Z, filtered by `lib/fuzzy` (subsequence + boundary/camel/consecutive bonuses, whitespace = multi-term AND, basename boost); commands mode lists `lib/commands.ts` (18; ids shared with the title-bar menus; Enter runs, mode-switch commands keep the palette open; discard-edits raises the confirm `Modal`). `↑↓` wrap, `Enter` runs & closes, `Esc` / click-away closes; the same shortcut while open keeps the palette and selects the query, the other one switches mode preserving the query suffix (`quickAccess.ts`). Empty states `No matching commands` / `No matching results`. Motion (250ms scale-in) deferred.
 
 ## 10. Search / Run / Extensions (dummy but alive)
 
