@@ -77,8 +77,10 @@ output is ANSI text; errors are red `command not found: X — try 'help'`.
 
 VFS: sections map to folders (`projects` → `Projects`), repo trees map to
 `Projects/<owner>/<repo>/...`, and `Projects/` + `tmp/` always exist. Saved
-edits and `tmpFs` overlay the tree; parent dirs are derived. `cached` supplies
-blob content until the backend lands (missing → dim note, not an error).
+edits and `tmpFs` overlay the tree; parent dirs are derived. The parser
+supports `cached` + `realCommits`, but the panel passes empty maps until
+`/api/repo/blob` and `/api/commits` land: `cat` reads saved edits/tmp, `log`
+lists local commits, and missing cached content prints a dim note.
 
 ## 3. Commands
 
@@ -90,7 +92,8 @@ Files:
 - `echo <txt> > <file>` / `>>` — writes `tmp/` or an existing repo file
   (dirty edit); other paths are a read-only snapshot error. `touch` mirrors
   that rule; `mkdir`/`rm` are tmp-only.
-- `open <path>` — `OPEN_TAB` (markdown kinds detected by extension).
+- `open <path>` — `OPEN_TAB`; FileViewer picks the renderer (preview split
+  lands with §4-5).
 
 Local git (same store as Source Control §7; `git <verb>` accepted for git
 verbs only):
@@ -98,9 +101,9 @@ verbs only):
 - `diff [file]` — LCS `-/+` rows (40-row cap) from cached vs local edits.
 - `commit -m "msg"` — requires dirty files; commits all and clears them,
   or `Please provide a commit message` / `nothing to commit`.
-- `log --graph` — local commits + cached real commits (`origin` tags), flat
-  star rows; `branch` prints `* main`; `checkout -- <file>` / `checkout -- .`
-  discards one/all local edits.
+- `log --graph` — local commits + cached real commits (`origin` tags, when
+  supplied), flat star rows; `branch` prints `* main`; `checkout -- <file>` /
+  `checkout -- .` discards one/all local edits.
 - `push`/`pull`/`fetch` are read-only-upstream jokes — no network, no remote.
 
 Misc:
