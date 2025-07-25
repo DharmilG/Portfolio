@@ -418,7 +418,9 @@ function textResponse(
 
 export async function GET(request: Request): Promise<Response> {
   const target = new URL(request.url).searchParams.get("url");
-  if (!target) return textResponse(400, "Missing ?url=");
+  if (!target) {
+    return textResponse(400, "Missing ?url=", { "x-proxy-error": "1" });
+  }
 
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
@@ -432,12 +434,18 @@ export async function GET(request: Request): Promise<Response> {
     });
   } catch (error) {
     if (error instanceof ProxyError) {
-      return textResponse(error.status, error.message);
+      return textResponse(error.status, error.message, {
+        "x-proxy-error": "1",
+      });
     }
     if (error instanceof Error && error.name === "AbortError") {
-      return textResponse(504, "Upstream timed out");
+      return textResponse(504, "Upstream timed out", {
+        "x-proxy-error": "1",
+      });
     }
-    return textResponse(502, "Upstream fetch failed");
+    return textResponse(502, "Upstream fetch failed", {
+      "x-proxy-error": "1",
+    });
   } finally {
     clearTimeout(timer);
   }
