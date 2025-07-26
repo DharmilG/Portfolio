@@ -185,6 +185,15 @@ type State = {
   previewHist: string[];
   openPreview: (url: string) => void;
 
+  // Markdown side preview (session-only): the source path bound to the
+  // preview group, and its dragged width (0 = auto 50% on first open).
+  mdPreviewPath: string | null;
+  mdPreviewWidth: number;
+  openMdPreview: (path: string) => void;
+  closeMdPreview: () => void;
+  toggleMdPreview: (path: string) => void;
+  setMdPreviewWidth: (w: number) => void;
+
   mode: "dark" | "light";
   setMode: (m: "dark" | "light") => void;
 };
@@ -288,7 +297,12 @@ export const useStore = create<State>()(
             s.activeTabId === id
               ? (tabs[tabs.length - 1]?.id ?? null)
               : s.activeTabId;
-          return { tabs, activeTabId };
+          // A preview cannot outlive its source file.
+          const mdPreviewPath =
+            s.mdPreviewPath && tabs.some((t) => t.path === s.mdPreviewPath)
+              ? s.mdPreviewPath
+              : null;
+          return { tabs, activeTabId, mdPreviewPath };
         }),
       setActiveTab: (activeTabId) =>
         set((s) => {
@@ -477,6 +491,16 @@ export const useStore = create<State>()(
           previewUrl,
           previewHist: [...s.previewHist, previewUrl].slice(-20),
         })),
+
+      mdPreviewPath: null,
+      mdPreviewWidth: 0,
+      openMdPreview: (mdPreviewPath) => set({ mdPreviewPath }),
+      closeMdPreview: () => set({ mdPreviewPath: null }),
+      toggleMdPreview: (path) =>
+        set((s) => ({
+          mdPreviewPath: s.mdPreviewPath === path ? null : path,
+        })),
+      setMdPreviewWidth: (mdPreviewWidth) => set({ mdPreviewWidth }),
 
       mode: "dark",
       setMode: (mode) => set({ mode }),
