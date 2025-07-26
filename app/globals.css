@@ -99,6 +99,12 @@
   --color-vscode-activity-active-bg: #ffffff1a;
   --color-vscode-activity-hover-bg: #ffffff0d;
 
+  /* === Markdown preview (DOC/10 §5) === */
+  --color-vscode-markdown-link: #4daafc; /* textLink.foreground */
+  --color-vscode-markdown-code-bg: #1e1e1e;
+  --color-vscode-markdown-inline-code-bg: #ffffff14;
+  --color-vscode-markdown-quote-border: #3c3c3c;
+
   /* === Radii, Fonts & Elevation === */
   --radius-control: 5px;
   --radius-tab: 6px;
@@ -192,4 +198,276 @@
 
 .terminal-xterm .xterm .xterm-viewport::-webkit-scrollbar-thumb:hover {
   background-color: var(--color-vscode-scroll-hover);
+}
+
+/* === Markdown preview (DOC/10 §5) ===
+   Scoped to .markdown-body so the workbench chrome is never affected. All
+   colors come from the Dark Modern tokens above; Mermaid colors are injected
+   from those same tokens by MermaidBlock. */
+.markdown-body {
+  color: var(--color-vscode-fg);
+  font-family: var(--font-vscode-ui);
+  font-size: 16px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+
+.markdown-body > :first-child {
+  margin-top: 0 !important;
+}
+
+.markdown-body > :last-child {
+  margin-bottom: 0 !important;
+}
+
+.markdown-body h1,
+.markdown-body h2,
+.markdown-body h3,
+.markdown-body h4,
+.markdown-body h5,
+.markdown-body h6 {
+  color: var(--color-vscode-fg-active);
+  font-weight: 600;
+  line-height: 1.25;
+  margin: 1.6em 0 0.6em;
+}
+
+.markdown-body h1 {
+  font-size: 2em;
+  padding-bottom: 0.3em;
+  border-bottom: 1px solid var(--color-vscode-border);
+}
+
+.markdown-body h2 {
+  font-size: 1.5em;
+  padding-bottom: 0.3em;
+  border-bottom: 1px solid var(--color-vscode-border);
+}
+
+.markdown-body h3 {
+  font-size: 1.25em;
+}
+
+.markdown-body h4 {
+  font-size: 1em;
+}
+
+.markdown-body h5 {
+  font-size: 0.875em;
+}
+
+.markdown-body h6 {
+  color: var(--color-vscode-muted);
+  font-size: 0.85em;
+}
+
+.markdown-body p,
+.markdown-body ul,
+.markdown-body ol,
+.markdown-body dl,
+.markdown-body table,
+.markdown-body pre,
+.markdown-body blockquote,
+.markdown-body details {
+  margin: 0 0 1em;
+}
+
+.markdown-body ul,
+.markdown-body ol {
+  padding-left: 2em;
+}
+
+.markdown-body li + li {
+  margin-top: 0.25em;
+}
+
+.markdown-body li > ul,
+.markdown-body li > ol {
+  margin: 0.25em 0 0;
+}
+
+.markdown-body .contains-task-list {
+  padding-left: 1.4em;
+}
+
+.markdown-body .task-list-item {
+  list-style: none;
+}
+
+.markdown-body .task-list-item input {
+  margin: 0 0.45em 0.25em -1.4em;
+  vertical-align: middle;
+  accent-color: var(--color-vscode-accent);
+}
+
+.markdown-body a {
+  color: var(--color-vscode-markdown-link);
+  text-decoration: none;
+}
+
+.markdown-body a:hover {
+  text-decoration: underline;
+}
+
+.markdown-body a:focus-visible {
+  outline: 1px solid var(--color-vscode-accent);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.markdown-body strong {
+  color: var(--color-vscode-fg-active);
+  font-weight: 600;
+}
+
+.markdown-body blockquote {
+  border-left: 4px solid var(--color-vscode-markdown-quote-border);
+  color: var(--color-vscode-muted);
+  padding: 0 1em;
+}
+
+.markdown-body hr {
+  border: 0;
+  border-top: 1px solid var(--color-vscode-border);
+  height: 0;
+  margin: 1.5em 0;
+}
+
+.markdown-body img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 2px;
+}
+
+.markdown-body table {
+  border-collapse: collapse;
+  border-spacing: 0;
+  display: block;
+  max-width: 100%;
+  overflow: auto;
+  width: max-content;
+}
+
+.markdown-body th,
+.markdown-body td {
+  border: 1px solid var(--color-vscode-border);
+  padding: 6px 13px;
+}
+
+.markdown-body th {
+  background: var(--color-vscode-tab);
+  color: var(--color-vscode-fg-active);
+  font-weight: 600;
+}
+
+.markdown-body tr:nth-child(2n) td {
+  background: var(--color-vscode-tab-hover);
+}
+
+.markdown-body :not(pre) > code {
+  background: var(--color-vscode-markdown-inline-code-bg);
+  border-radius: 3px;
+  font-family: var(--font-vscode-code);
+  font-size: 0.875em;
+  padding: 0.15em 0.35em;
+}
+
+.markdown-body pre {
+  background: var(--color-vscode-markdown-code-bg);
+  border: 1px solid var(--color-vscode-border);
+  border-radius: 4px;
+  font-family: var(--font-vscode-code);
+  font-size: 13px;
+  line-height: 1.55;
+  overflow: auto;
+  padding: 14px 16px;
+}
+
+.markdown-body pre code {
+  background: transparent;
+  border: 0;
+  font-family: inherit;
+  font-size: inherit;
+  padding: 0;
+}
+
+.markdown-body pre code.hljs {
+  background: transparent;
+  padding: 0;
+}
+
+.markdown-body kbd {
+  background: var(--color-vscode-keybinding-bg);
+  border: 1px solid var(--color-vscode-keybinding-border);
+  border-bottom-color: var(--color-vscode-keybinding-border-bottom);
+  border-radius: var(--radius-keybinding);
+  color: var(--color-vscode-fg);
+  font-family: var(--font-vscode-code);
+  font-size: 0.8em;
+  padding: 0.1em 0.35em;
+}
+
+.markdown-body details summary {
+  cursor: pointer;
+  color: var(--color-vscode-fg-active);
+}
+
+.markdown-body .footnotes {
+  border-top: 1px solid var(--color-vscode-border);
+  color: var(--color-vscode-muted);
+  font-size: 0.875em;
+  margin-top: 2em;
+  padding-top: 1em;
+}
+
+.markdown-body .mermaid-block {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  margin: 1.5em 0;
+  min-height: 48px;
+  overflow-x: auto;
+}
+
+.markdown-body .mermaid-block svg {
+  height: auto;
+  max-width: 100%;
+}
+
+.markdown-body .mermaid-loading {
+  border: 1px dashed var(--color-vscode-border);
+  border-radius: 4px;
+  color: var(--color-vscode-dim);
+  font-size: 13px;
+  min-height: 96px;
+  width: 100%;
+}
+
+.markdown-body .mermaid-error {
+  border: 1px solid var(--color-vscode-validation-error-border);
+  border-radius: 4px;
+  margin: 1.5em 0;
+  overflow: hidden;
+}
+
+.markdown-body .mermaid-error-title {
+  background: var(--color-vscode-validation-error-bg);
+  border-bottom: 1px solid var(--color-vscode-validation-error-border);
+  color: var(--color-vscode-fg);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 10px;
+}
+
+.markdown-body .mermaid-error-message {
+  color: var(--color-vscode-error);
+  font-size: 12px;
+  padding: 8px 10px;
+}
+
+.markdown-body .mermaid-error pre {
+  border: 0;
+  border-radius: 0;
+  border-top: 1px solid var(--color-vscode-border);
+  margin: 0;
 }
