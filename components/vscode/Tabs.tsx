@@ -7,9 +7,10 @@
 // unsaved buffer asks first (Modal: Save / Don't Save / Cancel). Right: pinned
 // actions rail (stays put while the tab run scrolls) — `...` menu: Copy path /
 // Reveal in Explorer / Open raw (repo file ->
-// raw.githubusercontent.com/<owner>/<repo>/HEAD/<path>); the split-right icon
-// lands with the preview components. See DOC/05 §6.
+// raw.githubusercontent.com/<owner>/<repo>/HEAD/<path>); Markdown sources add
+// Open/Close Preview to the Side (DOC/10 §5). See DOC/05 §6.
 import { useEffect, useRef, useState } from "react";
+import { isMarkdownPath } from "@/lib/langs";
 import { hasChanges, useStore } from "@/lib/store";
 import { resolveName } from "./Explorer";
 import Menu, { type MenuItem } from "./Menu";
@@ -40,6 +41,8 @@ export default function Tabs({ onReveal }: TabsProps) {
   const closeTab = useStore((s) => s.closeTab);
   const saveDraft = useStore((s) => s.saveDraft);
   const discardDraft = useStore((s) => s.discardDraft);
+  const mdPreviewPath = useStore((s) => s.mdPreviewPath);
+  const toggleMdPreview = useStore((s) => s.toggleMdPreview);
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [pendingClose, setPendingClose] = useState<string | null>(null);
@@ -92,6 +95,10 @@ export default function Tabs({ onReveal }: TabsProps) {
   };
 
   const active = tabs.find((t) => t.id === activeTabId) ?? null;
+  const mdActive =
+    active && active.kind === "code" && isMarkdownPath(active.path)
+      ? active.path
+      : null;
   const rawUrl =
     active && active.kind !== "browser" ? rawUrlFor(active.path) : null;
   const items: MenuItem[] = [
@@ -136,6 +143,17 @@ export default function Tabs({ onReveal }: TabsProps) {
         ))}
       </div>
       <div className="flex shrink-0 items-center px-1">
+        {mdActive ? (
+          <ViewActionButton
+            icon={mdPreviewPath === mdActive ? "close" : "open-preview"}
+            label={
+              mdPreviewPath === mdActive
+                ? "Close Preview"
+                : "Open Preview to the Side"
+            }
+            onClick={() => toggleMdPreview(mdActive)}
+          />
+        ) : null}
         <ViewActionButton
           icon="more"
           label="More Actions..."
