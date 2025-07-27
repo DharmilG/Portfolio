@@ -257,12 +257,9 @@ async function applyEffects(effects: Effect[], term: XTerm): Promise<void> {
   for (const fx of effects) {
     switch (fx.kind) {
       case "OPEN_TAB": {
-        const markdown = /\.(md|mdx)$/i.test(fx.path);
-        st.openTab({
-          kind: markdown ? "markdown" : "code",
-          path: fx.path,
-          sha: null,
-        });
+        // Markdown opens as a normal source tab; the side preview is a bound
+        // split (DOC/10 §5), not a tab kind, so it never duplicates tabs.
+        st.openTab({ kind: "code", path: fx.path, sha: null });
         break;
       }
       case "WRITE_EDIT":
