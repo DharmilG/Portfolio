@@ -6,6 +6,7 @@
 // that flips the palette mode without closing it; `confirm` raises the shared
 // Modal (the palette owns the dialog); `keybinding` renders as a chip and
 // mirrors a binding we actually handle; disabled entries show `hint`.
+import { isMarkdownPath } from "./langs";
 import { useStore } from "./store";
 
 export type Command = {
@@ -71,6 +72,26 @@ export const COMMANDS: Command[] = [
         st.saveDraft(tab.path);
       }
     },
+  },
+
+  // Markdown (DOC/10 §5) — the source tab stays put; the preview is a bound
+  // split beside it, so the same command opens or closes depending on state.
+  {
+    id: "markdown-preview",
+    label: "Markdown: Open Preview to the Side",
+    keybinding: "Ctrl+Shift+V",
+    run: () => {
+      const st = useStore.getState();
+      const tab = st.tabs.find((t) => t.id === st.activeTabId);
+      if (tab && tab.kind === "code" && isMarkdownPath(tab.path)) {
+        st.toggleMdPreview(tab.path);
+      }
+    },
+  },
+  {
+    id: "markdown-close-preview",
+    label: "Markdown: Close Preview",
+    run: () => useStore.getState().closeMdPreview(),
   },
 
   // View
