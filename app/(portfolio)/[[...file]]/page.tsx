@@ -144,7 +144,8 @@ export default function PortfolioPage() {
   }, []);
 
   useEffect(() => {
-    useStore.persist.rehydrate();
+    // Persisted local state hydrates at store module scope (lib/store.ts);
+    // doing it here would run after child effects and lose the snapshot.
     useStore.getState().initTerminal();
     loadSections();
   }, []);
