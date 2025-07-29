@@ -39,6 +39,14 @@ const MarkdownPreview = dynamic(
   { ssr: false, loading: PreviewLoading },
 );
 
+// The integrated browser pane (iframe + picker) loads with the first browser
+// tab; one instance is mounted per browser tab and stays alive when hidden
+// (DOC/10 §4 — manual suspend is the way to free its renderer).
+const BrowserPreview = dynamic(
+  () => import("@/components/vscode/BrowserPreview"),
+  { ssr: false, loading: PreviewLoading },
+);
+
 // Sidebar titles per activity view (VS Code view pane names).
 const VIEW_TITLES: Record<string, string> = {
   explorer: "Explorer",
@@ -63,6 +71,8 @@ function openCodeTab(path: string) {
 
 export default function PortfolioPage() {
   const hasTabs = useStore((s) => s.tabs.length > 0);
+  const tabs = useStore((s) => s.tabs);
+  const activeTabId = useStore((s) => s.activeTabId);
   const sidebarWidth = useStore((s) => s.sidebarWidth);
   const sidebarPreview = useStore((s) => s.sidebarPreview);
   const setSidebarWidth = useStore((s) => s.setSidebarWidth);
@@ -88,6 +98,7 @@ export default function PortfolioPage() {
   const [editorWidth, setEditorWidth] = useState(0);
   const rowRef = useRef<HTMLDivElement>(null);
   const editorRef = useRef<HTMLDivElement>(null);
+  const browserTabs = tabs.filter((t) => t.kind === "browser");
 
   // Sash max: keep the editor >= 320px in the workspace row
   // (10px padding + 48px activity rail + 5px gutter + 320px editor = 383px).
@@ -205,9 +216,38 @@ export default function PortfolioPage() {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
+  // Ctrl+L — Focus URL Input for the active browser tab (VS Code Browser:
+  // Focus URL Input). Never hijack fields (the URL input itself, xterm, SCM,
+  // the palette); keydown inside the framed page cannot reach us (cross-origin).
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (!(e.ctrlKey && !e.shiftKey && !e.altKey)) return;
+      if (e.key.toLowerCase() !== "l") return;
+      if (document.querySelector('[role="dialog"]')) return;
+      const target = e.target as HTMLElement | null;
+      if (
+        target instanceof HTMLInputElement ||
+        target instanceof HTMLTextAreaElement
+      )
+        return;
+      const st = useStore.getState();
+      const tab = st.tabs.find((t) => t.id === st.activeTabId);
+      if (!tab || tab.kind !== "browser") return;
+      e.preventDefault();
+      st.focusBrowserUrl();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
   // Menu ids run through the shared command registry (TitleBar MENU_ITEMS
   // carry command ids); ids without a live command keep the demo console note.
   const handleAction = (action: string) => {
+    // TitleBar browser menu: `browser-tab:<id>` focuses an existing instance.
+    if (action.startsWith("browser-tab:")) {
+      useStore.getState().setActiveTab(action.slice("browser-tab:".length));
+      return;
+    }
     const cmd = COMMANDS.find((c) => c.id === action);
     if (cmd && !cmd.disabled) {
       cmd.run();
@@ -309,6 +349,19 @@ export default function PortfolioPage() {
                     Open a file from the Explorer
                   </div>
                 )}
+                {/* One pane per browser tab, kept alive across tab switches
+                    (display:none, not unmount) — VS Code keeps the page alive
+                    until Suspend. */}
+                {browserTabs.map((bt) => (
+                  <div
+                    key={bt.id}
+                    className={`min-h-0 min-w-0 flex-col ${
+                      bt.id === activeTabId ? "flex flex-1" : "hidden"
+                    }`}
+                  >
+                    <BrowserPreview tabId={bt.id} />
+                  </div>
+                ))}
               </div>
               {mdPreviewPath ? (
                 <>
