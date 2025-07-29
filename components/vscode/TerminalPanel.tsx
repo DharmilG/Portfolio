@@ -14,7 +14,7 @@ import type { Terminal as XTerm } from "@xterm/xterm";
 import type { FitAddon } from "@xterm/addon-fit";
 import Codicon from "./Codicon";
 import Tooltip from "./Tooltip";
-import { useStore, type TerminalSession } from "@/lib/store";
+import { normalizeBrowserUrl, useStore, type TerminalSession } from "@/lib/store";
 import {
   SGR,
   complete,
@@ -252,6 +252,15 @@ async function runCurl(term: XTerm, url: string): Promise<void> {
   }
 }
 
+// The browser instance a terminal effect should hit: the active browser tab,
+// else the first one (null = no browser tab open yet).
+function browserTargetId(): string | null {
+  const st = useStore.getState();
+  const active = st.tabs.find((t) => t.id === st.activeTabId);
+  if (active?.kind === "browser") return active.id;
+  return st.tabs.find((t) => t.kind === "browser")?.id ?? null;
+}
+
 async function applyEffects(effects: Effect[], term: XTerm): Promise<void> {
   const st = useStore.getState();
   for (const fx of effects) {
@@ -288,9 +297,27 @@ async function applyEffects(effects: Effect[], term: XTerm): Promise<void> {
       case "CLEAR":
         term.clear();
         break;
-      case "RELOAD_PREVIEW":
-        // Browser preview lands with PV-C-PREVIEW; nothing to reload yet.
+      case "PREVIEW": {
+        // `open --preview <url>` (DOC/10 §4): retarget the browser tab when
+        // one is open (the dev-preview workflow), else open a new instance.
+        const url = normalizeBrowserUrl(fx.url);
+        if (!url) {
+          term.write(
+            "\x1b[91mopen: not a URL — try 'open --preview <url>'\x1b[0m\r\n",
+          );
+          break;
+        }
+        const target = browserTargetId();
+        if (target) st.navigateBrowser(target, url);
+        else st.openBrowser(url);
         break;
+      }
+      case "RELOAD_PREVIEW": {
+        const target = browserTargetId();
+        if (target) st.reloadBrowser(target);
+        else term.write("\x1b[2m(no browser tab to reload)\x1b[0m\r\n");
+        break;
+      }
       case "CURL":
         await runCurl(term, fx.url);
         break;
