@@ -42,6 +42,15 @@ export function newTextFile(): void {
   st.openTab({ kind: "code", path, sha: null });
 }
 
+// The browser instance a command should act on: the active tab when it is a
+// browser, else the first browser tab (Focus URL / Reload semantics).
+function browserTarget(): string | null {
+  const st = useStore.getState();
+  const active = st.tabs.find((t) => t.id === st.activeTabId);
+  if (active?.kind === "browser") return active.id;
+  return st.tabs.find((t) => t.kind === "browser")?.id ?? null;
+}
+
 export const COMMANDS: Command[] = [
   // Meta (VS Code: workbench.action.quickOpen / workbench.action.showCommands).
   {
@@ -175,14 +184,38 @@ export const COMMANDS: Command[] = [
     run: () => window.location.reload(),
   },
 
-  // Land with their features (disabled + hint, like the menus) — run no-ops.
+  // Browser (integrated browser tabs — DOC/10 §4). The globe/TitleBar menu is
+  // open-or-list; these mirror VS Code's Browser: Open Integrated Browser /
+  // Focus URL Input (Ctrl+L) / Reload.
   {
     id: "open-preview",
-    label: "Open Browser Preview",
-    disabled: true,
-    hint: "Available when the browser preview lands",
-    run: () => undefined,
+    label: "Browser: Open Integrated Browser",
+    run: () => {
+      useStore.getState().openBrowser();
+    },
   },
+  {
+    id: "browser-focus-url",
+    label: "Browser: Focus URL Input",
+    keybinding: "Ctrl+L",
+    run: () => {
+      const id = browserTarget();
+      if (!id) return;
+      const st = useStore.getState();
+      if (st.activeTabId !== id) st.setActiveTab(id);
+      st.focusBrowserUrl();
+    },
+  },
+  {
+    id: "browser-reload",
+    label: "Browser: Reload",
+    run: () => {
+      const id = browserTarget();
+      if (id) useStore.getState().reloadBrowser(id);
+    },
+  },
+
+  // Land with their features (disabled + hint, like the menus) — run no-ops.
   {
     id: "toggle-theme",
     label: "Toggle Theme",
