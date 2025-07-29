@@ -2,8 +2,11 @@
 
 // TitleBar — menu row + command center + layout/window controls.
 // Menus are data (MENU_ITEMS); the component only emits action ids.
+// The globe is open-or-list: with no browser tabs it opens one, with tabs it
+// lists them + New Integrated Browser Tab (VS Code browser.openOrListAction).
 // See DOC/05 §3, skills vscode-tokens + dumb-depth.
 import { useEffect, useRef, useState } from "react";
+import { browserTabLabel, useStore } from "@/lib/store";
 import IconButton from "@/components/vscode/IconButton";
 import Menu, { type MenuItem } from "./Menu";
 
@@ -63,7 +66,7 @@ export const MENU_ITEMS: Menu[] = [
   {
     menu: "Run",
     items: [
-      { label: "Open Preview", id: "open-preview" },
+      { label: "Open Integrated Browser", id: "open-preview" },
       { label: "Start Debugging", disabled: true, hint: "Preview is the demo runner here" },
     ],
   },
@@ -95,6 +98,9 @@ export default function TitleBar({
 }: TitleBarProps) {
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const barRef = useRef<HTMLElement>(null);
+  const tabs = useStore((s) => s.tabs);
+  const activeTabId = useStore((s) => s.activeTabId);
+  const browserTabs = tabs.filter((t) => t.kind === "browser");
 
   useEffect(() => {
     if (!openMenu) return;
@@ -208,12 +214,47 @@ export default function TitleBar({
         label="Toggle Secondary Side Bar (Ctrl+Alt+B)"
         onClick={() => fire("toggle-secondary-sidebar")}
       />
-      <IconButton
-        icon="globe"
-        label="Open Browser Preview"
-        onClick={() => fire("open-preview")}
-        tooltip="right"
-      />
+      {browserTabs.length === 0 ? (
+        <IconButton
+          icon="globe"
+          label="Browser"
+          onClick={() => fire("open-preview")}
+          tooltip="right"
+        />
+      ) : (
+        <div className="relative">
+          <IconButton
+            icon="globe"
+            label="Browser"
+            tooltip="right"
+            onClick={() =>
+              setOpenMenu(openMenu === "__browser__" ? null : "__browser__")
+            }
+          />
+          {openMenu === "__browser__" ? (
+            <Menu
+              items={[
+                {
+                  id: "open-preview",
+                  label: "New Integrated Browser Tab",
+                  icon: "add",
+                },
+                { separator: true },
+                ...browserTabs.map((t) => ({
+                  id: `browser-tab:${t.id}`,
+                  label: browserTabLabel(t.path),
+                  icon: "globe",
+                  active: t.id === activeTabId,
+                })),
+              ]}
+              onAction={fire}
+              density="compact"
+              label="Browser"
+              className="absolute right-0 top-full z-20 min-w-56"
+            />
+          ) : null}
+        </div>
+      )}
       <div
         className="flex items-center text-vscode-dim"
         title="Window controls are decorative in a browser"
