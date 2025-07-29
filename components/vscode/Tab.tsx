@@ -12,6 +12,7 @@ import Codicon from "./Codicon";
 
 type TabProps = {
   name: string;
+  icon?: string; // explicit glyph — browser tabs pass the globe
   active?: boolean;
   dirty?: boolean;
   status?: "new" | "modified" | null;
@@ -21,6 +22,7 @@ type TabProps = {
 
 export default function Tab({
   name,
+  icon,
   active = false,
   dirty = false,
   status = null,
@@ -50,7 +52,7 @@ export default function Tab({
           : "text-vscode-muted hover:bg-vscode-tab-hover hover:text-vscode-fg"
       }`}
     >
-      <Codicon name={fileIcon(name)} />
+      <Codicon name={icon ?? fileIcon(name)} />
       <span className={`min-w-0 flex-1 truncate ${nameTone}`}>{name}</span>
       <span className="flex shrink-0 items-center gap-1">
         {status === "modified" ? (
