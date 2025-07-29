@@ -31,6 +31,7 @@ export type Effect =
   | { kind: "DISCARD"; path?: string }
   | { kind: "SET_THEME"; mode: "dark" | "light" }
   | { kind: "CLEAR" }
+  | { kind: "PREVIEW"; url: string }
   | { kind: "RELOAD_PREVIEW" }
   | { kind: "CURL"; url: string };
 
@@ -485,6 +486,14 @@ function rmCmd(ctx: TerminalCtx, args: string[]): ParseResult {
 }
 
 function openCmd(ctx: TerminalCtx, args: string[]): ParseResult {
+  // `open --preview <url>` retargets the integrated browser tab (DOC/10 §4);
+  // a plain `open <path>` opens a file tab. The URL is normalized by the
+  // effect layer (the parser stays store-free).
+  if (args[0] === "--preview" || args[0] === "-p") {
+    const raw = args.slice(1).join(" ");
+    if (!raw) return err("open: --preview requires a URL");
+    return ok("", [{ kind: "PREVIEW", url: raw }]);
+  }
   if (!args.length) return err("open: missing file operand");
   const target = resolvePath(ctx.cwd, args.join(" "));
   const work = workPath(target);
@@ -688,6 +697,10 @@ const HELP = [
   `  ${blue("branch".padEnd(22))}${dim("current branch")}`,
   `  ${blue("checkout -- <file>".padEnd(22))}${dim("discard local changes")}`,
   "",
+  paint("BROWSER — INTEGRATED", SGR.bold, SGR.brightBlue),
+  `  ${blue("open --preview <url>".padEnd(22))}${dim("load a URL in the browser tab")}`,
+  `  ${blue("reload".padEnd(22))}${dim("reload the browser tab")}`,
+  "",
   paint("FUN", SGR.bold, SGR.brightBlue),
   `  ${blue("curl <url>".padEnd(22))}${dim("fetch text through /api/proxy (20 KB cap)")}`,
   `  ${blue("theme dark|light".padEnd(22))}${dim("switch the workbench palette")}`,
@@ -768,6 +781,8 @@ export function parse(input: string, ctx: TerminalCtx): ParseResult {
       return rmCmd(ctx, args);
     case "open":
       return openCmd(ctx, args);
+    case "reload":
+      return ok("", [{ kind: "RELOAD_PREVIEW" }]);
     case "status":
       return statusCmd(ctx);
     case "diff":
