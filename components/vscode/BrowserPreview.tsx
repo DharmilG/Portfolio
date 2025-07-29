@@ -6,7 +6,7 @@
 // container doubles as the quick-input anchor — focusing it opens the picker
 // (Recents / History / Open Tabs groups, the group label collapsing into the
 // first row, right-aligned) and typing offers the primary action rows
-// ("{text} - Google Search" and/or the go-to entry, order per the URL-vs-query
+// ("{text} - Bing Search" and/or the go-to entry, order per the URL-vs-query
 // heuristic) plus history matches. VS Code saves page titles with history; a
 // clone cannot read cross-origin titles, so rows fall back to host + URL (the
 // same fallback the real Recents picker uses for untitled pages).
@@ -14,10 +14,15 @@
 // Comment on Elements) render disabled — no chat engine here — while the ⋯
 // menu carries the real actions (copy URL / open externally / reload / suspend
 // / clear history). Manual suspend unmounts the iframe to free the renderer;
-// the paused card mirrors browser-overlay-paused. Cross-origin walls (no
-// title, no favicon, XFO/CSP refusals) are inherent to a web clone — the
-// blocked card mirrors the real browser error card. Search results open in
-// this tab while it is still the welcome state, otherwise in a new browser tab.
+// the paused card mirrors browser-overlay-paused.
+//
+// Cross-origin walls (no title, no favicon, no page JS) are inherent to a web
+// clone. Framing refusals are not: before an iframe mounts, the pane asks
+// /api/embed-check for a verdict (session-cached per origin) and shows its own
+// blocked card instead of Chrome's error page. Mapped URLs (Google's igu=1
+// search, YouTube /embed/) skip the check — they are known embeddable — and
+// the card offers a read-only view through /api/embed for everything else.
+// Search rows use Bing: it sends no framing block, so results render in-frame.
 // See DOC/10 §4.
 import {
   useEffect,
@@ -26,6 +31,7 @@ import {
   useState,
   type KeyboardEvent as ReactKeyboardEvent,
 } from "react";
+import { resolveEmbedSrc } from "@/lib/embedTargets";
 import { browserTabLabel, normalizeBrowserUrl, useStore } from "@/lib/store";
 import Codicon from "./Codicon";
 import Menu, { type MenuItem } from "./Menu";
@@ -38,8 +44,11 @@ type Row =
   | { kind: "visit"; label: string; description: string; header?: string; url: string }
   | { kind: "tab"; label: string; header?: string; tabId: string };
 
+// Search rows use Bing: verified to render its SERP inside the pane (Google
+// and DuckDuckGo refuse framing; typed google.com URLs still map to Google's
+// embeddable igu=1 page).
 function searchUrl(text: string): string {
-  return `https://www.google.com/search?q=${encodeURIComponent(text)}`;
+  return `https://www.bing.com/search?q=${encodeURIComponent(text)}`;
 }
 
 // Plain Enter (picker closed) behaves like the picker's first action row.
@@ -47,9 +56,57 @@ function defaultRow(text: string): Row | null {
   const norm = normalizeBrowserUrl(text);
   if (norm) return { kind: "goto", label: text, url: norm };
   if (text)
-    return { kind: "search", label: `${text} - Google Search`, url: searchUrl(text) };
+    return { kind: "search", label: `${text} - Bing Search`, url: searchUrl(text) };
   return null;
 }
+
+// Framing verdicts from /api/embed-check, cached per origin for the session:
+// the headers rarely differ per path and the probe is a full round trip.
+type Verdict = { verdict: "allowed" | "blocked" | "unknown"; reason?: string };
+const VERDICT_TTL_MS = 10 * 60_000;
+const verdicts = new Map<string, Verdict & { at: number }>();
+
+function readVerdict(url: string): Verdict | null {
+  let key: string;
+  try {
+    key = new URL(url).origin;
+  } catch {
+    return null;
+  }
+  const hit = verdicts.get(key);
+  if (!hit) return null;
+  if (Date.now() - hit.at > VERDICT_TTL_MS) {
+    verdicts.delete(key);
+    return null;
+  }
+  return hit;
+}
+
+function writeVerdict(url: string, verdict: Verdict): void {
+  try {
+    verdicts.set(new URL(url).origin, { ...verdict, at: Date.now() });
+  } catch {
+    // Unparseable URLs are never cached.
+  }
+}
+
+function forgetVerdict(url: string): void {
+  try {
+    verdicts.delete(new URL(url).origin);
+  } catch {
+    // nothing to forget
+  }
+}
+
+// Load pipeline for the pane: a new URL starts "checking"; "ready" lets the
+// iframe mount; "loaded" stops the fallback timer; "blocked" pins the card.
+// Every entry carries the URL it belongs to, so a stale verdict never leaks
+// into a freshly typed address.
+type LoadState =
+  | { url: string; phase: "checking" }
+  | { url: string; phase: "ready" }
+  | { url: string; phase: "loaded" }
+  | { url: string; phase: "blocked"; reason: string | null };
 
 // Toolbar action button: 28px square, 4px apart (actions-toolbar). Disabled
 // keeps the glyph at 40% and the default cursor (chat actions, no engine).
@@ -102,9 +159,8 @@ export default function BrowserPreview({ tabId }: { tabId: string }) {
   const [open, setOpen] = useState(false);
   const [index, setIndex] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [status, setStatus] = useState<"idle" | "loading" | "loaded" | "blocked">(
-    "idle",
-  );
+  const [load, setLoad] = useState<LoadState | null>(null);
+  const [proxy, setProxy] = useState<{ url: string; src: string } | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const urlWrapRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -114,21 +170,85 @@ export default function BrowserPreview({ tabId }: { tabId: string }) {
     setValue(url);
   }, [url]);
 
-  // Best-effort load detection for the blocked card: a frame that still has
-  // not fired load after 8s is treated as refused/unreachable (XFO frames
-  // report load in Chrome, so this only catches hard failures).
+  // Iframe sources: known-embeddable mappings for the URL itself (address bar
+  // keeps what the user typed), otherwise the URL, or the read-only view.
+  const mappedSrc = useMemo(() => (url ? resolveEmbedSrc(url) : ""), [url]);
+  const isMapped = !!url && mappedSrc !== url;
+  const proxyActive = !!proxy && proxy.url === url;
+  const frameSrc = proxyActive && proxy ? proxy.src : mappedSrc;
+
+  // A stale proxy belongs to an old address.
+  useEffect(() => {
+    setProxy((current) => (current && current.url === url ? current : null));
+  }, [url]);
+
+  // Pre-flight: mapped URLs mount straight away; everything else gets a
+  // session-cached verdict from /api/embed-check before the iframe may mount.
+  // A failed probe degrades to "ready" (best effort, 8s fallback still runs).
   useEffect(() => {
     if (!url || state?.suspended) {
-      setStatus("idle");
+      setLoad(null);
       return;
     }
-    setStatus("loading");
-    const timer = window.setTimeout(
-      () => setStatus((s) => (s === "loading" ? "blocked" : s)),
-      8000,
-    );
+    if (isMapped) {
+      setLoad({ url, phase: "ready" });
+      return;
+    }
+    const cached = readVerdict(url);
+    if (cached) {
+      setLoad(
+        cached.verdict === "blocked"
+          ? { url, phase: "blocked", reason: cached.reason ?? null }
+          : { url, phase: "ready" },
+      );
+      return;
+    }
+
+    const controller = new AbortController();
+    let cancelled = false;
+    const timer = window.setTimeout(() => controller.abort(), 6000);
+    setLoad({ url, phase: "checking" });
+
+    fetch(`/api/embed-check?url=${encodeURIComponent(url)}`, {
+      signal: controller.signal,
+    })
+      .then((response) =>
+        response.ok ? response.json() : Promise.reject(new Error("probe")),
+      )
+      .then((verdict: Verdict) => {
+        if (cancelled) return;
+        writeVerdict(url, verdict);
+        setLoad(
+          verdict.verdict === "blocked"
+            ? { url, phase: "blocked", reason: verdict.reason ?? null }
+            : { url, phase: "ready" },
+        );
+      })
+      .catch(() => {
+        if (!cancelled) setLoad({ url, phase: "ready" });
+      })
+      .finally(() => window.clearTimeout(timer));
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+      controller.abort();
+    };
+  }, [url, isMapped, state?.suspended, state?.reloadKey]);
+
+  // Fallback for frames that never fire load (allowed/unknown verdicts).
+  const phase = url && !state?.suspended ? (load && load.url === url ? load.phase : "checking") : null;
+  useEffect(() => {
+    if (phase !== "ready") return;
+    const timer = window.setTimeout(() => {
+      setLoad((current) =>
+        current && current.url === url && current.phase === "ready"
+          ? { url, phase: "blocked", reason: null }
+          : current,
+      );
+    }, 8000);
     return () => window.clearTimeout(timer);
-  }, [url, state?.reloadKey, state?.suspended]);
+  }, [phase, url, state?.reloadKey]);
 
   // "Focus URL Input" (Ctrl+L / palette): focus + select + open the picker.
   useEffect(() => {
@@ -176,6 +296,18 @@ export default function BrowserPreview({ tabId }: { tabId: string }) {
     };
   }, [menuOpen]);
 
+  // Explicit reloads drop the cached verdict so the probe runs again.
+  const reload = () => {
+    forgetVerdict(url);
+    useStore.getState().reloadBrowser(tabId);
+  };
+
+  const openReadOnly = () => {
+    if (!url) return;
+    setProxy({ url, src: `/api/embed?url=${encodeURIComponent(url)}` });
+    setLoad({ url, phase: "ready" });
+  };
+
   const q = value.trim();
   const rows: Row[] = useMemo(() => {
     const out: Row[] = [];
@@ -183,7 +315,7 @@ export default function BrowserPreview({ tabId }: { tabId: string }) {
       const norm = normalizeBrowserUrl(q);
       const search: Row = {
         kind: "search",
-        label: `${q} - Google Search`,
+        label: `${q} - Bing Search`,
         url: searchUrl(q),
       };
       // URL-like input: navigation first, search fallback. Query: search only.
@@ -238,8 +370,8 @@ export default function BrowserPreview({ tabId }: { tabId: string }) {
       return;
     }
     if (row.kind === "search") {
-      // Search results open here while the tab is still empty, else in a new
-      // browser tab (SERPs refuse framing, so the blocked card is expected).
+      // Bing renders in-frame, so search results load like any other page.
+      // They open here while the tab is still empty, else in a new tab.
       if (st.browser[tabId]?.url) st.openBrowser(row.url);
       else st.navigateBrowser(tabId, row.url);
       return;
@@ -300,12 +432,15 @@ export default function BrowserPreview({ tabId }: { tabId: string }) {
     if (id === "copy-url" && url) void navigator.clipboard.writeText(url);
     else if (id === "external" && url)
       window.open(url, "_blank", "noopener");
-    else if (id === "reload") st.reloadBrowser(tabId);
+    else if (id === "reload") reload();
     else if (id === "suspend") {
       if (st.browser[tabId]?.suspended) st.reloadBrowser(tabId);
       else st.suspendBrowser(tabId);
     } else if (id === "clear-history") st.clearBrowserHistory();
   };
+
+  const showFrame =
+    !!url && !state?.suspended && (phase === "ready" || phase === "loaded");
 
   return (
     <div className="flex min-h-0 min-w-0 flex-1 flex-col bg-vscode-editor">
@@ -328,7 +463,7 @@ export default function BrowserPreview({ tabId }: { tabId: string }) {
             icon="refresh"
             label="Reload"
             disabled={!url}
-            onClick={() => useStore.getState().reloadBrowser(tabId)}
+            onClick={reload}
           />
         </div>
 
@@ -435,84 +570,126 @@ export default function BrowserPreview({ tabId }: { tabId: string }) {
 
       {/* Content — inset card; the iframe holds the page (or a state card) */}
       <div className="relative min-h-0 flex-1 px-2 pb-2">
-        <div className="relative h-full w-full overflow-hidden rounded-[4px] bg-vscode-editor">
-          {url && !state?.suspended ? (
-            <>
+        <div className="flex h-full w-full flex-col overflow-hidden rounded-[4px] bg-vscode-editor">
+          {proxyActive ? (
+            <div className="flex h-6 shrink-0 items-center gap-1.5 border-b border-vscode-widget-border bg-vscode-editor px-2 text-[11px] text-vscode-muted">
+              <Codicon name="eye" size={12} />
+              <span className="truncate">
+                Read-only view — scripts disabled, links stay in this view
+              </span>
+              <button
+                type="button"
+                className="ml-auto h-[18px] shrink-0 rounded-control px-1.5 text-[11px] text-vscode-fg hover:bg-vscode-toolbar-hover"
+                onClick={() => {
+                  setProxy(null);
+                  reload();
+                }}
+              >
+                Try Live
+              </button>
+            </div>
+          ) : null}
+          <div className="relative min-h-0 flex-1">
+            {showFrame ? (
               <iframe
-                key={state.reloadKey}
-                src={url}
+                key={`${state?.reloadKey ?? 0}:${proxyActive ? "proxy" : "live"}`}
+                src={frameSrc}
                 title="Browser"
-                sandbox="allow-scripts allow-forms allow-same-origin allow-downloads allow-popups"
+                sandbox={
+                  proxyActive
+                    ? ""
+                    : "allow-scripts allow-forms allow-same-origin allow-downloads allow-popups"
+                }
                 className="h-full w-full border-0 bg-white"
-                onLoad={() => setStatus("loaded")}
-                onError={() => setStatus("blocked")}
+                onLoad={() => setLoad({ url, phase: "loaded" })}
+                onError={() => setLoad({ url, phase: "blocked", reason: null })}
               />
-              {status === "blocked" ? (
-                <div className="absolute inset-0 flex items-start justify-center overflow-y-auto bg-vscode-editor px-10 pt-20">
-                  <div className="w-full max-w-[520px]">
-                    <h3 className="text-[18px] font-semibold text-vscode-error">
-                      Failed to Load Page
-                    </h3>
-                    <p className="mt-2 text-[13px] text-vscode-muted">
-                      The page did not load. Sites that send X-Frame-Options or
-                      a frame-ancestors CSP refuse to be embedded — open them in
-                      a browser tab instead.
-                    </p>
-                    <p className="mt-4 break-all text-[13px]">
-                      <span className="text-vscode-muted">URL: </span>
-                      <span className="text-vscode-fg">{url}</span>
-                    </p>
-                    <div className="mt-5 flex items-center gap-2">
-                      <button
-                        type="button"
-                        className={BTN_PRIMARY}
-                        onClick={() => useStore.getState().reloadBrowser(tabId)}
-                      >
-                        Try Again
-                      </button>
-                      <button
-                        type="button"
-                        className={BTN_SECONDARY}
-                        onClick={() => window.open(url, "_blank", "noopener")}
-                      >
-                        Open in External Browser
-                      </button>
-                    </div>
+            ) : phase === "checking" ? (
+              <div className="flex h-full w-full items-center justify-center">
+                <div className="flex items-center gap-2 text-[13px] text-vscode-muted">
+                  <Codicon name="loading" className="animate-spin" />
+                  Checking whether this page can be embedded…
+                </div>
+              </div>
+            ) : phase === "blocked" ? (
+              <div className="flex h-full w-full items-start justify-center overflow-y-auto px-10 pt-20">
+                <div className="w-full max-w-[520px]">
+                  <h3 className="text-[18px] font-semibold text-vscode-error">
+                    Failed to Load Page
+                  </h3>
+                  <p className="mt-2 text-[13px] text-vscode-muted">
+                    {load?.phase === "blocked" && load.reason ? (
+                      <>
+                        The site refuses to be embedded (
+                        <span className="text-vscode-fg">{load.reason}</span>).
+                        A real browser window is not an iframe; open the page
+                        externally, or read a script-free copy here.
+                      </>
+                    ) : (
+                      "The page did not respond in time. Sites that send X-Frame-Options or a frame-ancestors CSP refuse to be embedded."
+                    )}
+                  </p>
+                  <p className="mt-4 break-all text-[13px]">
+                    <span className="text-vscode-muted">URL: </span>
+                    <span className="text-vscode-fg">{url}</span>
+                  </p>
+                  <div className="mt-5 flex flex-wrap items-center gap-2">
+                    <button
+                      type="button"
+                      className={BTN_PRIMARY}
+                      onClick={openReadOnly}
+                    >
+                      Read-Only View
+                    </button>
+                    <button
+                      type="button"
+                      className={BTN_SECONDARY}
+                      onClick={reload}
+                    >
+                      Try Again
+                    </button>
+                    <button
+                      type="button"
+                      className={BTN_SECONDARY}
+                      onClick={() => window.open(url, "_blank", "noopener")}
+                    >
+                      Open in External Browser
+                    </button>
                   </div>
                 </div>
-              ) : null}
-            </>
-          ) : state?.suspended ? (
-            <div className="flex h-full w-full items-center justify-center p-8">
-              <div className="max-w-[80%] rounded-[4px] border border-vscode-widget-border bg-vscode-editor px-10 py-5 text-center shadow-vscode">
-                <h3 className="text-[18px] font-semibold text-vscode-fg">
-                  Tab Suspended
-                </h3>
-                <p className="mt-2 text-sm text-vscode-muted">
-                  The page was unloaded to free memory. Reload to resume.
-                </p>
-                <button
-                  type="button"
-                  className={`${BTN_PRIMARY} mt-4`}
-                  onClick={() => useStore.getState().reloadBrowser(tabId)}
-                >
-                  Reload
-                </button>
               </div>
-            </div>
-          ) : (
-            <div className="flex h-full w-full items-center justify-center">
-              <div className="flex flex-col items-center">
-                <Codicon name="globe" size={40} className="mb-6 text-vscode-muted" />
-                <h2 className="text-[13px] font-semibold text-vscode-fg">
-                  Browser
-                </h2>
-                <p className="mt-2 max-w-[280px] px-5 text-center text-xs text-vscode-muted">
-                  Enter a URL above to get started.
-                </p>
+            ) : state?.suspended ? (
+              <div className="flex h-full w-full items-center justify-center p-8">
+                <div className="max-w-[80%] rounded-[4px] border border-vscode-widget-border bg-vscode-editor px-10 py-5 text-center shadow-vscode">
+                  <h3 className="text-[18px] font-semibold text-vscode-fg">
+                    Tab Suspended
+                  </h3>
+                  <p className="mt-2 text-sm text-vscode-muted">
+                    The page was unloaded to free memory. Reload to resume.
+                  </p>
+                  <button
+                    type="button"
+                    className={`${BTN_PRIMARY} mt-4`}
+                    onClick={() => useStore.getState().reloadBrowser(tabId)}
+                  >
+                    Reload
+                  </button>
+                </div>
               </div>
-            </div>
-          )}
+            ) : (
+              <div className="flex h-full w-full items-center justify-center">
+                <div className="flex flex-col items-center">
+                  <Codicon name="globe" size={40} className="mb-6 text-vscode-muted" />
+                  <h2 className="text-[13px] font-semibold text-vscode-fg">
+                    Browser
+                  </h2>
+                  <p className="mt-2 max-w-[280px] px-5 text-center text-xs text-vscode-muted">
+                    Enter a URL above to get started.
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
