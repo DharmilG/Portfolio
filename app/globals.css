@@ -159,6 +159,17 @@
   }
 }
 
+/* The workbench owns the viewport: only panes scroll (DOC/05). Without this,
+   the shell's min-content width turned narrow windows into document-level
+   h-scroll (which in turn stole 15px of height and produced a stray v-scroll),
+   and mobile browsers shrink-to-fit the enlarged layout. */
+html,
+body {
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
 /* === Bottom Panel / xterm (DOC/10 §1) ===
    Source-true VS Code terminal.css: 20px left gutter
    (--vscode-spacing-size200), the scrollable element offsets by the same
