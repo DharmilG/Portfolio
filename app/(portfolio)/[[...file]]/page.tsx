@@ -65,8 +65,17 @@ function loadSections() {
     });
 }
 
+// <768px the sidebar is an overlay drawer; opening a file from it dismisses
+// the drawer so the editor (full width underneath) is visible.
+function closeSidebarOnNarrow() {
+  if (!window.matchMedia("(max-width: 767px)").matches) return;
+  const st = useStore.getState();
+  if (st.showSidebar) st.toggleSidebar();
+}
+
 function openCodeTab(path: string) {
   useStore.getState().openTab({ kind: "code", path, sha: null });
+  closeSidebarOnNarrow();
 }
 
 export default function PortfolioPage() {
@@ -159,6 +168,14 @@ export default function PortfolioPage() {
     // doing it here would run after child effects and lose the snapshot.
     useStore.getState().initTerminal();
     loadSections();
+  }, []);
+
+  // Phones start with the sidebar collapsed (Ctrl+B / the rail reveal it as
+  // an overlay — the in-flow 280px pane would leave no editor at that width).
+  useEffect(() => {
+    if (!window.matchMedia("(max-width: 767px)").matches) return;
+    const st = useStore.getState();
+    if (st.showSidebar) st.toggleSidebar();
   }, []);
 
   // Ctrl+B — toggle primary sidebar (VS Code default); a dialog owns the
@@ -296,17 +313,17 @@ export default function PortfolioPage() {
   };
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
+    <div className="flex min-h-0 min-w-0 flex-1 flex-col">
       <TitleBar
         onMenuAction={handleAction}
         onQuickOpen={() => openPalette("files")}
       />
       <div
         ref={rowRef}
-        className="flex min-h-0 flex-1 gap-[5px] bg-vscode-titlebar p-[5px]"
+        className="relative flex min-h-0 min-w-0 flex-1 gap-[5px] bg-vscode-titlebar p-[5px]"
       >
         {showSidebar ? (
-          <div className="relative flex shrink-0">
+          <div className="relative flex shrink-0 max-md:absolute max-md:bottom-[5px] max-md:left-[5px] max-md:top-[5px] max-md:z-10 max-md:shadow-vscode">
             <PrimarySideBar
               active={view}
               onSelect={selectView}
@@ -323,7 +340,7 @@ export default function PortfolioPage() {
               )}
             </PrimarySideBar>
             <Sash
-              className="-right-[5px]"
+              className="-right-[5px] max-md:hidden"
               label="Resize primary sidebar"
               value={sidebarPreview ?? sidebarWidth}
               min={170}
