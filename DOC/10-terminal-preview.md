@@ -1,7 +1,7 @@
 # 10 — Terminal + Preview + Markdown (Detailed)
 
-> As-built for the terminal (PV-C-TERMINAL) and markdown preview
-> (PV-C-MDPREVIEW); browser preview is planned.
+> As-built for the terminal (PV-C-TERMINAL), markdown preview (PV-C-MDPREVIEW),
+> and the integrated browser (PV-C-BROWSERPREVIEW).
 > Dummy emulator, client-only. Same `localEdits/localCommits` store as `05`.
 > No pty (Vercel serverless can't hold pty). Depends on `04 §8`, `05 §6-7`, `09 §5, §8`.
 
@@ -93,8 +93,8 @@ Files:
 - `echo <txt> > <file>` / `>>` — writes `tmp/` or an existing repo file
   (dirty edit); other paths are a read-only snapshot error. `touch` mirrors
   that rule; `mkdir`/`rm` are tmp-only.
-- `open <path>` — `OPEN_TAB`; FileViewer picks the renderer (preview split
-  lands with §4-5).
+- `open <path>` — `OPEN_TAB`; FileViewer picks the renderer (Markdown preview
+  per §5). `open --preview <url>` targets the integrated browser (§4).
 
 Local git (same store as Source Control §7; `git <verb>` accepted for git
 verbs only):
@@ -124,13 +124,80 @@ Misc:
   reason (`Private or local addresses are blocked`, …) instead of a generic
   failure; `x-proxy-truncated` drives the 20 KB note (ANSI stripped).
 
-## 4. Browser preview (planned)
+## 4. Integrated browser (PV-C-BROWSERPREVIEW, as built)
 
-- Trigger: tab icon `split-right` when `projects.preview_url != null`, or Run icon, or terminal `open --preview <repo>`, or palette `Open Preview`.
-- Layout: second editor group split right, url bar (readonly input + reload + `Open in new tab`), iframe `flex-1 bg-white` (flush, square).
-- Iframe: `sandbox="allow-scripts allow-same-origin allow-forms allow-popups"`, `allow="clipboard-read"`, full scroll/click navigation works iff target allows framing.
-- Embed fix (your own Vercel apps): remove `X-Frame-Options: DENY`, set `Content-Security-Policy: frame-ancestors https://<portfolio>.vercel.app`. If `preview_embeddable=false` or `onError/load timeout 8s` -> fallback card `Preview blocked by site — [Open in new tab]`.
-- State: `previewUrl, history[], reloadKey` in Zustand `previewSlice`, `RELOAD_PREVIEW` from terminal.
+- **Tabs**: a page is a normal editor tab (`browser:<n>`, globe glyph, label =
+  host). The title-bar globe is open-or-list: with no browser tabs it opens
+  one; with tabs it lists `New Integrated Browser Tab` + one row per open tab
+  (active marked). Each instance owns its URL, back/forward stack, reload key
+  and suspended flag (session-only; browser tabs do not persist). Switching
+  editor tabs only hides the pane (`hidden`, not unmounted), so the page stays
+  alive until Suspend; closing the tab drops the instance. The `...` actions
+  menu: Copy URL / Open in External Browser / Reload / Suspend Tab (unloads
+  the frame, Resume remounts) / Clear Browser History. Recents/history persist
+  in localStorage, cap 200.
+- **Navbar**: 6/8/3 insets, 8px gaps. Back/forward/reload are 28px, 40% dimmed
+  when unavailable. URL container: `#313131`, 1px `#3C3C3C`, 6px radius, focus
+  `#0078D4`, placeholder `Search or enter URL`. Right: the two disabled chat
+  actions (`codicon-comment` "Comment on Elements", `codicon-inspect` "Add
+  Element to Chat") + the `...` menu. The URL picker opens under the input:
+  typing yields the go-to row and/or `{q} - Bing Search` (URL-like input puts
+  go-to first) plus up to 6 History matches; an empty field shows the top-3
+  `Recents` + other tabs under `Open Tabs` (label right-aligned on the first
+  row). Rows are 22px (focus `#04395E`/white, hover `#2A2D2E`). Enter/click
+  navigates; search rows load in the current tab while it is still empty, else
+  in a new tab. `Ctrl+L` focuses/selects the URL and reopens the picker (not
+  while typing in another field/xterm); the first Esc closes the picker, a
+  second blurs. URL normalization: explicit schemes kept, localhost/loopback/
+  IPs -> `http://`, other bare hosts -> `https://`, whitespace -> search.
+- **Framing pre-flight** (`/api/embed-check?url=`): Chrome's refusal is not
+  observable from iframe JS, so the pane probes headers before mounting.
+  4s timeout, up to 3 validated redirects, body cancelled after the headers;
+  `X-Frame-Options` DENY / SAMEORIGIN / ALLOW-FROM, or a `frame-ancestors`
+  list that does not admit the app origin, returns `blocked` + the reason;
+  loopback/private targets are never probed (`unknown`, mounted directly);
+  everything else is `allowed`. Verdicts are cached per origin for 10 min.
+  `blocked` never mounts an iframe: the pane shows its own **Failed to Load
+  Page** card (reason + URL + Read-Only View / Try Again / Open in External
+  Browser) instead of Chrome's error page. A failed probe degrades to best
+  effort, and an 8s no-load fallback shows the timeout variant of the card.
+  Navbar/menu Reload and Try Again forget the verdict and re-probe.
+- **Embeddable mappings** (`lib/embedTargets.ts`): the iframe `src` can differ
+  from what the address bar shows. `google.<tld>` home/`/webhp` ->
+  `https://www.google.com/search?igu=1`; Google `/search` keeps q/tbm/udm/...
+  and adds `igu=1`; YouTube watch/shorts/live/youtu.be ->
+  `youtube.com/embed/<id>` (`t`/`start` preserved). Mapped URLs skip the probe
+  (known embeddable). These entry points are best-effort and can change
+  without notice: Google's igu landing can show a dismissible Chrome promo and
+  search can hit an anti-bot check; a dead mapping falls back to the target's
+  own behavior (usually the blocked card).
+- **Search rows use Bing** (`{q} - Bing Search`): Bing sends no framing block,
+  so the SERP renders in-frame; Google and DuckDuckGo refuse.
+- **Read-only view** (`/api/embed?url=`, fallback for refused pages): fetches
+  HTML only server-side (other content types -> a 415 error page), 3MB / 8s,
+  with the shared SSRF guards. It strips scripts, inline handlers, nested
+  frames/objects/embeds, meta refresh + CSP and any `<base>`, injects a
+  `<base>` at the final URL, and rewrites `<a href>` through the route so
+  links keep browsing the read-only surface. The response carries
+  `CSP: sandbox; default-src 'none'` (images/media/styles/fonts only); the
+  pane mounts it with `sandbox=""` and the banner `Read-only view - scripts
+  disabled, links stay in this view` + **Try Live** (forgets the verdict and
+  reloads the live path). JS apps render as static markup by design — a
+  best-effort fallback, not a general proxy.
+- **Sandbox**: live pages run `allow-scripts allow-forms allow-same-origin
+  allow-downloads allow-popups`; read-only runs `sandbox=""` on top of the
+  response CSP above.
+- **Honest limits**: a link clicked inside a live framed page (a Bing result ->
+  GitHub, say) navigates the framed site itself; cross-origin navigation can't
+  be intercepted, so that target's own refusal is what you see. Our own pages
+  can be embedded only if their headers allow it (drop `X-Frame-Options`, set
+  a matching `frame-ancestors`). Read-only links stay inside the read-only
+  surface, and scripts stay off there.
+- **Terminal / palette**: `open --preview <url>` retargets the active browser
+  tab (or the first; creates one when none), `reload` remounts it (dim note
+  with no browser tab). Palette: `Browser: Open Integrated Browser`,
+  `Browser: Focus URL Input` (Ctrl+L), `Browser: Reload`; Run > Open
+  Integrated Browser and the globe use the same command.
 
 ## 5. Markdown preview (PV-C-MDPREVIEW, as built)
 
@@ -173,5 +240,9 @@ Misc:
 - No `eval`; terminal output caps at 20KB, `cat` at 100 lines, `diff` at 40 rows, `curl` at 20KB / 8s.
 - `commit` messages are shown as plain text in xterm (no HTML injection); ANSI is only emitted by the parser, remote curl text is stripped of escape sequences.
 - The proxy route owns URL validation and SSRF guards (GET-only public http(s), DNS + redirect checks, 8s/20 KB); the client never opens sockets directly.
+- Browser fallbacks reuse `lib/net.ts`: `/api/embed-check` reads headers only
+  (4s, 3 validated redirects, private hosts never probed); `/api/embed`
+  renders HTML only (3MB / 8s), strips active content, and serves it with
+  `CSP: sandbox` into a `sandbox=""` iframe.
 - Proxy rate limiting (30/min/IP in DOC/09 5) stays backend-gated with Upstash; the SSRF guards and caps above are live today.
 - Persist `tmpFs/localEdits/localCommits` to localStorage (`vscode-local-v1`), cap 2MB total, `Reset local edits` in gear menu clears all.
