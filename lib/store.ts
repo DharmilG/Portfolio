@@ -59,11 +59,14 @@ export type TreeEntry = {
   size?: number;
 };
 
+export type TerminalPane = "left" | "right";
+
 export type TerminalSession = {
   id: string;
   hist: string[];
   cwd: string;
   shell: TerminalShell;
+  name?: string; // user rename; the shell name is the fallback label
 };
 
 // Terminal history survives reloads on its own key (DOC/10 §1); the panel and
@@ -215,9 +218,20 @@ type State = {
 
   sessions: TerminalSession[];
   activeSessionId: string | null;
+  // Terminal groups capped at two panes (VS Code split terminal, v1): the
+  // left pane always follows activeSessionId, the right pane follows
+  // splitSessionId. Tabs are the shared pool; the focused pane owns tab picks.
+  splitSessionId: string | null;
+  focusedPane: TerminalPane;
+  splitRatio: number; // left pane fraction while split (0.2–0.8)
   initTerminal: () => void;
   setActiveSession: (id: string) => void;
+  setFocusedPane: (pane: TerminalPane) => void;
   spawnSession: (shell?: TerminalShell) => void;
+  splitTerminal: (shell?: TerminalShell) => void;
+  unsplitTerminal: () => void;
+  renameSession: (id: string, name: string | null) => void;
+  setSplitRatio: (ratio: number) => void;
   killSession: (id: string) => void;
   pushHist: (id: string, line: string) => void;
   setCwd: (id: string, cwd: string) => void;
@@ -459,6 +473,9 @@ export const useStore = create<State>()(
 
       sessions: [],
       activeSessionId: null,
+      splitSessionId: null,
+      focusedPane: "left",
+      splitRatio: 0.5,
       // Mount seed: pwsh first, bash active (DOC/10 §1), history replayed from
       // the flat vscode-term-hist array. StrictMode-safe: only seeds once.
       initTerminal: () =>
@@ -477,32 +494,145 @@ export const useStore = create<State>()(
             cwd: "~",
             shell: "bash",
           };
-          return { sessions: [pwsh, bash], activeSessionId: bash.id };
+          return {
+            sessions: [pwsh, bash],
+            activeSessionId: bash.id,
+            splitSessionId: null,
+            focusedPane: "left",
+          };
         }),
-      setActiveSession: (activeSessionId) => set({ activeSessionId }),
+      // Tabs are shared by both panes. Clicking a tab that is already shown
+      // focuses its pane; any other tab replaces the focused pane's session
+      // (the previous one stays alive in the tab strip).
+      setActiveSession: (id) =>
+        set((s) => {
+          if (!s.sessions.some((x) => x.id === id)) return {};
+          if (id === s.activeSessionId) return { focusedPane: "left" };
+          if (id === s.splitSessionId) return { focusedPane: "right" };
+          if (!s.splitSessionId)
+            return { activeSessionId: id, focusedPane: "left" };
+          if (s.focusedPane === "right") return { splitSessionId: id };
+          return { activeSessionId: id };
+        }),
+      setFocusedPane: (focusedPane) =>
+        set((s) =>
+          focusedPane === "right" && !s.splitSessionId ? {} : { focusedPane },
+        ),
       spawnSession: (shell = "bash") =>
         set((s) => {
           const id = `term-${Date.now()}-${s.sessions.length}`;
+          const session: TerminalSession = {
+            id,
+            hist: readTermHistory(),
+            cwd: "~",
+            shell,
+          };
+          if (!s.sessions.length) {
+            return {
+              sessions: [session],
+              activeSessionId: id,
+              splitSessionId: null,
+              focusedPane: "left" as const,
+              panelOpen: true,
+            };
+          }
+          const target: TerminalPane = s.splitSessionId
+            ? s.focusedPane
+            : "left";
           return {
-            sessions: [
-              ...s.sessions,
-              { id, hist: readTermHistory(), cwd: "~", shell },
-            ],
-            activeSessionId: id,
+            sessions: [...s.sessions, session],
+            ...(target === "right"
+              ? { splitSessionId: id }
+              : { activeSessionId: id }),
+            focusedPane: target,
             panelOpen: true,
           };
         }),
+      splitTerminal: (shell = "bash") =>
+        set((s) => {
+          const id = `term-${Date.now()}-${s.sessions.length}`;
+          const session: TerminalSession = {
+            id,
+            hist: readTermHistory(),
+            cwd: "~",
+            shell,
+          };
+          // No sessions: seed one instead of opening an empty pair.
+          if (!s.sessions.length) {
+            return {
+              sessions: [session],
+              activeSessionId: id,
+              splitSessionId: null,
+              focusedPane: "left" as const,
+              panelOpen: true,
+            };
+          }
+          // Two panes max: a second split behaves like New Terminal in the
+          // focused pane (the split button disables in the panel chrome).
+          if (s.splitSessionId) {
+            const target: TerminalPane = s.focusedPane;
+            return {
+              sessions: [...s.sessions, session],
+              ...(target === "right"
+                ? { splitSessionId: id }
+                : { activeSessionId: id }),
+              focusedPane: target,
+              panelOpen: true,
+            };
+          }
+          return {
+            sessions: [...s.sessions, session],
+            activeSessionId: s.activeSessionId ?? s.sessions[0].id,
+            splitSessionId: id,
+            focusedPane: "right" as const,
+            panelOpen: true,
+          };
+        }),
+      unsplitTerminal: () =>
+        set({ splitSessionId: null, focusedPane: "left" }),
+      renameSession: (id, name) =>
+        set((s) => ({
+          sessions: s.sessions.map((x) =>
+            x.id === id ? { ...x, name: name?.trim() || undefined } : x,
+          ),
+        })),
+      setSplitRatio: (ratio) =>
+        set({ splitRatio: Math.min(0.8, Math.max(0.2, ratio)) }),
       killSession: (id) =>
         set((s) => {
           const sessions = s.sessions.filter((x) => x.id !== id);
+          if (!sessions.length) {
+            // Killing the last shell closes the panel (DOC/10 §1).
+            return {
+              sessions,
+              activeSessionId: null,
+              splitSessionId: null,
+              focusedPane: "left" as const,
+              panelOpen: false,
+            };
+          }
+          let activeSessionId = s.activeSessionId;
+          let splitSessionId = s.splitSessionId;
+          let focusedPane = s.focusedPane;
+          if (!sessions.some((x) => x.id === activeSessionId)) {
+            const next = [...sessions]
+              .reverse()
+              .find((x) => x.id !== splitSessionId);
+            activeSessionId = next?.id ?? sessions[sessions.length - 1].id;
+            if (activeSessionId === splitSessionId) splitSessionId = null;
+          }
+          if (splitSessionId === id) {
+            splitSessionId =
+              [...sessions]
+                .reverse()
+                .find((x) => x.id !== activeSessionId)?.id ?? null;
+            if (!splitSessionId) focusedPane = "left";
+          }
           return {
             sessions,
-            activeSessionId:
-              s.activeSessionId === id
-                ? (sessions[sessions.length - 1]?.id ?? null)
-                : s.activeSessionId,
-            // Killing the last shell closes the panel (DOC/10 §1).
-            ...(sessions.length === 0 ? { panelOpen: false } : {}),
+            activeSessionId,
+            splitSessionId,
+            focusedPane,
           };
         }),
       pushHist: (id, line) => {
@@ -534,9 +664,11 @@ export const useStore = create<State>()(
           return {
             panelOpen: true,
             sessions: [
-              { id, hist: readTermHistory(), cwd: "~", shell: "bash" },
+              { id, hist: readTermHistory(), cwd: "~", shell: "bash" as const },
             ],
             activeSessionId: id,
+            splitSessionId: null,
+            focusedPane: "left" as const,
           };
         }),
       closePanel: () => set({ panelOpen: false }),
