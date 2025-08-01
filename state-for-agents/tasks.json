@@ -4,7 +4,7 @@
   "pushed_count": 0,
   "session": {
     "branch": "main",
-    "next_up": "Page polish next: PV-UI-TOAST (Saved locally / Committed locally / copy + error toasts) + an ActivityBar/Explorer eye-pass; then the data/backend wave (Studio seed + PV-API-PROJECTS -> project rows, PV-API-TREE/BLOB -> README content, PV-API-COMMITS -> SCM real history, cron/revalidate last). Browser follow-ups stay deferred (per-row remove-from-history, search-engine gear, Quick Open Browser Tab + Ctrl+Shift+A chord, DevTools button, favorites).",
+    "next_up": "Terminal UX next: split panes (max 2), profile menus, overflow/context actions, rename, and shortcuts + docs. Wave R repo content is queued as PV-REPO-CONTENT (R1 server -> R2 client) and starts after terminal UX. Then re-scope PV-UI-TOAST to real error/extension/update producers. Browser follow-ups stay deferred (per-row remove-from-history, search-engine gear, Quick Open Browser Tab + Ctrl+Shift+A chord, DevTools button, favorites).",
     "pending_verifications": [
       "responsive wave (a0d8646..4371c15, 6 commits; CDP matrix): at 1500px nothing moved (command center still 600px, menu row/window controls/status bar unchanged); resizing down never produces document or pane scrollbars — the command center shrinks first (585px at 1280, 329px at 1024, 161px at 768) and the shell/header/footer/row all stay inside the viewport at 1500/1280/1024/768/640/390; window controls hide <1024, Customize Layout + Secondary Side Bar hide <768, Spaces/UTF-8/LF hide <768, Ln/Col + sync + language label hide <640, menu row + command center hide <640 (logo + back/forward + sidebar/panel/globe icons remain), status bar keeps branch/problems/bell on phones; <768 the sidebar starts collapsed on load, Ctrl+B opens it as an absolutely-positioned drawer (shadow, sash hidden, editor full width underneath), opening a file from the drawer closes it — CONFIRM this approach; browser tab at 390/768: tab strip + navbar fit (chat actions hidden <640), the iframe card scroll == client (no pane h/v scrollbars; the framed page's own scrollbar is expected), no gap below the status bar; the two chat glyphs + welcome subtitle wording remain open confirmations",
       "terminal panel (PV-C-TERMINAL): closed by default -> Ctrl+J / Ctrl+` opens a 280px bottom card with a 5px gutter (editor shrinks, titlebar/tabs/statusbar pixel-unchanged); drag the gutter live (min 120px, 200px editor floor), release persists for the session; Maximize -> 60vh capped by the floor, Restore returns to the last height; close -> editor restores and reopen keeps xterm scrollback; chrome: 35px title (11px uppercase TERMINAL, 1px #0078D4 underline, square 28px maximize/close), 22px tab strip (1px separators, 1px #0078D4 active left border, 22px +/clear/trash), #181818 surface, 8px radius, toolbar hover #5a5d5e50",
@@ -440,10 +440,10 @@
     "tokens": "app/globals.css @theme"
   },
   "summary": {
-    "total": 54,
+    "total": 55,
     "done": 28,
     "in_progress": 10,
-    "backlog": 16
+    "backlog": 17
   },
   "tasks": [
     {
@@ -750,6 +750,15 @@
       "id": "PV-API-BLOB",
       "status": "backlog",
       "title": "API blob"
+    },
+    {
+      "description": "Wave R (queued after terminal UX): R1 — seed.sql + cache/allowlist/github/repoLocal libs + /api/projects|repo/tree|repo/blob (local provider in dev, GitHub read-only elsewhere); R2 — repo cache loaders, lib/vfs, shared useFileContent, Explorer folder nesting + auto-open README, FileViewer/MarkdownPreview wiring, langs. Covers the PV-API-PROJECTS/TREE/BLOB backlog subtasks when it starts.",
+      "file": "lib/vfs.ts",
+      "id": "PV-REPO-CONTENT",
+      "status": "backlog",
+      "owner": "agent",
+      "title": "Repo content (Wave R) — pending",
+      "log": "Queued 2026-10-20 at user request; starts only after the terminal UX wave. R1/R2 plans are ready (local provider + GitHub, 512KB blob cap, tree cap 5000, allowlist first, README auto-open)."
     },
     {
       "description": "Paginated real history (app/api/commits/route.ts, per DOC/09 §4)",
