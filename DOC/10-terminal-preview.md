@@ -1,7 +1,8 @@
 # 10 — Terminal + Preview + Markdown (Detailed)
 
-> As-built for the terminal (PV-C-TERMINAL), markdown preview (PV-C-MDPREVIEW),
-> and the integrated browser (PV-C-BROWSERPREVIEW).
+> As-built for the terminal (PV-C-TERMINAL + the split/profile follow-up),
+> markdown preview (PV-C-MDPREVIEW), and the integrated browser
+> (PV-C-BROWSERPREVIEW).
 > Dummy emulator, client-only. Same `localEdits/localCommits` store as `05`.
 > No pty (Vercel serverless can't hold pty). Depends on `04 §8`, `05 §6-7`, `09 §5, §8`.
 
@@ -19,13 +20,30 @@
 - Chrome: 35px panel title (11px uppercase `TERMINAL` tab, 1px accent
   underline inset 2px, square 28px maximize/close actions), 22px terminal tab
   strip (12px labels, 10px horizontal padding, 1px separators, 1px
-  `#0078D4` active left border, 22px +/clear/trash actions). Panel surface
-  `#181818`, border/separators `#2b2b2b`, card radius 8px, toolbar hover
-  `#5a5d5e50`.
-- Sessions: seeds `pwsh` then `bash` (bash active). `+` spawns a new bash;
-  trash kills the active session; killing the last closes the panel
-  (reopening seeds a fresh bash). `Ctrl+D` on an empty line also kills.
-  One xterm instance per session; tab labels show the shell name.
+  `#0078D4` active left border). Tab actions: `+`, profile caret, split,
+  trash, and `...` overflow (New / Split / Unsplit / Rename / Clear / Kill).
+  The overflow and profile menus are fixed-positioned so they escape the panel
+  clip at the 120px minimum height. Panel surface `#181818`,
+  border/separators `#2b2b2b`, card radius 8px, toolbar hover `#5a5d5e50`.
+- Sessions: seeds `pwsh` then `bash` (bash active). The tab strip is one shared
+  pool; each tab keeps one xterm instance (scrollback survives switches, split
+  moves, panel hides). New tab from `+` or ``Ctrl+Shift+` ``; the profile caret
+  spawns bash or PowerShell; trash kills the focused pane's session; killing
+  the last closes the panel (reopening seeds a fresh bash). `Ctrl+D` on an
+  empty line also kills. Tab labels show the shell name; double-click or the
+  tab context menu renames one (empty resets to the shell name). Kill leaves
+  other tabs alone and picks a replacement for the emptied pane, collapsing
+  the split when none is left.
+- Split: `Ctrl+Shift+5`, the split action, the overflow, the tab context menu,
+  `Terminal > Split Terminal`, or `Terminal: Split Terminal`. v1 caps the
+  workspace at **two panes**: the left pane follows `activeSessionId` and the
+  right pane follows `splitSessionId`; if already split, Split behaves like
+  New Terminal in the focused pane. Tabs stay in the shared strip; clicking a
+  hidden tab replaces the focused pane's session, clicking either visible tab
+  focuses its pane. The 5px vertical `Sash` (120px pane floor) drags live and
+  commits a session-only `splitRatio` (0.2–0.8). Unsplit (overflow / command /
+  menu) hides the second pane but keeps its session as a tab. The panel stays
+  keyboard-focused on the active pane after split/unsplit/tab changes.
 - xterm: `@xterm/xterm` 5.5.0 + `@xterm/addon-fit`, Fira Code 13px,
   `lineHeight: 1`, block cursor (blink), scrollback 1000, 20px left gutter
   (VS Code `--vscode-spacing-size200`). Dark Modern ANSI palette: bg `#181818`,
@@ -40,7 +58,9 @@
   completes; `Ctrl+L`/`Ctrl+K` clear; `Ctrl+C` copies selection else cancels
   the line with `^C`; `Ctrl+Shift+C/V` copy/paste; `Ctrl+A/E/U/W` line edits;
   multi-line paste is processed line by line. Workbench chords (`Ctrl+J`,
-  ``Ctrl+` ``, `Ctrl+B`) pass through to the window handler.
+  ``Ctrl+` ``, `Ctrl+B`) and the terminal commands ``Ctrl+Shift+` ``
+  (new) / `Ctrl+Shift+5` (split) pass through to the window handler instead of
+  reaching the shell.
 - History: per session, 100 cap, mirrored flat to localStorage
   `vscode-term-hist`; new sessions replay the flat list. Panel/session state
   itself is session-only (`vscode-local-v1` excludes it).
