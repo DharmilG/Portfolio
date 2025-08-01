@@ -13,8 +13,14 @@ import { useEffect, useRef, useState } from "react";
 import type { Terminal as XTerm } from "@xterm/xterm";
 import type { FitAddon } from "@xterm/addon-fit";
 import Codicon from "./Codicon";
+import Menu, { type MenuItem } from "./Menu";
+import Sash from "./Sash";
 import Tooltip from "./Tooltip";
-import { normalizeBrowserUrl, useStore, type TerminalSession } from "@/lib/store";
+import {
+  normalizeBrowserUrl,
+  useStore,
+  type TerminalSession,
+} from "@/lib/store";
 import {
   SGR,
   complete,
@@ -77,6 +83,14 @@ const PROMPT_DIRTY = (cwd: string, dirty: boolean, shell: TerminalSession["shell
 
 function toCRLF(s: string): string {
   return s.replace(/\r?\n/g, "\r\n");
+}
+
+function termLabel(session: TerminalSession): string {
+  return session.name ?? (session.shell === "pwsh" ? "pwsh" : "bash");
+}
+
+function termIcon(session: TerminalSession): string {
+  return session.shell === "pwsh" ? "terminal-powershell" : "terminal-bash";
 }
 
 function capOutput(s: string): string {
@@ -544,10 +558,18 @@ function PanelAction({
 export default function TerminalPanel() {
   const sessions = useStore((s) => s.sessions);
   const activeSessionId = useStore((s) => s.activeSessionId);
+  const splitSessionId = useStore((s) => s.splitSessionId);
+  const focusedPane = useStore((s) => s.focusedPane);
+  const splitRatio = useStore((s) => s.splitRatio);
   const panelOpen = useStore((s) => s.panelOpen);
   const panelMaximized = useStore((s) => s.panelMaximized);
   const setActiveSession = useStore((s) => s.setActiveSession);
+  const setFocusedPane = useStore((s) => s.setFocusedPane);
   const spawnSession = useStore((s) => s.spawnSession);
+  const splitTerminal = useStore((s) => s.splitTerminal);
+  const unsplitTerminal = useStore((s) => s.unsplitTerminal);
+  const renameSession = useStore((s) => s.renameSession);
+  const setSplitRatio = useStore((s) => s.setSplitRatio);
   const killSession = useStore((s) => s.killSession);
   const closePanel = useStore((s) => s.closePanel);
   const togglePanelMaximized = useStore((s) => s.togglePanelMaximized);
@@ -555,12 +577,29 @@ export default function TerminalPanel() {
   const initTerminal = useStore((s) => s.initTerminal);
   const clearNonce = useStore((s) => s.termClearNonce);
 
-  const hostRef = useRef<HTMLDivElement>(null);
+  const leftHostRef = useRef<HTMLDivElement>(null);
+  const rightHostRef = useRef<HTMLDivElement>(null);
+  const panesRef = useRef<HTMLDivElement>(null);
   const libsRef = useRef<XtermLibs | null>(null);
   const handles = useRef(new Map<string, Handle>());
   const editors = useRef(new Map<string, LineState>());
   const lastClear = useRef(0);
+  const renameCancelled = useRef(false);
   const [ready, setReady] = useState(false);
+  const [menu, setMenu] = useState<{
+    kind: "profile" | "overflow";
+    x: number;
+    y: number;
+  } | null>(null);
+  const [context, setContext] = useState<{
+    id: string;
+    x: number;
+    y: number;
+  } | null>(null);
+  const [renamingId, setRenamingId] = useState<string | null>(null);
+  const [renameValue, setRenameValue] = useState("");
+  const [previewLeft, setPreviewLeft] = useState<number | null>(null);
+  const [panesWidth, setPanesWidth] = useState(0);
 
   // Seed pwsh + bash once (history replays from vscode-term-hist).
   useEffect(() => {
@@ -590,11 +629,14 @@ export default function TerminalPanel() {
 
   const sessionKey = sessions.map((s) => `${s.id}:${s.shell}`).join("|");
 
-  // Create/dispose one xterm per session; show the active one.
+  // Create/dispose one xterm per session; move its layer into the pane that
+  // currently shows it. Panes share the tab pool, so a session can move
+  // between left/right without losing scrollback.
   useEffect(() => {
     const libs = libsRef.current;
-    const host = hostRef.current;
-    if (!ready || !libs || !host) return;
+    const left = leftHostRef.current;
+    if (!ready || !libs || !left) return;
+    const right = splitSessionId ? rightHostRef.current : null;
 
     const live = new Set(useStore.getState().sessions.map((s) => s.id));
     for (const [id, h] of handles.current) {
@@ -611,7 +653,7 @@ export default function TerminalPanel() {
       const el = document.createElement("div");
       el.className = "absolute inset-0 overflow-hidden";
       el.style.display = "none";
-      host.appendChild(el);
+      left.appendChild(el);
 
       const term = new libs.Terminal({
         theme: TERM_THEME,
@@ -642,14 +684,18 @@ export default function TerminalPanel() {
       term.attachCustomKeyEventHandler((e) => {
         if (e.type !== "keydown") return true;
         // Workbench chords stay with the window handler: xterm would otherwise
-        // consume Ctrl+J as LF / Ctrl+B as ^B and swallow the toggle.
-        if (
-          e.ctrlKey &&
-          !e.shiftKey &&
-          !e.altKey &&
-          (e.code === "KeyJ" || e.code === "KeyB" || e.code === "Backquote")
-        ) {
-          return false;
+        // consume Ctrl+J as LF / Ctrl+B as ^B and swallow the toggle. The
+        // split/new-terminal chords are panel commands, not shell input.
+        if (e.ctrlKey && !e.altKey) {
+          if (
+            !e.shiftKey &&
+            (e.code === "KeyJ" || e.code === "KeyB" || e.code === "Backquote")
+          ) {
+            return false;
+          }
+          if (e.shiftKey && (e.code === "Backquote" || e.code === "Digit5")) {
+            return false;
+          }
         }
         if (e.ctrlKey && e.shiftKey && e.code === "KeyC") {
           if (term.hasSelection()) {
@@ -701,48 +747,86 @@ export default function TerminalPanel() {
       );
     }
 
-    // Visibility + fit for the active session.
+    // Attach each visible session to its pane; hide the rest (tabs keep the
+    // xterm buffer alive, exactly like switching tabs did before).
     for (const [id, h] of handles.current) {
-      h.host.style.display = id === activeSessionId ? "block" : "none";
+      const pane =
+        id === activeSessionId
+          ? left
+          : splitSessionId && id === splitSessionId
+            ? right
+            : null;
+      if (pane) {
+        if (h.host.parentElement !== pane) pane.appendChild(h.host);
+        h.host.style.display = "block";
+      } else {
+        h.host.style.display = "none";
+      }
     }
-    const active = activeSessionId ? handles.current.get(activeSessionId) : null;
-    if (active) {
-      const raf = requestAnimationFrame(() => {
-        if (!active.host.isConnected) return;
-        if (active.host.clientWidth < 10 || active.host.clientHeight < 10) return;
+
+    const visible = [
+      ...new Set(
+        [activeSessionId, splitSessionId].filter(
+          (id): id is string => id !== null,
+        ),
+      ),
+    ];
+    const focusId =
+      focusedPane === "right" && splitSessionId
+        ? splitSessionId
+        : activeSessionId;
+    const raf = requestAnimationFrame(() => {
+      for (const id of visible) {
+        const h = handles.current.get(id);
+        if (!h || !h.host.isConnected) continue;
+        if (h.host.clientWidth < 10 || h.host.clientHeight < 10) continue;
         try {
-          active.fit.fit();
+          h.fit.fit();
         } catch {
           // zero-size while hidden — ResizeObserver refits on open
         }
-        if (panelOpen) active.term.focus();
-      });
-      return () => cancelAnimationFrame(raf);
-    }
-  }, [ready, sessionKey, activeSessionId, panelOpen]);
+      }
+      if (panelOpen && focusId) handles.current.get(focusId)?.term.focus();
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [
+    ready,
+    sessionKey,
+    activeSessionId,
+    splitSessionId,
+    focusedPane,
+    panelOpen,
+  ]);
 
-  // Refit on panel/sash/viewport resize (fit measures the session host).
+  // Refit both panes on panel/split/sash/viewport resize. Observing the pane
+  // hosts (not just the panel) keeps the split live while the sash moves.
   useEffect(() => {
     if (!ready) return;
-    const host = hostRef.current;
-    if (!host) return;
     let raf = 0;
     const refit = () => {
       cancelAnimationFrame(raf);
       raf = requestAnimationFrame(() => {
-        const id = useStore.getState().activeSessionId;
-        const h = id ? handles.current.get(id) : null;
-        if (!h || !h.host.isConnected) return;
-        if (h.host.clientWidth < 10 || h.host.clientHeight < 10) return;
-        try {
-          h.fit.fit();
-        } catch {
-          // ignore transient zero-size layouts
+        const st = useStore.getState();
+        const ids = new Set(
+          [st.activeSessionId, st.splitSessionId].filter(
+            (id): id is string => id !== null,
+          ),
+        );
+        for (const id of ids) {
+          const h = handles.current.get(id);
+          if (!h || !h.host.isConnected) continue;
+          if (h.host.clientWidth < 10 || h.host.clientHeight < 10) continue;
+          try {
+            h.fit.fit();
+          } catch {
+            // ignore transient zero-size layouts
+          }
         }
       });
     };
     const ro = new ResizeObserver(refit);
-    ro.observe(host);
+    if (leftHostRef.current) ro.observe(leftHostRef.current);
+    if (rightHostRef.current) ro.observe(rightHostRef.current);
     window.addEventListener("resize", refit);
     // Fira Code may settle after first paint; refit once fonts are ready.
     void document.fonts?.ready.then(refit);
@@ -751,13 +835,56 @@ export default function TerminalPanel() {
       window.removeEventListener("resize", refit);
       cancelAnimationFrame(raf);
     };
-  }, [ready]);
+  }, [ready, splitSessionId, panelOpen]);
 
-  // Terminal: Clear (menu command) → clear the active session.
+  // Split geometry (left fraction persisted for the session). The sash needs
+  // pixel widths; while unsplit there is no second pane to measure.
+  useEffect(() => {
+    if (!splitSessionId) {
+      setPanesWidth(0);
+      setPreviewLeft(null);
+      return;
+    }
+    const el = panesRef.current;
+    if (!el) return;
+    const measure = () => setPanesWidth(el.clientWidth);
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [splitSessionId, panelOpen]);
+
+  // Menus close on an outside press or Esc.
+  useEffect(() => {
+    if (!menu && !context) return;
+    const dismiss = (e: MouseEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (target?.closest("[data-term-menu]")) return;
+      setMenu(null);
+      setContext(null);
+    };
+    const esc = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      setMenu(null);
+      setContext(null);
+    };
+    window.addEventListener("mousedown", dismiss);
+    window.addEventListener("keydown", esc);
+    return () => {
+      window.removeEventListener("mousedown", dismiss);
+      window.removeEventListener("keydown", esc);
+    };
+  }, [menu, context]);
+
+  // Terminal: Clear (menu command) → clear the focused pane's session.
   useEffect(() => {
     if (clearNonce === lastClear.current) return;
     lastClear.current = clearNonce;
-    const id = useStore.getState().activeSessionId;
+    const st = useStore.getState();
+    const id =
+      st.focusedPane === "right" && st.splitSessionId
+        ? st.splitSessionId
+        : st.activeSessionId;
     const h = id ? handles.current.get(id) : null;
     const ed = id ? editors.current.get(id) : null;
     if (!h || !ed) return;
@@ -777,6 +904,120 @@ export default function TerminalPanel() {
   );
 
   const active = sessions.find((s) => s.id === activeSessionId);
+  const focusedSessionId =
+    focusedPane === "right" && splitSessionId
+      ? splitSessionId
+      : activeSessionId;
+  const focusedSession = sessions.find((s) => s.id === focusedSessionId);
+  const leftWidth =
+    previewLeft ?? (panesWidth ? Math.round(panesWidth * splitRatio) : null);
+
+  const focusSession = (id: string) => {
+    setActiveSession(id);
+    requestAnimationFrame(() => handles.current.get(id)?.term.focus());
+  };
+
+  const beginRename = (session: TerminalSession) => {
+    renameCancelled.current = false;
+    setRenamingId(session.id);
+    setRenameValue(session.name ?? termLabel(session));
+    setMenu(null);
+    setContext(null);
+  };
+
+  const finishRename = (id: string, save: boolean, refocus = false) => {
+    renameCancelled.current = true;
+    if (save) renameSession(id, renameValue);
+    setRenamingId(null);
+    if (!refocus) return;
+    requestAnimationFrame(() => {
+      const st = useStore.getState();
+      if (id === st.activeSessionId || id === st.splitSessionId) {
+        handles.current.get(id)?.term.focus();
+      }
+    });
+  };
+
+  const profileItems: MenuItem[] = [
+    { id: "bash", label: "bash", icon: "terminal-bash" },
+    { id: "pwsh", label: "PowerShell", icon: "terminal-powershell" },
+    { separator: true },
+    {
+      id: "split",
+      label: "Split Terminal",
+      icon: "split-horizontal",
+      disabled: !!splitSessionId,
+    },
+  ];
+
+  const overflowItems: MenuItem[] = [
+    { id: "new", label: "New Terminal", icon: "add" },
+    {
+      id: "split",
+      label: "Split Terminal",
+      icon: "split-horizontal",
+      disabled: !!splitSessionId,
+    },
+    {
+      id: "unsplit",
+      label: "Unsplit Terminal",
+      icon: "collapse-all",
+      disabled: !splitSessionId,
+    },
+    { separator: true },
+    {
+      id: "rename",
+      label: "Rename…",
+      icon: "edit",
+      disabled: !focusedSession,
+    },
+    { id: "clear", label: "Clear", icon: "clear-all", disabled: !focusedSession },
+    {
+      id: "kill",
+      label: "Kill Terminal",
+      icon: "trash",
+      disabled: !focusedSession,
+    },
+  ];
+
+  const contextItems: MenuItem[] = [
+    { id: "rename", label: "Rename…", icon: "edit" },
+    {
+      id: "split",
+      label: "Split Terminal",
+      icon: "split-horizontal",
+      disabled: !!splitSessionId,
+    },
+    { separator: true },
+    { id: "kill", label: "Kill Terminal", icon: "trash" },
+  ];
+
+  const onProfileAction = (id: string) => {
+    setMenu(null);
+    if (id === "bash" || id === "pwsh") spawnSession(id);
+    else if (id === "split") splitTerminal("bash");
+  };
+
+  const onOverflowAction = (id: string) => {
+    setMenu(null);
+    if (id === "new") spawnSession("bash");
+    else if (id === "split") splitTerminal("bash");
+    else if (id === "unsplit") unsplitTerminal();
+    else if (id === "rename" && focusedSession) beginRename(focusedSession);
+    else if (id === "clear") clearTerminal();
+    else if (id === "kill" && focusedSessionId) killSession(focusedSessionId);
+  };
+
+  const onContextAction = (id: string) => {
+    const target = context
+      ? sessions.find((session) => session.id === context.id)
+      : null;
+    setContext(null);
+    if (!target) return;
+    if (id === "rename") beginRename(target);
+    else if (id === "split") splitTerminal("bash");
+    else if (id === "kill") killSession(target.id);
+  };
 
   return (
     <section
@@ -817,7 +1058,7 @@ export default function TerminalPanel() {
         </div>
       </div>
 
-      {/* Terminal instance tabs — 22px */}
+      {/* Terminal instance tabs — 22px; the same tab pool feeds both panes */}
       <div
         role="tablist"
         aria-label="Terminal sessions"
@@ -825,79 +1066,263 @@ export default function TerminalPanel() {
       >
         <div className="flex min-w-0 flex-1 items-stretch overflow-x-auto">
           {sessions.map((session) => {
-            const isActive = session.id === activeSessionId;
+            const shownLeft = session.id === activeSessionId;
+            const shownRight = !!splitSessionId && session.id === splitSessionId;
+            const isActive = shownLeft || shownRight;
+            const label = termLabel(session);
             return (
-              <button
+              <div
                 key={session.id}
-                type="button"
                 role="tab"
+                tabIndex={0}
                 aria-selected={isActive}
-                onClick={() => setActiveSession(session.id)}
-                title={session.shell === "pwsh" ? "PowerShell" : "bash"}
-                className={`relative flex h-full max-w-[180px] min-w-[88px] items-center gap-[6px] border-r border-vscode-panel-tab-border px-[10px] text-[12px] transition-colors hover:bg-vscode-toolbar-hover ${
+                onClick={() => focusSession(session.id)}
+                onDoubleClick={() => beginRename(session)}
+                onContextMenu={(e) => {
+                  e.preventDefault();
+                  setMenu(null);
+                  setContext({
+                    id: session.id,
+                    x: e.clientX,
+                    y: e.clientY,
+                  });
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    focusSession(session.id);
+                  }
+                }}
+                title={`${label}${shownRight ? " — split pane" : ""}`}
+                className={`relative flex h-full max-w-[180px] min-w-[88px] cursor-default items-center gap-[6px] border-r border-vscode-panel-tab-border px-[10px] text-[12px] transition-colors hover:bg-vscode-toolbar-hover ${
                   isActive
                     ? "text-vscode-panel-tab-active"
                     : "text-vscode-panel-tab-inactive"
                 }`}
               >
-                {isActive ? (
-                  <span className="absolute inset-y-0 left-0 w-px bg-vscode-terminal-tab-border" />
-                ) : null}
-                <Codicon
-                  name={session.shell === "pwsh" ? "terminal-powershell" : "terminal-bash"}
-                  size={14}
-                  className="shrink-0"
-                />
-                <span className="truncate">
-                  {session.shell === "pwsh" ? "pwsh" : "bash"}
-                </span>
-              </button>
+                {renamingId === session.id ? (
+                  <input
+                    autoFocus
+                    aria-label="Terminal name"
+                    value={renameValue}
+                    onChange={(e) => setRenameValue(e.target.value)}
+                    onClick={(e) => e.stopPropagation()}
+                    onMouseDown={(e) => e.stopPropagation()}
+                    onDoubleClick={(e) => e.stopPropagation()}
+                    onFocus={(e) => e.currentTarget.select()}
+                    onBlur={() => {
+                      if (renameCancelled.current) {
+                        renameCancelled.current = false;
+                        setRenamingId(null);
+                        return;
+                      }
+                      finishRename(session.id, true);
+                    }}
+                    onKeyDown={(e) => {
+                      e.stopPropagation();
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        finishRename(session.id, true, true);
+                      } else if (e.key === "Escape") {
+                        e.preventDefault();
+                        finishRename(session.id, false, true);
+                      }
+                    }}
+                    className="h-[18px] w-full min-w-0 rounded-[2px] border border-vscode-accent bg-vscode-input-bg px-1 text-[12px] text-vscode-fg outline-none"
+                  />
+                ) : (
+                  <>
+                    {isActive ? (
+                      <span className="absolute inset-y-0 left-0 w-px bg-vscode-terminal-tab-border" />
+                    ) : null}
+                    <Codicon
+                      name={termIcon(session)}
+                      size={14}
+                      className="shrink-0"
+                    />
+                    <span className="truncate">{label}</span>
+                  </>
+                )}
+              </div>
             );
           })}
         </div>
-        <div className="flex shrink-0 items-center gap-[1px] pr-1">
+        <div
+          data-term-menu
+          className="relative flex shrink-0 items-center gap-[1px] pr-1"
+        >
           <PanelAction
             icon="add"
             label="New Terminal"
-            onClick={() => spawnSession("bash")}
+            onClick={() => {
+              setMenu(null);
+              spawnSession("bash");
+            }}
             compact
             align="end"
           />
+          <Tooltip text="Select Default Profile" position="top" align="end">
+            <button
+              type="button"
+              aria-label="Select Default Profile"
+              onClick={(e) => {
+                if (menu?.kind === "profile") {
+                  setMenu(null);
+                  return;
+                }
+                const r = e.currentTarget.getBoundingClientRect();
+                setMenu({ kind: "profile", x: r.right, y: r.bottom });
+              }}
+              className="-ml-[3px] flex h-[22px] w-[14px] items-center justify-center text-vscode-muted transition-colors hover:bg-vscode-toolbar-hover hover:text-vscode-fg"
+            >
+              <Codicon name="chevron-down" size={12} />
+            </button>
+          </Tooltip>
           <PanelAction
-            icon="clear-all"
-            label="Clear Terminal"
-            onClick={clearTerminal}
+            icon="split-horizontal"
+            label="Split Terminal"
+            onClick={() => {
+              setMenu(null);
+              splitTerminal("bash");
+            }}
             compact
             align="end"
+            disabled={!!splitSessionId}
           />
           <PanelAction
             icon="trash"
             label="Kill Terminal"
             onClick={() => {
-              if (activeSessionId) killSession(activeSessionId);
+              setMenu(null);
+              if (focusedSessionId) killSession(focusedSessionId);
             }}
             compact
             align="end"
-            disabled={!activeSessionId}
+            disabled={!focusedSessionId}
           />
+          <Tooltip text="More Actions..." position="top" align="end">
+            <button
+              type="button"
+              aria-label="More Actions..."
+              onClick={(e) => {
+                if (menu?.kind === "overflow") {
+                  setMenu(null);
+                  return;
+                }
+                const r = e.currentTarget.getBoundingClientRect();
+                setMenu({ kind: "overflow", x: r.right, y: r.bottom });
+              }}
+              className="flex h-[22px] w-[22px] items-center justify-center rounded-control text-vscode-muted transition-colors hover:bg-vscode-toolbar-hover hover:text-vscode-fg"
+            >
+              <Codicon name="more" size={16} />
+            </button>
+          </Tooltip>
         </div>
       </div>
 
-      {/* xterm host — one absolute session layer per shell */}
-      <div
-        ref={hostRef}
-        className="terminal-xterm relative min-h-0 flex-1 bg-vscode-panel-bg"
-        onClick={() => {
-          const h = activeSessionId ? handles.current.get(activeSessionId) : null;
-          h?.term.focus();
-        }}
-      >
+      {/* xterm panes — one absolute session layer per shell; the sash is only
+          mounted while split so single-pane widths stay pixel-identical. */}
+      <div ref={panesRef} className="relative flex min-h-0 flex-1">
+        <div
+          ref={leftHostRef}
+          className={`terminal-xterm relative min-h-0 min-w-0 overflow-hidden bg-vscode-panel-bg ${
+            splitSessionId ? "shrink-0" : "flex-1"
+          }`}
+          style={
+            splitSessionId
+              ? leftWidth !== null
+                ? { width: leftWidth }
+                : { width: `${splitRatio * 100}%` }
+              : undefined
+          }
+          onMouseDown={() => setFocusedPane("left")}
+        />
+        {splitSessionId ? (
+          <>
+            <div className="relative w-[5px] shrink-0 bg-vscode-panel-bg">
+              <Sash
+                orientation="vertical"
+                label="Resize terminal split"
+                value={leftWidth ?? Math.round((panesWidth || 800) * splitRatio)}
+                min={120}
+                max={Math.max(121, panesWidth - 125)}
+                onPreview={setPreviewLeft}
+                onCommit={(width) => {
+                  if (panesWidth > 0) setSplitRatio(width / panesWidth);
+                  setPreviewLeft(null);
+                }}
+                className="inset-x-0"
+              />
+            </div>
+            <div
+              ref={rightHostRef}
+              className="terminal-xterm relative min-h-0 min-w-0 flex-1 overflow-hidden bg-vscode-panel-bg"
+              onMouseDown={() => setFocusedPane("right")}
+            />
+          </>
+        ) : null}
         {!ready && active ? (
-          <div className="flex h-full items-center justify-center text-xs text-vscode-dim">
+          <div className="pointer-events-none absolute inset-0 flex items-center justify-center text-xs text-vscode-dim">
             Loading terminal…
           </div>
         ) : null}
       </div>
+
+      {menu ? (
+        <div
+          data-term-menu
+          className="fixed z-50"
+          style={{
+            left: Math.max(
+              8,
+              Math.min(
+                menu.x - (menu.kind === "overflow" ? 210 : 190),
+                window.innerWidth - (menu.kind === "overflow" ? 218 : 198),
+              ),
+            ),
+            top: Math.max(
+              8,
+              Math.min(
+                menu.y + 1,
+                window.innerHeight - (menu.kind === "overflow" ? 240 : 160),
+              ),
+            ),
+          }}
+        >
+          <Menu
+            density="compact"
+            label={
+              menu.kind === "profile"
+                ? "Terminal profiles"
+                : "Terminal actions"
+            }
+            className={menu.kind === "overflow" ? "w-[210px]" : "w-[190px]"}
+            items={menu.kind === "profile" ? profileItems : overflowItems}
+            onAction={
+              menu.kind === "profile" ? onProfileAction : onOverflowAction
+            }
+          />
+        </div>
+      ) : null}
+
+      {context ? (
+        <div
+          data-term-menu
+          className="fixed z-50"
+          style={{
+            left: Math.max(8, Math.min(context.x, window.innerWidth - 210)),
+            top: Math.max(8, Math.min(context.y, window.innerHeight - 160)),
+          }}
+        >
+          <Menu
+            density="compact"
+            label="Terminal tab actions"
+            className="w-[190px]"
+            items={contextItems}
+            onAction={onContextAction}
+          />
+        </div>
+      ) : null}
     </section>
   );
 }
