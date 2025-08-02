@@ -32,7 +32,9 @@ hidden; overscroll-behavior: none }`), the shell is `h-dvh` with an explicit
 `width=device-width` viewport, and the workspace row is `min-w-0`; only panes
 scroll. The title bar's Command Center yields width first, so no window width
 produces a document-level scrollbar. At ≈1307px and wider it keeps its 600px;
-below, it shrinks with the window.
+below, it shrinks with the window. Because the left menu group is wider than
+the right controls, `mx-auto` leaves the pill right of the viewport center; the
+quick input follows its measured center (§9).
 
 | Width | Behavior |
 |---|---|
@@ -181,7 +183,7 @@ Left: branch — `$(git-branch)` flips to `$(git-branch-changes)` and the label 
 
 `Ctrl+P` quick open, `Ctrl+Shift+P` / `F1` commands, `Ctrl+B` sidebar, `Ctrl+J` / ``Ctrl+` `` panel, `Ctrl+S` local save; `Ctrl+Shift+V` / `Ctrl+\` markdown split is live (DOC/10 §5).
 
-Palette UI (VS Code 2026 source-true — `quickInput.css` + `quickInputController.ts`): floating widget `min(62vw, 600px)` centered, top = 36px titlebar offset, `--radius-quick` 12px, `bg` #222222 + 1px `widget.border` #313131, `--shadow-vscode`; header pad 6/6/4/6; input 26px `--radius-quick-input` 6px, `#313131` / `#3C3C3C` (static border — no focus ring); list cap `min(40vh, 440px)` (= min(0.4×height, 20×22px), list pb 7px), rows 22px `--radius-quick-row` 3px, side insets 6px (scrollable) + 6px (entry), icon 16px+6, label ml 5px; focus row `#04395E` + white (`list.activeSelection*`), hover `#2A2D2E` (`list.hoverBackground`), match bold `#2AAAFF` (`list.highlightForeground`); keybinding chips per `keybindingLabel` (bg rgba(128,128,128,.17), border rgba(51,51,51,.6) / bottom rgba(68,68,68,.6), 11px keys, 3px radius; focused/hover = transparent bg + currentColor @30%).
+Palette UI (VS Code 2026 source-true — `quickInput.css` + `quickInputController.ts`): floating widget `min(62vw, 600px)`, top = 36px titlebar offset, anchored to the measured center of the Command Center (clamped to an 8px viewport inset; viewport-centered below 640px where the pill is hidden), `--radius-quick` 12px, `bg` #222222 + 1px `widget.border` #313131, `--shadow-vscode`; header pad 6/6/4/6; input 26px `--radius-quick-input` 6px, `#313131` / `#3C3C3C` (static border — no focus ring); list cap `min(40vh, 440px)` (= min(0.4×height, 20×22px), list pb 7px), rows 22px `--radius-quick-row` 3px, side insets 6px (scrollable) + 6px (entry), icon 16px+6, label ml 5px; focus row `#04395E` + white (`list.activeSelection*`), hover `#2A2D2E` (`list.hoverBackground`), match bold `#2AAAFF` (`list.highlightForeground`); keybinding chips per `keybindingLabel` (bg rgba(128,128,128,.17), border rgba(51,51,51,.6) / bottom rgba(68,68,68,.6), 11px keys, 3px radius; focused/hover = transparent bg + currentColor @30%).
 
 Behavior: `>` prefix = commands mode (backspace past it returns to files); file mode lists open tabs (tab order) then tmp scratch + loaded repo trees A–Z, filtered by `lib/fuzzy` (subsequence + boundary/camel/consecutive bonuses, whitespace = multi-term AND, basename boost); commands mode lists `lib/commands.ts` (25; ids shared with the title-bar menus; Enter runs, mode-switch commands keep the palette open; discard-edits raises the confirm `Modal`). `↑↓` wrap, `Enter` runs & closes, `Esc` / click-away closes; the same shortcut while open keeps the palette and selects the query, the other one switches mode preserving the query suffix (`quickAccess.ts`). Empty states `No matching commands` / `No matching results`. Motion (250ms scale-in) deferred.
 
