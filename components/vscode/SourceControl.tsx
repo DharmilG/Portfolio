@@ -2,13 +2,13 @@
 
 // SourceControl — SCM view (DOC/05 §7). Source-true metrics from VS Code
 // 1.142: scm.css (input inset 11px, editor 1px #3C3C3C / #313131, radius 4,
-// focus outline #0078D4 offset -1, grows 1→10 lines), button.css (26px,
+// focus outline #0078D4 offset -1, single-line commit input), button.css (26px,
 // 4px/8px padding, 12px/16px, radius 4, #0078D4 → #026EC1, disabled 0.4),
 // countBadge.css (18px, 3px/5px, radius 11, 11px), git-repository.ts
 // (placeholder `Message (Ctrl+Enter to commit on "main")`, discard prompt).
 // Input font is the UI font (scm.inputFontFamily default), not monospace.
 // Product layer (DOC/02 #10): LOCAL lane with accent line + dots (top dot
-// pulses) and a 600ms CSS confetti burst on commit.
+// pulses).
 // Deferred: diff peek (no diff viewer), toast (PV-UI-TOAST), staging, split
 // button, real history until `projects` loads + /api/commits ships.
 import { useEffect, useRef, useState } from "react";
@@ -27,31 +27,6 @@ type CommitPage = {
   commits: RealCommit[];
   hasMore: boolean;
 };
-
-type ConfettiPiece = {
-  dx: number;
-  dy: number;
-  rot: number;
-  color: string;
-};
-
-const CONFETTI_COLORS = [
-  "var(--color-vscode-accent)",
-  "var(--color-vscode-added)",
-  "var(--color-vscode-modified)",
-  "var(--color-vscode-error)",
-  "var(--color-vscode-warning)",
-];
-
-// One burst: pieces fly up/out from the button center and fade (600ms CSS).
-function makeConfetti(): ConfettiPiece[] {
-  return Array.from({ length: 16 }, (_, i) => ({
-    dx: Math.round((Math.random() - 0.5) * 180),
-    dy: Math.round(-30 - Math.random() * 70),
-    rot: Math.round((Math.random() - 0.5) * 360),
-    color: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
-  }));
-}
 
 function timeAgo(iso: string): string {
   const then = new Date(iso).getTime();
@@ -150,7 +125,6 @@ export default function SourceControl({ onOpenFile }: SourceControlProps) {
   });
   const [pendingDiscard, setPendingDiscard] = useState<string | null>(null);
   const [showError, setShowError] = useState(false);
-  const [pieces, setPieces] = useState<ConfettiPiece[]>([]);
   const [announce, setAnnounce] = useState("");
 
   const [real, setReal] = useState<RealCommit[]>([]);
@@ -160,36 +134,13 @@ export default function SourceControl({ onOpenFile }: SourceControlProps) {
     "idle" | "loading" | "error"
   >("idle");
 
-  const msgRef = useRef<HTMLTextAreaElement>(null);
-  const burstTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const msgRef = useRef<HTMLInputElement>(null);
 
   const repo = projects[0];
   const repoKey = repo ? `${repo.repo_owner}/${repo.repo_name}` : "";
 
   const toggle = (key: keyof typeof open) =>
     setOpen((o) => ({ ...o, [key]: !o[key] }));
-
-  // Auto-grow 1→10 lines (scm.inputMaxLineCount default 10; 13px × 1.5 =
-  // 20px line box, +2px padding +1px border each side). An empty box stays at
-  // one line: the placeholder wraps at sidebar widths and must not drive the
-  // height (VS Code measures editor content, not placeholder text).
-  useEffect(() => {
-    const el = msgRef.current;
-    if (!el) return;
-    if (commitMsg === "") {
-      el.style.height = "26px";
-      return;
-    }
-    el.style.height = "auto";
-    el.style.height = `${Math.min(el.scrollHeight + 2, 206)}px`;
-  }, [commitMsg]);
-
-  useEffect(
-    () => () => {
-      if (burstTimer.current) clearTimeout(burstTimer.current);
-    },
-    [],
-  );
 
   // Real history: page 1 when a repo is linked (backend ships last, so the
   // common state today is `projects` empty → placeholder).
@@ -252,10 +203,7 @@ export default function SourceControl({ onOpenFile }: SourceControlProps) {
     if (!made) return;
     setShowError(false);
     setCommitMsg("");
-    setPieces(makeConfetti());
     setAnnounce(`Committed locally: ${made.msg}`);
-    if (burstTimer.current) clearTimeout(burstTimer.current);
-    burstTimer.current = setTimeout(() => setPieces([]), 700);
     msgRef.current?.focus();
   };
 
@@ -271,9 +219,9 @@ export default function SourceControl({ onOpenFile }: SourceControlProps) {
     <div className="text-[13px]">
       {/* Commit input: 5px vertical row padding, 11px left inset, 12px right. */}
       <div className="pl-[11px] pr-3 pt-[5px]">
-        <textarea
+        <input
           ref={msgRef}
-          rows={1}
+          type="text"
           value={commitMsg}
           onChange={(e) => {
             setCommitMsg(e.target.value);
@@ -288,7 +236,7 @@ export default function SourceControl({ onOpenFile }: SourceControlProps) {
           placeholder='Message (Ctrl+Enter to commit on "main")'
           aria-label="Commit message"
           spellCheck={false}
-          className={`block w-full resize-none overflow-y-auto rounded-[4px] border bg-vscode-scm-input-bg px-[6px] py-[2px] text-[13px] leading-[20px] text-vscode-fg placeholder:text-vscode-scm-placeholder ${
+          className={`block h-[26px] w-full rounded-[4px] border bg-vscode-scm-input-bg px-[6px] py-[2px] text-[13px] leading-[20px] text-vscode-fg placeholder:text-vscode-scm-placeholder ${
             showError
               ? "border-vscode-validation-error-border outline outline-1 outline-vscode-validation-error-border outline-offset-[-1px]"
               : "border-vscode-scm-input-border focus:outline focus:outline-1 focus:outline-vscode-accent focus:outline-offset-[-1px]"
@@ -309,30 +257,8 @@ export default function SourceControl({ onOpenFile }: SourceControlProps) {
           onClick={commit}
           className="flex h-[26px] w-full items-center justify-center rounded-[4px] border border-transparent bg-vscode-accent px-2 py-[4px] text-[12px] leading-[16px] text-vscode-badge-fg enabled:hover:bg-vscode-accent-hover enabled:focus-visible:outline enabled:focus-visible:outline-1 enabled:focus-visible:outline-offset-2 enabled:focus-visible:outline-vscode-accent disabled:opacity-40"
         >
-          <Codicon name="check" className="mr-[0.2em]" />
           <span>Commit</span>
         </button>
-        {pieces.length > 0 ? (
-          <span
-            aria-hidden="true"
-            className="pointer-events-none absolute left-1/2 top-1/2 z-20 h-0 w-0"
-          >
-            {pieces.map((p, i) => (
-              <span
-                key={i}
-                className="scm-confetti absolute h-[10px] w-[6px] rounded-[1px]"
-                style={
-                  {
-                    backgroundColor: p.color,
-                    "--dx": `${p.dx}px`,
-                    "--dy": `${p.dy}px`,
-                    "--rot": `${p.rot}deg`,
-                  } as React.CSSProperties
-                }
-              />
-            ))}
-          </span>
-        ) : null}
       </div>
 
       <p role="status" className="sr-only">
@@ -404,7 +330,7 @@ export default function SourceControl({ onOpenFile }: SourceControlProps) {
             className="text-vscode-dim opacity-60"
           />
           <p className="text-xs leading-relaxed text-vscode-dim">
-            No local changes — edit any file to start the tree 🌱
+            No local changes — edit any file to start the tree
           </p>
         </div>
       )}
