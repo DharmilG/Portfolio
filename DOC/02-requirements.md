@@ -12,7 +12,7 @@
 7. Preview icon when `preview_url != null` -> iframe split (`sandbox allow-scripts allow-same-origin`), url bar + reload + `Open in new tab`. Fallback card if blocked or `preview_embeddable=false`.
 8. Terminal: `help ls pwd cd cat echo touch mkdir rm clear whoami date neofetch open theme curl` + git `status diff [file] commit -m "msg" log --graph branch checkout -- <file>`. `push/pull` prints read-only joke, no-op.
 9. `echo >/touch` under `/tmp/` or edit of cached file -> `localEdits/tmpFs` (localStorage `vscode-local-v1`, 2MB cap), visible in Explorer dimmed. `Discard` reverts.
-10. Source Control: input + Commit button (`Ctrl+Enter`) requires dirty -> `localCommits.unshift({id:local-ts, msg, files})` + confetti + clears dirty. Lane: `LOCAL (k)` SVG `main` dots on top, `CHANGES (n)` diff list, `COMMITS` real page 1 + `View more` (`page+1`, max 20/page).
+10. Source Control: single-line input + Commit button (`Ctrl+Enter`) requires dirty -> `localCommits.unshift({id:local-ts, msg, files})` + clears dirty. Lane: `LOCAL (k)` SVG `main` dots on top, `CHANGES (n)` diff list, `COMMITS` real page 1 + `View more` (`page+1`, max 20/page).
 11. Rename folder/file -> `uiRenames` localStorage only, zero fetch. `Reset` clears.
 12. Search filters tree client-side + highlights in viewer. Run opens preview. Extensions dummy cards.
 13. `GET /api/commits?owner&repo&per_page=10&page=1` real history only. Merge client: `[...localCommits, ...real]`. No bulk 500/1000.
@@ -32,7 +32,7 @@
 - [ ] ActivityBar 48px + badge counts + avatar/gear bottom
 - [ ] Explorer 280px + skeleton + `M/●/tmp` states
 - [ ] Tabs 35px + breadcrumb 22px + split groups
-- [ ] Source Control local lane + real list + commit input + confetti
+- [ ] Source Control local lane + real list + single-line commit input
 - [ ] Terminal 280px + `pwsh|bash` + history/complete
 - [ ] StatusBar Dark Modern 22px `#181818` + `main*`, `0↓ k↑` sync, `ⓧ0 ⚠0`, `Ln/Col`, `Spaces/UTF-8/LF`, language, bell
 - [ ] Palette min(62vw, 600px) + fuzzy + commands
