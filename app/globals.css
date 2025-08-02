@@ -135,30 +135,6 @@
   line-height: 1.5;
 }
 
-/* SCM commit confetti (DOC/05 §7: 600ms burst, reduced-motion off).
-   Pieces are positioned by the component; only the motion lives here. */
-@keyframes vscode-confetti-burst {
-  from {
-    transform: translate(0, 0) rotate(0deg);
-    opacity: 1;
-  }
-  to {
-    transform: translate(var(--dx), var(--dy)) rotate(var(--rot));
-    opacity: 0;
-  }
-}
-
-.scm-confetti {
-  animation: vscode-confetti-burst 600ms cubic-bezier(0.2, 0.7, 0.3, 1) forwards;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .scm-confetti {
-    animation: none;
-    opacity: 0;
-  }
-}
-
 /* The workbench owns the viewport: only panes scroll (DOC/05). Without this,
    the shell's min-content width turned narrow windows into document-level
    h-scroll (which in turn stole 15px of height and produced a stray v-scroll),
