@@ -10,9 +10,8 @@
 // (line+col) is pushed to the store for the StatusBar. Keystrokes land in
 // the store as an unsaved buffer (drafts[path] — the tab dot shows live);
 // Ctrl+S promotes the buffer into the saved-edits layer (M badge).
-// Zero server calls (09 §8). Content: drafts[path] ?? edits[path] ??
-// tmpFs[path] ?? blob cache — the cache arrives with /api/repo/blob (dim
-// placeholder until then).
+// Edits stay local (09 §8). Content: drafts[path] ?? edits[path] ??
+// tmpFs[path] ?? repo blob loaded lazily from /api/repo/blob.
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { createHighlighterCore, getTokenStyleObject } from "shiki/core";
 import { createJavaScriptRegexEngine } from "shiki/engine/javascript";
