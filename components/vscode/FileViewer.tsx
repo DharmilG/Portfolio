@@ -40,6 +40,16 @@ type Highlighter = Awaited<ReturnType<typeof createHighlighterCore>>;
 // the bundler ships exactly this set (the full `shiki` entry would ship all).
 let highlighterPromise: Promise<Highlighter> | null = null;
 
+// Immutable blob content keyed by GitHub SHA. Session-only, like tab buffers;
+// switching tabs does not refetch a file the visitor already opened.
+const repoBlobCache = new Map<string, string>();
+
+type RepoBlob = {
+  path: string;
+  content?: string;
+  error?: string;
+};
+
 function getHighlighter(): Promise<Highlighter> {
   highlighterPromise ??= createHighlighterCore({
     themes: [darkPlus],
@@ -76,16 +86,68 @@ export default function FileViewer() {
 
   const tab = tabs.find((t) => t.id === activeTabId);
   const path = tab?.kind === "code" ? tab.path : null;
+  const sha = tab?.kind === "code" ? tab.sha : null;
+  const [loaded, setLoaded] = useState<RepoBlob | null>(null);
 
   // Switching tabs resets the caret (active-line highlight + StatusBar Ln/Col).
   useEffect(() => {
     setCaret(0, 0);
   }, [path, setCaret]);
 
+  // Repo files open from the Explorer with the blob SHA from /api/repo/tree.
+  // Fetch lazily; tmp files never hit this route.
+  useEffect(() => {
+    if (!path || !path.startsWith("Projects/") || !sha) {
+      setLoaded(null);
+      return;
+    }
+    const hit = repoBlobCache.get(sha);
+    if (hit !== undefined) {
+      setLoaded({ path, content: hit });
+      return;
+    }
+    const parts = path.split("/");
+    if (parts.length < 4) {
+      setLoaded(null);
+      return;
+    }
+    const owner = parts[1];
+    const repo = parts[2];
+    const rel = parts.slice(3).join("/");
+    const controller = new AbortController();
+    setLoaded(null);
+    fetch(
+      `/api/repo/blob?owner=${encodeURIComponent(owner)}&repo=${encodeURIComponent(repo)}&sha=${encodeURIComponent(sha)}&path=${encodeURIComponent(rel)}`,
+      { cache: "no-store", signal: controller.signal },
+    )
+      .then(async (res) => {
+        const data: {
+          content?: string;
+          binary?: boolean;
+          error?: string;
+        } = await res.json();
+        if (!res.ok) throw new Error(data.error ?? "Could not load file");
+        if (data.binary) throw new Error("Binary preview is not supported");
+        const content = data.content ?? "";
+        repoBlobCache.set(sha, content);
+        setLoaded({ path, content });
+      })
+      .catch((error: unknown) => {
+        if (controller.signal.aborted) return;
+        setLoaded({
+          path,
+          error: error instanceof Error ? error.message : "Could not load file",
+        });
+      });
+    return () => controller.abort();
+  }, [path, sha]);
+
   // Unsaved buffer first (it persists until Ctrl+S), then the saved-edits
-  // layer, then tmp scratch, then the repo blob cache — the cache is always
-  // undefined until /api/repo/blob lands (placeholder shows instead).
-  const cached: string | undefined = undefined;
+  // layer, then tmp scratch, then the immutable repo blob cache.
+  const loadedForPath = loaded?.path === path ? loaded : null;
+  const cached = loadedForPath?.error
+    ? undefined
+    : loadedForPath?.content;
   const content =
     path === null
       ? undefined
@@ -183,9 +245,15 @@ export default function FileViewer() {
         ref={scrollRef}
         className="min-h-0 min-w-0 flex-1 overflow-auto font-code selection:bg-vscode-selection"
       >
-        {content === undefined ? (
+        {loadedForPath?.error ? (
           <p className="px-12 py-6 text-xs text-vscode-dim">
-            Repo content arrives with the blob API (backend milestone).
+            {loadedForPath.error}
+          </p>
+        ) : content === undefined ? (
+          <p className="px-12 py-6 text-xs text-vscode-dim">
+            {path.startsWith("Projects/") && sha
+              ? "Loading file…"
+              : "File content is not available for this tab."}
           </p>
         ) : (
           <div className="grid w-max min-w-full py-2 pr-4">
