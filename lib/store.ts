@@ -355,7 +355,7 @@ export const useStore = create<State>()(
       // Default-open roots (mirrors Explorer ROOT_NAME) + tmp scratch.
       // Session-only: expanded is intentionally absent from persist
       // partialize below.
-      expanded: { "Dharmil Gajjar": true, Projects: true, tmp: true },
+      expanded: { "Dharmil Gajjar": true, projects: true, tmp: true },
       openTab: (t) =>
         set((s) => {
           const id = `${t.kind}:${t.path}`;
