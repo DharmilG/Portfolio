@@ -23,9 +23,9 @@ import { supabase } from "@/lib/db";
 import { isMarkdownPath } from "@/lib/langs";
 import { useStore } from "@/lib/store";
 
-// The preview (react-markdown + Mermaid) is not part of the initial shell
-// bundle; it loads on the first Ctrl+Shift+V (DOC/10 §5). Mermaid itself stays
-// behind a second lazy import inside MermaidBlock.
+// Lazy editor panes share the same loading surface: MarkdownPreview is loaded
+// by FileViewer on the first Markdown tab, BrowserPreview on the first browser
+// tab (DOC/10 §4/§5).
 function PreviewLoading() {
   return (
     <div className="flex min-h-0 flex-1 items-center justify-center bg-vscode-editor text-xs text-vscode-dim">
@@ -33,11 +33,6 @@ function PreviewLoading() {
     </div>
   );
 }
-
-const MarkdownPreview = dynamic(
-  () => import("@/components/vscode/MarkdownPreview"),
-  { ssr: false, loading: PreviewLoading },
-);
 
 // The integrated browser pane (iframe + picker) loads with the first browser
 // tab; one instance is mounted per browser tab and stays alive when hidden
@@ -113,15 +108,9 @@ export default function PortfolioPage() {
   const panelMaximized = useStore((s) => s.panelMaximized);
   const setPanelHeight = useStore((s) => s.setPanelHeight);
   const setPanelPreview = useStore((s) => s.setPanelPreview);
-  const mdPreviewPath = useStore((s) => s.mdPreviewPath);
-  const mdPreviewWidth = useStore((s) => s.mdPreviewWidth);
-  const setMdPreviewWidth = useStore((s) => s.setMdPreviewWidth);
-  const [mdPreviewDrag, setMdPreviewDrag] = useState<number | null>(null);
   const [rowWidth, setRowWidth] = useState(0);
   const [rowHeight, setRowHeight] = useState(0);
-  const [editorWidth, setEditorWidth] = useState(0);
   const rowRef = useRef<HTMLDivElement>(null);
-  const editorRef = useRef<HTMLDivElement>(null);
   const browserTabs = tabs.filter((t) => t.kind === "browser");
 
   // Sash max: keep the editor >= 320px in the workspace row
@@ -139,20 +128,6 @@ export default function PortfolioPage() {
       }
     : undefined;
 
-  // Markdown split: preview defaults to 50%, keeps a 240px floor and leaves
-  // ~300px for the source editor. The dragged width stays local until commit.
-  const previewMax =
-    editorWidth > 0 ? Math.max(240, editorWidth - 305) : 10000;
-  const previewTarget =
-    mdPreviewDrag ??
-    (mdPreviewWidth > 0 ? mdPreviewWidth : Math.round(editorWidth / 2));
-  const previewPx =
-    editorWidth > 0
-      ? Math.min(Math.max(previewTarget, 240), previewMax)
-      : 0;
-  const previewStyle =
-    previewPx > 0 ? { width: `${previewPx}px` } : { width: "50%" };
-
   useEffect(() => {
     const el = rowRef.current;
     if (!el) return;
@@ -160,18 +135,6 @@ export default function PortfolioPage() {
       setRowWidth(el.clientWidth);
       setRowHeight(el.clientHeight);
     };
-    measure();
-    const observer = new ResizeObserver(measure);
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
-
-  // Split geometry needs the editor card width (not the whole workspace row,
-  // which also contains the sidebar).
-  useEffect(() => {
-    const el = editorRef.current;
-    if (!el) return;
-    const measure = () => setEditorWidth(el.clientWidth);
     measure();
     const observer = new ResizeObserver(measure);
     observer.observe(el);
@@ -233,7 +196,7 @@ export default function PortfolioPage() {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  // Markdown preview: Ctrl+Shift+V (VS Code) and Ctrl+\ (split command).
+  // Markdown: Ctrl+Shift+V toggles preview/source in the active editor tab.
   // Ignore fields outside the source editor and the terminal: Ctrl+Shift+V is
   // paste in xterm/SCM, and the palette owns its input while open.
   useEffect(() => {
@@ -243,12 +206,7 @@ export default function PortfolioPage() {
         e.shiftKey &&
         !e.altKey &&
         (e.code === "KeyV" || e.key.toLowerCase() === "v");
-      const split =
-        e.ctrlKey &&
-        !e.shiftKey &&
-        !e.altKey &&
-        (e.code === "Backslash" || e.key === "\\");
-      if (!markdown && !split) return;
+      if (!markdown) return;
       if (document.querySelector('[role="dialog"]')) return;
       const target = e.target as HTMLElement | null;
       const foreign =
@@ -260,7 +218,7 @@ export default function PortfolioPage() {
       const tab = st.tabs.find((t) => t.id === st.activeTabId);
       if (!tab || tab.kind !== "code" || !isMarkdownPath(tab.path)) return;
       e.preventDefault();
-      st.toggleMdPreview(tab.path);
+      st.toggleMdView(tab.path);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -389,7 +347,7 @@ export default function PortfolioPage() {
         ) : null}
         <div className="flex min-h-0 min-w-0 flex-1 flex-col">
           <Section className="flex-1 bg-vscode-editor">
-            <div ref={editorRef} className="flex min-h-0 min-w-0 flex-1">
+            <div className="flex min-h-0 min-w-0 flex-1">
               <div className="flex min-h-0 min-w-0 flex-1 flex-col">
                 <Tabs onReveal={handleReveal} />
                 <Breadcrumb onOpenFile={openCodeTab} />
@@ -414,32 +372,6 @@ export default function PortfolioPage() {
                   </div>
                 ))}
               </div>
-              {mdPreviewPath ? (
-                <>
-                  <div className="relative w-[5px] shrink-0 bg-vscode-editor">
-                    <Sash
-                      label="Resize markdown preview"
-                      value={previewPx}
-                      min={240}
-                      max={previewMax}
-                      onPreview={setMdPreviewDrag}
-                      onCommit={(w) => {
-                        setMdPreviewDrag(null);
-                        setMdPreviewWidth(w);
-                      }}
-                    />
-                  </div>
-                  <div
-                    className="flex min-h-0 min-w-0 shrink-0 flex-col"
-                    style={previewStyle}
-                  >
-                    <MarkdownPreview
-                      key={mdPreviewPath}
-                      path={mdPreviewPath}
-                    />
-                  </div>
-                </>
-              ) : null}
             </div>
           </Section>
           {panelOpen ? (
