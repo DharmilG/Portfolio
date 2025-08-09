@@ -8,7 +8,7 @@
 3. Click file -> tab (Shiki + breadcrumb + line numbers), always editable (transparent textarea over the highlight layer — no modes). Typing -> session `drafts` buffer. `Ctrl+S` -> `localEdits` only. `●` dot (unsaved buffer) + `M` (saved edits) + `main*` when dirty.
 4. Avatar (logo) -> `profile.json` tab. Gear hover -> `Settings (settings.json) | Appearance (theme) | Profile | Reset local edits`.
 5. `Ctrl+P` quick open, `Ctrl+Shift+P` commands (open file, preview, theme, discard), `Ctrl+B` sidebar, ``Ctrl+` `` terminal.
-6. `.md/.mdx` + `Ctrl+Shift+V` / `Ctrl+\` / split icon -> bound read-only markdown split (`drafts > localEdits > tmpFs`; repo blob with `/api/repo/blob`), live while typing (300ms debounce), GFM + Mermaid fences, dirty strip, 512 KB cap. `.mdx` renders as plain Markdown.
+6. `.md/.mdx` open in preview mode; `Ctrl+Shift+V` / the tab action toggles preview ↔ source in the same tab (no split/second tab). Content = `drafts > localEdits > tmpFs > repo blob` from FileViewer, live while typing (300ms debounce), GFM + Mermaid fences, dirty strip, 512 KB cap. `.mdx` renders as plain Markdown.
 7. Preview icon when `preview_url != null` -> iframe split (`sandbox allow-scripts allow-same-origin`), url bar + reload + `Open in new tab`. Fallback card if blocked or `preview_embeddable=false`.
 8. Terminal: `help ls pwd cd cat echo touch mkdir rm clear whoami date neofetch open theme curl` + git `status diff [file] commit -m "msg" log --graph branch checkout -- <file>`. `push/pull` prints read-only joke, no-op.
 9. `echo >/touch` under `/tmp/` or edit of cached file -> `localEdits/tmpFs` (localStorage `vscode-local-v1`, 2MB cap), visible in Explorer dimmed. `Discard` reverts.
