@@ -12,7 +12,17 @@
 // Ctrl+S promotes the buffer into the saved-edits layer (M badge).
 // Edits stay local (09 §8). Content: drafts[path] ?? edits[path] ??
 // tmpFs[path] ?? repo blob loaded lazily from /api/repo/blob.
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+// Markdown opens in preview and toggles to this source surface in the same tab
+// (Ctrl+Shift+V / the tab action); there is no split preview group.
+import dynamic from "next/dynamic";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+  type ReactNode,
+} from "react";
 import { createHighlighterCore, getTokenStyleObject } from "shiki/core";
 import { createJavaScriptRegexEngine } from "shiki/engine/javascript";
 import darkPlus from "shiki/themes/dark-plus.mjs";
@@ -30,8 +40,17 @@ import py from "shiki/langs/python.mjs";
 import sh from "shiki/langs/shellscript.mjs";
 import sql from "shiki/langs/sql.mjs";
 import dotenv from "shiki/langs/dotenv.mjs";
-import { langFor } from "@/lib/langs";
+import { isMarkdownPath, langFor } from "@/lib/langs";
 import { useStore } from "@/lib/store";
+
+const MarkdownPreview = dynamic(() => import("./MarkdownPreview"), {
+  ssr: false,
+  loading: () => (
+    <div className="flex min-h-0 min-w-0 flex-1 items-center justify-center bg-vscode-editor text-xs text-vscode-dim">
+      Loading preview…
+    </div>
+  ),
+});
 
 type Highlighter = Awaited<ReturnType<typeof createHighlighterCore>>;
 
@@ -56,6 +75,22 @@ function getHighlighter(): Promise<Highlighter> {
     engine: createJavaScriptRegexEngine({ forgiving: true }),
   });
   return highlighterPromise;
+}
+
+// Shiki returns CSS-style keys ("font-weight", "background-color"). React's
+// style prop needs the camelCase equivalents; passing the raw object throws
+// at runtime for any token with bold/italic/underline/bg styling.
+function tokenStyle(
+  token: Parameters<typeof getTokenStyleObject>[0],
+): CSSProperties {
+  const styles = getTokenStyleObject(token);
+  return {
+    color: styles.color,
+    backgroundColor: styles["background-color"],
+    fontStyle: styles["font-style"] as CSSProperties["fontStyle"],
+    fontWeight: styles["font-weight"] as CSSProperties["fontWeight"],
+    textDecoration: styles["text-decoration"],
+  };
 }
 
 export default function FileViewer() {
@@ -86,6 +121,11 @@ export default function FileViewer() {
   const tab = tabs.find((t) => t.id === activeTabId);
   const path = tab?.kind === "code" ? tab.path : null;
   const sha = tab?.kind === "code" ? tab.sha : null;
+  const mdViewMode = useStore((s) =>
+    path ? (s.mdViewMode[path] ?? "preview") : "preview",
+  );
+  const previewing =
+    path !== null && isMarkdownPath(path) && mdViewMode === "preview";
   const [loaded, setLoaded] = useState<RepoBlob | null>(null);
 
   // Switching tabs resets the caret (active-line highlight + StatusBar Ln/Col).
@@ -153,14 +193,24 @@ export default function FileViewer() {
       : (drafts[path] ??
         edits[path] ??
         (path.startsWith("tmp/") ? tmpFs[path] : cached));
+  const dirty =
+    path === null
+      ? null
+      : drafts[path] !== undefined
+        ? "unsaved"
+        : edits[path] !== undefined
+          ? "saved"
+          : null;
 
   const tokens = useMemo(() => {
-    if (!highlighter || path === null || content === undefined) return null;
+    if (!highlighter || path === null || content === undefined || previewing) {
+      return null;
+    }
     return highlighter.codeToTokens(content, {
       lang: langFor(path),
       theme: "dark-plus",
     });
-  }, [highlighter, path, content]);
+  }, [highlighter, path, content, previewing]);
 
   const plainLines =
     tokens === null && content !== undefined ? content.split("\n") : null;
@@ -213,7 +263,7 @@ export default function FileViewer() {
     el.style.height = "auto";
     const floor = Math.max((scrollRef.current?.clientHeight ?? 0) - 16, 0);
     el.style.height = `${Math.max(el.scrollHeight, floor)}px`;
-  }, [content]);
+  }, [content, previewing]);
 
   if (path === null) return null;
 
@@ -238,67 +288,94 @@ export default function FileViewer() {
     );
   };
 
+  const previewStatus = loadedForPath?.error
+    ? loadedForPath.error
+    : content === undefined
+      ? path.startsWith("Projects/") && sha
+        ? "Loading file…"
+        : "File content is not available for this tab."
+      : null;
+
   return (
     <div className="flex min-h-0 flex-1">
-      <div
-        ref={scrollRef}
-        className="min-h-0 min-w-0 flex-1 overflow-auto font-code selection:bg-vscode-selection"
-      >
-        {loadedForPath?.error ? (
-          <p className="px-12 py-6 text-xs text-vscode-dim">
-            {loadedForPath.error}
-          </p>
-        ) : content === undefined ? (
-          <p className="px-12 py-6 text-xs text-vscode-dim">
-            {path.startsWith("Projects/") && sha
-              ? "Loading file…"
-              : "File content is not available for this tab."}
-          </p>
-        ) : (
-          <div className="grid w-max min-w-full py-2 pr-4">
-            {/* Painted first; the transparent textarea below-in-DOM sits on
-                top and owns pointer/keyboard input. */}
-            <div
-              aria-hidden
-              className="pointer-events-none col-start-1 row-start-1 select-none"
-              style={{ color: tokens?.fg }}
-            >
-              {tokens
-                ? tokens.tokens.map((line, i) =>
-                    lineRow(
-                      i,
-                      line.map((t, j) => (
-                        <span key={j} style={getTokenStyleObject(t)}>
-                          {t.content}
-                        </span>
-                      )),
-                    ),
-                  )
-                : plainLines?.map((line, i) => lineRow(i, line))}
-            </div>
-            <textarea
-              ref={textareaRef}
-              wrap="off"
-              spellCheck={false}
-              autoCapitalize="off"
-              autoCorrect="off"
-              value={content}
-              aria-label={`Edit ${path}`}
-              onChange={(e) => {
-                setDraft(path, e.target.value);
-                syncCaret();
-              }}
-              onSelect={syncCaret}
-              onClick={syncCaret}
-              className="col-start-1 row-start-1 w-full resize-none overflow-hidden bg-transparent py-0 pl-12 pr-4 text-transparent caret-vscode-accent selection:bg-vscode-selection focus:outline-none"
-            />
+      {previewing ? (
+        previewStatus ? (
+          <div className="flex min-h-0 min-w-0 flex-1 items-start overflow-auto bg-vscode-editor">
+            <p className="px-12 py-6 text-xs text-vscode-dim">
+              {previewStatus}
+            </p>
           </div>
-        )}
-      </div>
-      <div
-        aria-hidden
-        className="pointer-events-none w-20 shrink-0 bg-gradient-to-b from-white/[0.05] via-white/[0.02] to-transparent"
-      />
+        ) : (
+          <MarkdownPreview
+            key={path}
+            path={path}
+            content={content}
+            dirty={dirty}
+          />
+        )
+      ) : (
+        <>
+          <div
+            ref={scrollRef}
+            className="min-h-0 min-w-0 flex-1 overflow-auto font-code selection:bg-vscode-selection"
+          >
+            {loadedForPath?.error ? (
+              <p className="px-12 py-6 text-xs text-vscode-dim">
+                {loadedForPath.error}
+              </p>
+            ) : content === undefined ? (
+              <p className="px-12 py-6 text-xs text-vscode-dim">
+                {path.startsWith("Projects/") && sha
+                  ? "Loading file…"
+                  : "File content is not available for this tab."}
+              </p>
+            ) : (
+              <div className="grid w-max min-w-full py-2 pr-4">
+                {/* Painted first; the transparent textarea below-in-DOM sits on
+                    top and owns pointer/keyboard input. */}
+                <div
+                  aria-hidden
+                  className="pointer-events-none col-start-1 row-start-1 select-none"
+                  style={{ color: tokens?.fg }}
+                >
+                  {tokens
+                    ? tokens.tokens.map((line, i) =>
+                        lineRow(
+                          i,
+                          line.map((t, j) => (
+                            <span key={j} style={tokenStyle(t)}>
+                              {t.content}
+                            </span>
+                          )),
+                        ),
+                      )
+                    : plainLines?.map((line, i) => lineRow(i, line))}
+                </div>
+                <textarea
+                  ref={textareaRef}
+                  wrap="off"
+                  spellCheck={false}
+                  autoCapitalize="off"
+                  autoCorrect="off"
+                  value={content}
+                  aria-label={`Edit ${path}`}
+                  onChange={(e) => {
+                    setDraft(path, e.target.value);
+                    syncCaret();
+                  }}
+                  onSelect={syncCaret}
+                  onClick={syncCaret}
+                  className="col-start-1 row-start-1 w-full resize-none overflow-hidden bg-transparent py-0 pl-12 pr-4 text-transparent caret-vscode-accent selection:bg-vscode-selection focus:outline-none"
+                />
+              </div>
+            )}
+          </div>
+          <div
+            aria-hidden
+            className="pointer-events-none w-20 shrink-0 bg-gradient-to-b from-white/[0.05] via-white/[0.02] to-transparent"
+          />
+        </>
+      )}
     </div>
   );
 }
