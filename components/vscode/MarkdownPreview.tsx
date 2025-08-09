@@ -1,9 +1,10 @@
 "use client";
 
-// MarkdownPreview — the read-only side of the Markdown split group (DOC/10 §5).
-// Source remains in FileViewer; this pane renders drafts/edits/tmp with GFM and
-// lazy Mermaid fences. The preview is bound to a path so switching source tabs
-// does not silently change what the preview is showing.
+// MarkdownPreview — the read-only Markdown view mode inside the editor tab
+// (DOC/10 §5). FileViewer passes the same content it shows in source (repo
+// blob / drafts / edits / tmp), so toggling modes never refetches or loses a
+// buffer. GFM + Mermaid fences render here; there is no split group or second
+// tab strip.
 import {
   Children,
   isValidElement,
@@ -19,9 +20,7 @@ import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
 import rehypeSlug from "rehype-slug";
 import "highlight.js/styles/github-dark.css";
-import { useStore } from "@/lib/store";
 import MermaidBlock from "./MermaidBlock";
-import Tab from "./Tab";
 
 const PREVIEW_LIMIT = 512 * 1024;
 
@@ -97,27 +96,17 @@ const COMPONENTS: Components = {
 
 type MarkdownPreviewProps = {
   path: string;
+  content: string | undefined;
+  dirty: "unsaved" | "saved" | null;
 };
 
-export default function MarkdownPreview({ path }: MarkdownPreviewProps) {
-  const drafts = useStore((s) => s.drafts);
-  const edits = useStore((s) => s.edits);
-  const tmpFs = useStore((s) => s.tmpFs);
-  const closeMdPreview = useStore((s) => s.closeMdPreview);
-
-  const content =
-    drafts[path] ??
-    edits[path] ??
-    (path.startsWith("tmp/") ? tmpFs[path] : undefined);
-  const dirty =
-    drafts[path] !== undefined
-      ? "unsaved"
-      : edits[path] !== undefined
-        ? "saved"
-        : null;
-
+export default function MarkdownPreview({
+  path,
+  content,
+  dirty,
+}: MarkdownPreviewProps) {
   // 300ms debounce keeps typing responsive while diagrams are re-rendered.
-  // startTransition is not needed: the textarea and preview are separate trees.
+  // startTransition is not needed: source and preview are separate trees.
   const [display, setDisplay] = useState<string | undefined>(content);
   useEffect(() => {
     if (content === undefined) {
@@ -129,24 +118,10 @@ export default function MarkdownPreview({ path }: MarkdownPreviewProps) {
   }, [content]);
 
   const preview = display ?? content;
-  const name = path.split("/").pop() ?? path;
   const tooLarge = preview !== undefined && preview.length > PREVIEW_LIMIT;
 
   return (
     <div className="flex min-h-0 min-w-0 flex-1 flex-col bg-vscode-editor">
-      <div className="flex h-[35px] shrink-0 items-center bg-vscode-tab pl-2">
-        <div
-          role="tablist"
-          aria-label="Preview editors"
-          className="flex min-w-0 flex-1 items-center overflow-x-auto"
-        >
-          <Tab
-            name={`Preview ${name}`}
-            active
-            onClose={closeMdPreview}
-          />
-        </div>
-      </div>
       {dirty ? (
         <div className="flex h-[22px] shrink-0 items-center gap-1.5 border-b border-vscode-border bg-vscode-side px-3 text-[11px] text-vscode-muted">
           <span>
@@ -160,7 +135,7 @@ export default function MarkdownPreview({ path }: MarkdownPreviewProps) {
       <div className="min-h-0 flex-1 overflow-auto">
         {preview === undefined ? (
           <div className="flex h-full items-center justify-center px-6 text-center text-xs text-vscode-dim">
-            Repo content arrives with the blob API (backend milestone).
+            Loading file…
           </div>
         ) : tooLarge ? (
           <div className="flex h-full items-center justify-center px-6 text-center text-xs text-vscode-dim">
@@ -169,7 +144,7 @@ export default function MarkdownPreview({ path }: MarkdownPreviewProps) {
         ) : (
           <article
             className="markdown-body mx-auto w-full max-w-[860px] px-10 py-8"
-            aria-label="Markdown preview"
+            aria-label={`Preview ${path}`}
           >
             <ReactMarkdown
               remarkPlugins={REMARK_PLUGINS}
