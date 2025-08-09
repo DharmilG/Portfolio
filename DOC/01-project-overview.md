@@ -17,7 +17,7 @@ Interactive developer portfolio where visitors browse real project code, preview
 - Profile: bottom-left logo (`profiles.avatar_url`) -> `profile.json`. Gear hover -> `Settings/Appearance/Profile/Reset local edits`.
 - Live preview: iframe split group from `projects.preview_url` (+ `Open in new tab` fallback if `preview_embeddable=false`).
 - Dummy terminal: xterm UI + client parser (`help/ls/cat/echo/touch` + git `status/diff/commit/log/branch/checkout` + `curl` via `/api/proxy`). `tmp/` session files.
-- Markdown split: `Ctrl+Shift+V` (`react-markdown + remark-gfm`), live local-edit preview.
+- Markdown preview/source: `.md` tabs open in preview; `Ctrl+Shift+V` toggles the same tab (`react-markdown + remark-gfm`), live local-edit preview.
 - Local edit + fake git: seamless always-editable editor (transparent textarea over the Shiki layer — no modes), typing -> `drafts` session buffer, `Ctrl+S` -> `localEdits` (localStorage), commit input/terminal -> `localCommits` (SVG `main` lane). Display rule everywhere: `view = drafts[path] ?? localEdits[path] ?? cached`. Never writes to server (see `04 §8`).
 
 ## Non-goals
