@@ -23,7 +23,7 @@ portfolio page) stays empty placeholders until shell renders on local DB.
 
 ## Interactive
 - [ ] PV-C-TERMINAL — `TerminalPanel.tsx` (xterm + git-local commands)
-- [ ] PV-C-MDPREVIEW — `MarkdownPreview.tsx` (Ctrl+Shift+V split, live local)
+- [ ] PV-C-MDPREVIEW — `MarkdownPreview.tsx` (Ctrl+Shift+V preview/source in the same tab, live local)
 - [ ] PV-C-BROWSERPREVIEW — `BrowserPreview.tsx` (iframe split + fallback)
 - [ ] PV-PAGE-HOME/PORTFOLIO — `app/page.tsx` polish + `(portfolio)/[[...file]]/page.tsx` deep-links
 
