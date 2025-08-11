@@ -15,7 +15,7 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { fileIcon } from "@/lib/fileIcons";
 import { langLabelFor } from "@/lib/langs";
-import { dirtyCount, useStore, type BranchInfo } from "@/lib/store";
+import { dirtyCount, projectDescription, useStore, type BranchInfo } from "@/lib/store";
 import Codicon from "./Codicon";
 
 // One status-bar item: full height, real metrics (3px margins + 5px padding;
@@ -56,11 +56,13 @@ function Item({
 function PickRow({
   label,
   hint,
+  detail,
   active,
   onClick,
 }: {
   label: string;
   hint?: string;
+  detail?: string;
   active?: boolean;
   onClick: () => void;
 }) {
@@ -68,13 +70,20 @@ function PickRow({
     <button
       type="button"
       onClick={onClick}
-      className={`flex w-full items-center gap-2 px-3 py-1 text-left text-xs hover:bg-vscode-list-hover ${
+      className={`flex w-full items-start gap-2 px-3 py-1 text-left text-xs hover:bg-vscode-list-hover ${
         active ? "bg-vscode-list-inactive text-vscode-fg" : "text-vscode-fg"
       }`}
     >
-      <span className="min-w-0 flex-1 truncate">{label}</span>
+      <span className="min-w-0 flex-1">
+        <span className="block truncate">{label}</span>
+        {detail ? (
+          <span className="block truncate text-[11px] text-vscode-dim">
+            {detail}
+          </span>
+        ) : null}
+      </span>
       {hint ? (
-        <span className="shrink-0 text-[11px] text-vscode-dim">{hint}</span>
+        <span className="shrink-0 pt-px text-[11px] text-vscode-dim">{hint}</span>
       ) : null}
     </button>
   );
@@ -91,9 +100,12 @@ export default function StatusBar() {
   const branchByRepo = useStore((s) => s.branchByRepo);
   const branchInfo = useStore((s) => s.branchInfo);
   const treeBranch = useStore((s) => s.treeBranch);
+  const readmes = useStore((s) => s.readmes);
+  const repoMeta = useStore((s) => s.repoMeta);
   const setActiveRepo = useStore((s) => s.setActiveRepo);
   const setBranch = useStore((s) => s.setBranch);
   const setBranchInfo = useStore((s) => s.setBranchInfo);
+  const setRepoMeta = useStore((s) => s.setRepoMeta);
 
   const [bellOpen, setBellOpen] = useState(false);
   const bellRef = useRef<HTMLSpanElement>(null);
@@ -114,8 +126,11 @@ export default function StatusBar() {
         { cache: "no-store" },
       );
       if (!res.ok) return;
-      const data = (await res.json()) as BranchInfo;
+      const data = (await res.json()) as BranchInfo & {
+        description?: string | null;
+      };
       setBranchInfo(repo, data);
+      setRepoMeta(repo, { description: data.description ?? null });
       // Until the visitor picks one, the repository's default branch is the
       // selected one.
       if (!branchByRepo[repo] && !treeBranch[repo]) {
@@ -238,6 +253,12 @@ export default function StatusBar() {
                       <PickRow
                         key={p.id}
                         label={p.title_override ?? p.repo_name}
+                        detail={
+                          readmes[repo] ??
+                          p.description ??
+                          repoMeta[repo]?.description ??
+                          undefined
+                        }
                         hint={repo === activeRepo ? "active" : undefined}
                         active={repo === activeRepo}
                         onClick={() => pickProject(repo)}
