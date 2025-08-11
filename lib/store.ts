@@ -49,6 +49,15 @@ export type Project = {
   repo_owner: string;
   repo_name: string;
   title_override: string | null;
+  description_override: string | null;
+  description: string | null;
+  tags: string[];
+  stars: number;
+  forks: number;
+  language: string | null;
+  languages: Record<string, number>;
+  branch: string;
+  sha: string | null;
   preview_url: string | null;
   preview_embeddable: boolean;
   orders: number;
@@ -72,6 +81,18 @@ export type BranchInfo = {
 // Trees are cached per branch: "owner/repo@branch".
 export function repoTreeKey(repo: string, branch?: string | null): string {
   return branch ? `${repo}@${branch}` : repo;
+}
+
+// The one-line project description: the README excerpt wins, the GitHub
+// repository description is the fallback.
+export function projectDescription(
+  s: {
+    readmes: Record<string, string>;
+    repoMeta: Record<string, { description: string | null }>;
+  },
+  repo: string,
+): string {
+  return s.readmes[repo] ?? s.repoMeta[repo]?.description ?? "";
 }
 
 export type TerminalPane = "left" | "right";
@@ -190,6 +211,13 @@ type State = {
   setBranchInfo: (repo: string, info: BranchInfo) => void;
   setTreeBranch: (repo: string, branch: string) => void;
 
+  // Project descriptions (session-only): the README excerpt wins over the
+  // GitHub repository description.
+  readmes: Record<string, string>;
+  repoMeta: Record<string, { description: string | null }>;
+  setReadme: (repo: string, text: string) => void;
+  setRepoMeta: (repo: string, meta: { description: string | null }) => void;
+
   sidebarWidth: number; // layout pref (sash, DOC/05 §3/§5) — persisted
   sidebarPreview: number | null; // live sash drag width — session-only
   setSidebarWidth: (w: number) => void;
@@ -210,7 +238,8 @@ type State = {
 
   tabs: EditorTab[];
   activeTabId: string | null;
-  openTab: (t: Omit<EditorTab, "id">) => void;
+  // `activate: false` opens a tab in the background (README auto-open).
+  openTab: (t: Omit<EditorTab, "id">, activate?: boolean) => void;
   closeTab: (id: string) => void;
   setActiveTab: (id: string | null) => void;
 
@@ -378,6 +407,13 @@ export const useStore = create<State>()(
       setTreeBranch: (repo, branch) =>
         set((s) => ({ treeBranch: { ...s.treeBranch, [repo]: branch } })),
 
+      readmes: {},
+      repoMeta: {},
+      setReadme: (repo, text) =>
+        set((s) => ({ readmes: { ...s.readmes, [repo]: text } })),
+      setRepoMeta: (repo, meta) =>
+        set((s) => ({ repoMeta: { ...s.repoMeta, [repo]: meta } })),
+
       sidebarWidth: 280,
       sidebarPreview: null, // not in partialize: the drag preview never persists
       setSidebarWidth: (sidebarWidth) => set({ sidebarWidth }),
@@ -406,13 +442,15 @@ export const useStore = create<State>()(
       // Session-only: expanded is intentionally absent from persist
       // partialize below.
       expanded: { "Dharmil Gajjar": true, projects: true, tmp: true },
-      openTab: (t) =>
+      openTab: (t, activate = true) =>
         set((s) => {
           const id = `${t.kind}:${t.path}`;
           const tab = { ...t, id };
           // autoReveal: opening a file reveals + selects it in the Explorer
-          // (browser previews hold URLs — nothing to reveal).
-          const reveal = t.kind === "browser" ? {} : revealed(s, t.path);
+          // (browser previews hold URLs — nothing to reveal). A background
+          // open (README auto-open) leaves the current editor alone.
+          const reveal =
+            activate && t.kind !== "browser" ? revealed(s, t.path) : {};
           // First open of a Markdown source starts in preview mode; a mode the
           // visitor explicitly chose for an already-open tab is preserved.
           const mdViewMode =
@@ -422,11 +460,13 @@ export const useStore = create<State>()(
               ? { ...s.mdViewMode, [t.path]: "preview" as const }
               : s.mdViewMode;
           if (s.tabs.some((x) => x.id === id)) {
-            return { activeTabId: id, mdViewMode, ...reveal };
+            return activate
+              ? { activeTabId: id, mdViewMode, ...reveal }
+              : { mdViewMode };
           }
           return {
             tabs: [...s.tabs, tab],
-            activeTabId: id,
+            ...(activate ? { activeTabId: id } : {}),
             mdViewMode,
             ...reveal,
           };
