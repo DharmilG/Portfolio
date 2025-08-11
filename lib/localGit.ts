@@ -22,6 +22,8 @@ export type RealCommit = {
   author: string;
   date: string;
   url: string;
+  // Parent SHAs — the inline graph rail needs the DAG edges (DOC/09 §4).
+  parents: string[];
   local?: false;
 };
 
