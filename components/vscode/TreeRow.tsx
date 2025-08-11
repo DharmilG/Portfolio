@@ -12,6 +12,7 @@ type TreeRowProps = {
   right?: string;
   selected?: boolean;
   focused?: boolean;
+  title?: string;
   onClick?: () => void;
   onDoubleClick?: () => void;
   children: ReactNode;
@@ -23,6 +24,7 @@ export default function TreeRow({
   right = "pr-2",
   selected = false,
   focused = false,
+  title,
   onClick,
   onDoubleClick,
   children,
@@ -37,6 +39,7 @@ export default function TreeRow({
   return (
     <div
       data-path={path}
+      title={title}
       onClick={onClick}
       onDoubleClick={onDoubleClick}
       className={`flex h-7 cursor-pointer items-center gap-1 ${indent} ${right} ${state}`}
