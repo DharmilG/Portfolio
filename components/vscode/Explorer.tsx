@@ -14,8 +14,10 @@
 // See DOC/05 §5, skills vscode-tokens + local-git.
 import { useEffect, useRef, useState } from "react";
 import { fileIcon } from "@/lib/fileIcons";
+import { readmeDescription } from "@/lib/readme";
 import {
   isDirty,
+  projectDescription,
   repoTreeKey,
   ROOT_NAME,
   useStore,
@@ -23,6 +25,7 @@ import {
 } from "@/lib/store";
 import Codicon from "./Codicon";
 import RenameInput from "./RenameInput";
+import Tooltip from "./Tooltip";
 import TreeRow from "./TreeRow";
 import ViewActionButton from "./ViewActionButton";
 
@@ -149,6 +152,9 @@ export default function Explorer({
   const selectPath = useStore((s) => s.selectPath);
   const setTree = useStore((s) => s.setTree);
   const setTreeBranch = useStore((s) => s.setTreeBranch);
+  const setReadme = useStore((s) => s.setReadme);
+  const readmes = useStore((s) => s.readmes);
+  const repoMeta = useStore((s) => s.repoMeta);
   const branchByRepo = useStore((s) => s.branchByRepo);
   const treeBranch = useStore((s) => s.treeBranch);
   const [renaming, setRenaming] = useState<string | null>(null);
@@ -156,6 +162,7 @@ export default function Explorer({
   const [treeLoading, setTreeLoading] = useState<Record<string, boolean>>({});
   const [treeErrors, setTreeErrors] = useState<Record<string, string>>({});
   const requested = useRef(new Set<string>());
+  const readmeRequested = useRef(new Set<string>());
   const treeRef = useRef<HTMLDivElement>(null);
 
   // autoReveal scroll: openTab/setActiveTab bump revealNonce; bring the
@@ -173,6 +180,49 @@ export default function Explorer({
   const match = (name: string) =>
     filter.trim() === "" ||
     name.toLowerCase().includes(filter.trim().toLowerCase());
+
+  // The README of a project is its description (DOC/05 §5): fetch the blob
+  // once per commit SHA, keep the opening paragraph and open the file in a
+  // background tab.
+  const loadReadme = async (
+    project: { repo_owner: string; repo_name: string },
+    entries: TreeEntry[],
+  ) => {
+    const repo = `${project.repo_owner}/${project.repo_name}`;
+    const readme = entries.find(
+      (e) =>
+        e.type === "blob" &&
+        /^readme(\.md)?$/i.test(e.path.split("/").pop() ?? ""),
+    );
+    if (!readme || readmeRequested.current.has(readme.sha)) return;
+    readmeRequested.current.add(readme.sha);
+    try {
+      const query = new URLSearchParams({
+        owner: project.repo_owner,
+        repo: project.repo_name,
+        sha: readme.sha,
+        path: readme.path,
+      });
+      const res = await fetch(`/api/repo/blob?${query.toString()}`, {
+        cache: "no-store",
+      });
+      if (!res.ok) return;
+      const data: { content?: string } = await res.json();
+      const text = readmeDescription(data.content ?? "");
+      if (text) setReadme(repo, text);
+      // Auto-open the README in the background (the editor keeps its file).
+      useStore.getState().openTab(
+        {
+          kind: "code",
+          path: `Projects/${repo}/${readme.path}`,
+          sha: readme.sha,
+        },
+        false,
+      );
+    } catch {
+      // The description is optional — the tree still works without it.
+    }
+  };
 
   const requestTree = (project: {
     repo_owner: string;
@@ -200,8 +250,10 @@ export default function Explorer({
         } = await res.json();
         if (!res.ok) throw new Error(data.error ?? "Could not load files");
         const loaded = data.branch ?? branch ?? "";
-        setTree(repo, loaded, Array.isArray(data.tree) ? data.tree : []);
+        const entries = Array.isArray(data.tree) ? data.tree : [];
+        setTree(repo, loaded, entries);
         setTreeBranch(repo, loaded);
+        void loadReadme(project, entries);
       })
       .catch((error: unknown) => {
         const message =
@@ -518,6 +570,12 @@ export default function Explorer({
                                 indent="pl-10"
                                 selected={selectedPath === rkey}
                                 focused={focused}
+                                title={
+                                  readmes[repo] ??
+                                  p.description ??
+                                  repoMeta[repo]?.description ??
+                                  undefined
+                                }
                                 onClick={() => {
                                   selectPath(rkey);
                                   toggleExpanded(rkey);
