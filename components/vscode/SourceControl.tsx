@@ -9,13 +9,17 @@
 // Input font is the UI font (scm.inputFontFamily default), not monospace.
 // Product layer (DOC/02 #10): LOCAL lane with accent line + dots (top dot
 // pulses).
+// Real history: the project + branch picked in the status bar, 16 commits per
+// page, read-only, with the inline graph rail (lib/commitGraph.ts).
 // Deferred: diff peek (no diff viewer), toast (PV-UI-TOAST), staging, split
-// button, real history until `projects` loads + /api/commits ships.
-import { useEffect, useRef, useState } from "react";
+// button.
+import { useEffect, useMemo, useRef, useState } from "react";
+import { buildCommitLanes, commitLaneCount } from "@/lib/commitGraph";
 import { fileIcon } from "@/lib/fileIcons";
 import type { RealCommit } from "@/lib/localGit";
 import { dirtyCount, useStore } from "@/lib/store";
 import Codicon from "./Codicon";
+import CommitGraph from "./CommitGraph";
 import Modal from "./Modal";
 import Tooltip from "./Tooltip";
 
@@ -27,6 +31,9 @@ type CommitPage = {
   commits: RealCommit[];
   hasMore: boolean;
 };
+
+// 16 commits per page (DOC/09 §4) — "View more" appends the next page.
+const PAGE_SIZE = 16;
 
 function timeAgo(iso: string): string {
   const then = new Date(iso).getTime();
@@ -104,6 +111,9 @@ export default function SourceControl({ onOpenFile }: SourceControlProps) {
   const edits = useStore((s) => s.edits);
   const localCommits = useStore((s) => s.commits);
   const projects = useStore((s) => s.projects);
+  const activeRepo = useStore((s) => s.activeRepo);
+  const branchByRepo = useStore((s) => s.branchByRepo);
+  const treeBranch = useStore((s) => s.treeBranch);
   const commitMsg = useStore((s) => s.commitMsg);
   const setCommitMsg = useStore((s) => s.setCommitMsg);
   const commitLocal = useStore((s) => s.commitLocal);
@@ -136,14 +146,21 @@ export default function SourceControl({ onOpenFile }: SourceControlProps) {
 
   const msgRef = useRef<HTMLInputElement>(null);
 
-  const repo = projects[0];
+  // The project + branch the status bar points at drive the history.
+  const repo =
+    projects.find(
+      (p) => `${p.repo_owner}/${p.repo_name}` === activeRepo,
+    ) ?? null;
   const repoKey = repo ? `${repo.repo_owner}/${repo.repo_name}` : "";
+  const branch = activeRepo
+    ? (branchByRepo[activeRepo] ?? treeBranch[activeRepo] ?? "main")
+    : "main";
 
   const toggle = (key: keyof typeof open) =>
     setOpen((o) => ({ ...o, [key]: !o[key] }));
 
-  // Real history: page 1 when a repo is linked (backend ships last, so the
-  // common state today is `projects` empty → placeholder).
+  // Real history: page 1 when a repo is linked; switching project or branch
+  // reloads it from scratch.
   useEffect(() => {
     setReal([]);
     setPage(1);
@@ -155,7 +172,7 @@ export default function SourceControl({ onOpenFile }: SourceControlProps) {
     fetch(
       `/api/commits?owner=${encodeURIComponent(repo.repo_owner)}&repo=${encodeURIComponent(
         repo.repo_name,
-      )}&per_page=10&page=1`,
+      )}&branch=${encodeURIComponent(branch)}&per_page=${PAGE_SIZE}&page=1`,
     )
       .then((r) => (r.ok ? (r.json() as Promise<CommitPage>) : Promise.reject()))
       .then((data) => {
@@ -171,7 +188,7 @@ export default function SourceControl({ onOpenFile }: SourceControlProps) {
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [repoKey]);
+  }, [repoKey, branch]);
 
   const loadMore = () => {
     if (!repo || historyState === "loading") return;
@@ -179,7 +196,7 @@ export default function SourceControl({ onOpenFile }: SourceControlProps) {
     fetch(
       `/api/commits?owner=${encodeURIComponent(repo.repo_owner)}&repo=${encodeURIComponent(
         repo.repo_name,
-      )}&per_page=10&page=${page + 1}`,
+      )}&branch=${encodeURIComponent(branch)}&per_page=${PAGE_SIZE}&page=${page + 1}`,
     )
       .then((r) => (r.ok ? (r.json() as Promise<CommitPage>) : Promise.reject()))
       .then((data) => {
@@ -190,6 +207,10 @@ export default function SourceControl({ onOpenFile }: SourceControlProps) {
       })
       .catch(() => setHistoryState("error"));
   };
+
+  // Graph rail lanes for the loaded history.
+  const lanes = useMemo(() => buildCommitLanes(real), [real]);
+  const laneCount = useMemo(() => commitLaneCount(lanes), [lanes]);
 
   const commit = () => {
     if (dirty === 0) return;
@@ -386,7 +407,8 @@ export default function SourceControl({ onOpenFile }: SourceControlProps) {
         </>
       ) : null}
 
-      {/* COMMITS — real history (read-only, opens on GitHub). */}
+      {/* COMMITS — real history (read-only, opens on GitHub). The graph rail
+          sits inline with the rows, not in a separate section. */}
       <GroupRow
         label="Commits"
         open={open.commits}
@@ -412,15 +434,16 @@ export default function SourceControl({ onOpenFile }: SourceControlProps) {
             </p>
           ) : (
             <>
-              {real.map((c) => (
+              {real.map((c, i) => (
                 <a
                   key={c.sha}
                   href={c.url}
                   target="_blank"
                   rel="noreferrer"
                   title={`${c.author} · ${timeAgo(c.date)}`}
-                  className="flex h-7 items-center gap-2 pl-6 pr-2 hover:bg-vscode-list-hover"
+                  className="flex h-7 items-center gap-1 pr-2 hover:bg-vscode-list-hover"
                 >
+                  <CommitGraph row={lanes[i]} laneCount={laneCount} />
                   <span className="shrink-0 font-code text-[11px] text-vscode-dim">
                     {c.sha.slice(0, 7)}
                   </span>
