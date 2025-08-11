@@ -18,6 +18,7 @@ import Sash from "./Sash";
 import Tooltip from "./Tooltip";
 import {
   normalizeBrowserUrl,
+  repoTreeKey,
   useStore,
   type TerminalSession,
 } from "@/lib/store";
@@ -119,7 +120,8 @@ function buildCtx(session: TerminalSession): TerminalCtx {
     const repo = `${p.repo_owner}/${p.repo_name}`;
     const base = `Projects/${repo}`;
     dirs.add(base);
-    for (const entry of st.trees[repo] ?? []) {
+    const branch = st.branchByRepo[repo] ?? st.treeBranch[repo];
+    for (const entry of st.trees[repoTreeKey(repo, branch)] ?? []) {
       if (entry.type === "blob") vfs.add(`${base}/${entry.path}`);
       else dirs.add(`${base}/${entry.path}`);
     }
