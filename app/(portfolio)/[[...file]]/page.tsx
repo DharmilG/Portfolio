@@ -299,11 +299,6 @@ export default function PortfolioPage() {
     revealPath(path);
   };
 
-  // StatusBar branch click: focus the Source Control view (sidebar shown).
-  const handleBranchClick = () => {
-    showView("scm");
-  };
-
   return (
     <div className="flex min-h-0 min-w-0 flex-1 flex-col">
       <TitleBar
@@ -402,7 +397,7 @@ export default function PortfolioPage() {
           </div>
         </div>
       </div>
-      <StatusBar onBranchClick={handleBranchClick} />
+      <StatusBar />
       <CommandPalette />
     </div>
   );
