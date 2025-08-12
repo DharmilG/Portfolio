@@ -1,7 +1,10 @@
 // GET /api/repo/blob?owner=X&repo=Y&sha=...&path=...
 // Allowlist + one lazy GitHub blob request; text previews only (DOC/06 §4).
+// The SHA must belong to the allowlisted repository's cached tree, so the
+// route cannot be used to mine arbitrary blobs (DOC/09 §3).
 import { NextRequest, NextResponse } from "next/server";
 import { assertAllowlisted } from "@/lib/allowlist";
+import { supabase } from "@/lib/db";
 import { getOctokit, githubStatus } from "@/lib/github";
 import { langFor } from "@/lib/langs";
 import { BlobQuery } from "@/lib/validators";
@@ -41,6 +44,28 @@ export async function GET(request: NextRequest) {
 
   if (isBinaryPath(path)) {
     return error(415, "binary preview not supported", { binary: true });
+  }
+
+  // SHA verification against the cached tree of this repository. A snapshot
+  // of another branch is not a match — the request stays allowed there (the
+  // tree of that branch simply is not cached).
+  const full = `${project.repo_owner}/${project.repo_name}`;
+  const { data: cached } = await supabase
+    .from("github_cache")
+    .select("branch,tree,expires_at")
+    .eq("repo_full_name", full)
+    .maybeSingle();
+  const fresh = Boolean(
+    cached?.expires_at && new Date(cached.expires_at).getTime() > Date.now(),
+  );
+  if (fresh && cached) {
+    const requested = parsed.data.branch;
+    const known = Array.isArray(cached.tree)
+      ? (cached.tree as { sha?: string }[]).some((e) => e?.sha === sha)
+      : false;
+    if (!known && (!requested || requested === cached.branch)) {
+      return error(404, "file not found");
+    }
   }
 
   try {
