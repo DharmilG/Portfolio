@@ -2,15 +2,17 @@
 
 > **DEPLOY GATE — DO NOT DEPLOY YET.** Remove this block only when the human starts the deployment stage.
 > A Vercel deploy stays blocked until all of these are true:
-> 1. `pnpm build` passes locally; the three remaining 0-byte API route stubs (commits, cron/sync, revalidate) are implemented.
+> 1. `pnpm build` passes locally; the three remaining 0-byte API route stubs (commits, cron/sync, revalidate) are implemented. **Done 2026-10-21** — all three routes are real and `pnpm build` is green.
 > 2. Cloud Supabase is linked, migrations are applied, and real `sections` / `projects` rows exist.
 > 3. Vercel env is set; production never reads `.env.local` or `127.0.0.1`.
-> 4. GitHub reads are verified against `DharmilG/Portfolio`: branches, branch-aware tree/blob, and 16 commits/page in Source Control.
-> 5. Status-bar project/branch pickers and Source-Control-only commit history pass a smoke test.
+> 4. GitHub reads are verified against `DharmilG/Portfolio`: branches, branch-aware tree/blob, and 16 commits/page in Source Control. **Done 2026-10-21** — `/api/repo/branches`, branch-aware tree/blob and `/api/commits` (16/page, `parents[]`) verified locally.
+> 5. Status-bar project/branch pickers and Source-Control-only commit history pass a smoke test. **Done 2026-10-21** — both pickers live in the status bar, the history is Source-Control-only with the inline graph rail.
 >
-> **Current scope (2026-10-20):** project picker + branch picker in the status bar; 16 real commits per page,
-> branch-aware, shown only in Source Control; repo owner stays backend-only; title/description/tags come from
-> DB overrides or GitHub metadata. The iframe/preview-URL work is deferred until the projects have public URLs.
+> **Current scope (2026-10-21):** project picker + branch picker in the status bar; 16 real commits per page,
+> branch-aware, shown only in Source Control with the inline graph rail; repo owner stays backend-only;
+> title/description/tags come from the README excerpt, GitHub metadata or DB overrides. The iframe/preview-URL
+> work is deferred until the projects have public URLs. Remaining gate: cloud Supabase + Vercel env + the
+> human's go-ahead.
 
 ## Env (Vercel Project > Settings > Env)
 ```
