@@ -70,12 +70,29 @@ type TreeOut = { full_name:string; branch:string; sha:string; tree:TreeEntry[]; 
 
 Steps:
 1. `RepoQuery` parse + `assertAllowlisted`.
-2. `branch ?? github_cache.branch ?? 'main'`. Try `getTree(branch, recursive:1)`, on 404 retry `master`.
-3. Redis `GET repo:o/r:tree:branch` -> HIT.
-4. Else `github_cache` fresh (`expires_at>now()`) -> return + async warm Redis.
-5. Else Octokit `git.getTree` with `If-None-Match: etag`. `304` -> bump `expires_at`, return stale. `200` -> filter `node_modules/dist/.git/.next/build/coverage`, cap 5000, `SETEX 172800`, `upsert github_cache {tree, sha, etag, fetched_at, expires_at}`.
+2. `github_cache` snapshot first: a fresh row (48h) for the same branch is a
+   `HIT` (`x-cache: HIT`, `public, s-maxage=3600, stale-while-revalidate=86400`).
+   A different branch misses and falls through to GitHub (`x-cache: MISS`).
+3. `branch ?? github_cache.branch ?? 'main'`. Try `getTree(branch, recursive:1)`,
+   on 404 retry `master`. A default branch that exists but holds no files also
+   answers 404 — confirm with `repos.getBranch` and return an empty tree.
+4. Redis `GET repo:o/r:tree:branch` -> HIT.
+5. Else Octokit `git.getTree` with `If-None-Match: etag`. `304` -> bump `expires_at`, return stale. `200` -> filter `node_modules/dist/.git/.next/build/coverage`, cap 5000, `SETEX 172800`, upsert github_cache {tree, sha, etag, fetched_at, expires_at}.
 
 Errors: `404 not-allowlisted | branch not found`, `422 empty repo`, `429 + stale`.
+
+## 2b. GET /api/repo/branches?owner=X&repo=Y
+
+```ts
+type BranchOut = { full_name:string; default_branch:string; description:string|null; branches:{name:string;sha:string}[]; truncated:boolean; fetched_at:string };
+```
+
+Steps:
+1. `RepoQuery` parse + `assertAllowlisted`.
+2. `repos.get` (default branch + repository description) and
+   `repos.listBranches` (per_page 100, one extra page when the first is full).
+3. The status-bar branch picker calls this the first time a project is picked;
+   the browser caches the answer for the session (2 GitHub requests).
 
 ## 3. GET /api/repo/blob?owner=X&repo=Y&sha=...&path=...
 
@@ -84,31 +101,36 @@ type BlobOut = { full_name:string; path:string; sha:string; content:string; lang
 ```
 
 Steps:
-1. Validate `sha` + `assertAllowlisted` + verify `sha` exists in cached tree (prevents arbitrary SHA mining) — allow if tree miss, but log.
+1. Validate `sha` + `assertAllowlisted` + verify the SHA exists in the cached
+   tree of that repository (prevents arbitrary SHA mining). A snapshot of
+   another branch is not a match — the request stays allowed there.
 2. Redis `GET blob:<sha>` -> HIT.
 3. Else `git.getBlob({owner,repo,file_sha:sha})`. If `size>524288` -> `413 {error:'too large', truncated:true}` + preview message, no content.
 4. Binary ext blocklist `png|jpg|jpeg|gif|webp|ico|mp4|mp3|zip|gz|woff2|ttf|pdf|exe` -> `415 {binary:true, content:''}`.
 5. `Buffer.from(content,'base64').toString('utf8')`, strip `\uFEFF`, `SETEX 86400` (immutable), language from `path` ext map for Shiki.
 
-## 4. GET /api/commits?owner=X&repo=Y&per_page=10&page=1
+## 4. GET /api/commits?owner=X&repo=Y&branch=main&per_page=16&page=1
 
 Real history, paginated. Cached per page 24h.
 
 ```ts
 import { z } from "zod";
 export const CommitsQuery = RepoQuery.extend({
-  per_page: z.coerce.number().min(1).max(20).default(10),
-  page: z.coerce.number().min(1).max(10).default(1),
+  per_page: z.coerce.number().min(1).max(32).default(16),
+  page: z.coerce.number().min(1).max(20).default(1),
 });
-type RealCommit = { sha:string; message:string; author:string; date:string; url:string };
+type RealCommit = { sha:string; message:string; author:string; date:string; url:string; parents:string[] };
 type CommitsOut = { full_name:string; branch:string; page:number; per_page:number; commits:RealCommit[]; hasMore:boolean };
 ```
 
 Steps:
 1. `CommitsQuery` parse + `assertAllowlisted` (no bypass).
-2. Branch from `github_cache.branch ?? 'main'`. Redis `GET commits:o/r:branch:page:per_page` -> HIT.
-3. Else `octokit.repos.listCommits({owner, repo, sha:branch, per_page, page})`. `hasMore = commits.length === per_page`.
-4. `SETEX 86400`, return. On `409/404 empty` -> `{commits:[], hasMore:false}`.
+2. Branch from the query, else the repository's default branch.
+3. `octokit.repos.listCommits({owner, repo, sha:branch, per_page, page})`.
+   `parents[]` rides along so Source Control can draw its inline graph rail.
+4. `hasMore` = GitHub's `Link` header carries `rel="next"` (fallback: the page
+   came back full). `SETEX 86400`, return. On `409/404 empty` ->
+   `{commits:[], hasMore:false}`.
 5. HEAD invalidation: `sync` DELs `commits:o/r:*` when `sha` changes.
 
 ## 5. GET /api/proxy?url=https://...
@@ -131,8 +153,16 @@ POST /api/revalidate?repo=owner/name  Header x-secret: $REVALIDATE_SECRET
 ```ts
 const {data: list} = await supabaseAdmin.from('projects').select('repo_owner,repo_name').eq('visible',true);
 for (const r of list) { await syncRepo(r); revalidateTag(`repo:${r.repo_owner}/${r.repo_name}`); }
-// syncRepo: getTree+getRepo+langs+README blob -> upsert github_cache + update projects.last_synced_at
+// syncRepo: getRepo + listLanguages + getTree + README blob -> upsert github_cache
+//           {branch, sha, metadata{description,readme,tags,stars,languages}, tree, etag,
+//            fetched_at, expires_at(+48h)} + update projects.last_synced_at
 ```
+Empty repositories (409) and branches without files (404) snapshot as an empty
+tree — they are not failures. The response is `{synced:[...], failed:[...], at}`.
+
+`revalidate` marks the tag `repo:<owner>/<name>` stale
+(`revalidateTag(tag, "max")` — Next 16 wants the two-argument form).
+
 `vercel.json`: `{ "crons": [{ "path":"/api/cron/sync","schedule":"0 2 * * *"}] }`.
 
 ## 7. Error table
