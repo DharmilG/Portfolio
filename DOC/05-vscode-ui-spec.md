@@ -48,6 +48,23 @@ overflow in the title bar/footer/workspace, and an open browser page's iframe
 card has `scrollWidth/Height == clientWidth/Height` (no pane scrollbars; the
 framed site's own scrollbar is its content).
 
+### 1.1 Scrollbars (all scrollable surfaces)
+
+One global layer in `app/globals.css` styles every scroller — primary sidebar
+(Source Control / Explorer), editor, Markdown preview, command palette,
+breadcrumb picker, status-bar pickers, browser URL picker, tab strip, terminal.
+VS Code-style: 10px bar, transparent track and corner, arrow buttons removed
+(`::-webkit-scrollbar-button { display: none }`), and a slim rounded thumb
+(`border-radius: var(--radius-scrollbar)`, 2px transparent border +
+`background-clip: padding-box` so it reads as a pill) that is **invisible at
+rest and fades in (120ms) while the pointer is over the scroller**. Firefox
+gets the same behaviour through `scrollbar-width`/`scrollbar-color` inside
+`@supports not selector(::-webkit-scrollbar)`. Colors: `--color-vscode-scroll`
+`rgba(255,255,255,.22)` (revealed) and `--color-vscode-scroll-hover`
+`rgba(255,255,255,.36)` (pointer over the thumb); radius `--radius-scrollbar`
+4px. The xterm viewport follows the same layer (its old 14px always-on thumb is
+gone). The gutter shrinks from the OS default 15px to 10px.
+
 ## 2. Tailwind 4 design tokens (`app/globals.css` — source of truth)
 
 ```css
