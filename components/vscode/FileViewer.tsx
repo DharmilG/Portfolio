@@ -93,6 +93,28 @@ function tokenStyle(
   };
 }
 
+// Split a token's text around the search term so the occurrences can be
+// marked (VS Code's find-match highlight).
+function markSegments(
+  text: string,
+  term: string,
+): { text: string; hit: boolean }[] {
+  if (!term) return [{ text, hit: false }];
+  const lower = text.toLowerCase();
+  const needle = term.toLowerCase();
+  const out: { text: string; hit: boolean }[] = [];
+  let at = 0;
+  for (;;) {
+    const found = lower.indexOf(needle, at);
+    if (found === -1) break;
+    if (found > at) out.push({ text: text.slice(at, found), hit: false });
+    out.push({ text: text.slice(found, found + needle.length), hit: true });
+    at = found + needle.length;
+  }
+  if (at < text.length) out.push({ text: text.slice(at), hit: false });
+  return out.length > 0 ? out : [{ text, hit: false }];
+}
+
 export default function FileViewer() {
   const tabs = useStore((s) => s.tabs);
   const activeTabId = useStore((s) => s.activeTabId);
@@ -103,6 +125,7 @@ export default function FileViewer() {
   const saveDraft = useStore((s) => s.saveDraft);
   const caret = useStore((s) => s.caret);
   const setCaret = useStore((s) => s.setCaret);
+  const searchQuery = useStore((s) => s.searchQuery);
 
   const [highlighter, setHighlighter] = useState<Highlighter | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -356,12 +379,48 @@ export default function FileViewer() {
                           i,
                           line.map((t, j) => (
                             <span key={j} style={tokenStyle(t)}>
-                              {t.content}
+                              {searchQuery ? (
+                                markSegments(t.content, searchQuery).map(
+                                  (seg, k) =>
+                                    seg.hit ? (
+                                      <span
+                                        key={k}
+                                        className="bg-vscode-find-match text-vscode-fg"
+                                      >
+                                        {seg.text}
+                                      </span>
+                                    ) : (
+                                      <span key={k}>{seg.text}</span>
+                                    ),
+                                )
+                              ) : (
+                                t.content
+                              )}
                             </span>
                           )),
                         ),
                       )
-                    : plainLines?.map((line, i) => lineRow(i, line))}
+                    : plainLines?.map((line, i) =>
+                        lineRow(
+                          i,
+                          searchQuery ? (
+                            markSegments(line, searchQuery).map((seg, k) =>
+                              seg.hit ? (
+                                <span
+                                  key={k}
+                                  className="bg-vscode-find-match text-vscode-fg"
+                                >
+                                  {seg.text}
+                                </span>
+                              ) : (
+                                <span key={k}>{seg.text}</span>
+                              ),
+                            )
+                          ) : (
+                            line
+                          ),
+                        ),
+                      )}
                 </div>
                 <textarea
                   ref={textareaRef}
