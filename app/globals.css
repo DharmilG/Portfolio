@@ -64,6 +64,8 @@
   /* === Editor Selection, Line Highlight & Scrollbars === */
   --color-vscode-selection: #264f78;
   --color-vscode-line-highlight: #282828;
+  /* Find-match highlight (search term occurrences in the editor) */
+  --color-vscode-find-match: rgba(234, 92, 0, 0.33);
   /* Scrollbar thumb — slightly transparent white, revealed on hover. */
   --color-vscode-scroll: rgba(255, 255, 255, 0.22);
   --color-vscode-scroll-hover: rgba(255, 255, 255, 0.36);
