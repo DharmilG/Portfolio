@@ -4,8 +4,9 @@
   "pushed_count": 418,
   "session": {
     "branch": "main",
-    "next_up": "DO NOT DEPLOY YET — the deployment gate is recorded in DOC/11. The code side of Wave R is done and `pnpm build` is green: /api/repo/branches, branch-aware tree/blob, /api/commits (16/page, parents[], hasMore via Link), the status-bar project + branch pickers, Source-Control-only history with the inline graph rail, README descriptions/auto-open, the cached tree/metadata snapshot and the protected cron + revalidate routes. Scrollbars are themed too (5321c5b): every scroller uses a 10px hover-only rounded thumb (--radius-scrollbar), the OS arrow buttons are gone and the gutter shrank 15px -> 10px. Next (human): link cloud Supabase + apply the 10 migrations, set the Vercel env, then deploy. Still optional: the iframe preview (needs public project URLs), Upstash hot cache (the DB snapshot works without it), blob SHA verification for non-default branches, and the V1 list in DOC/11. No pushes until the human says so.",
+    "next_up": "DO NOT DEPLOY YET — the deployment gate is recorded in DOC/11. The code side of Wave R is done and `pnpm build` is green: /api/repo/branches, branch-aware tree/blob, /api/commits (16/page, parents[], hasMore via Link), the status-bar project + branch pickers, Source-Control-only history with the inline graph rail, README descriptions/auto-open, the cached tree/metadata snapshot and the protected cron + revalidate routes. Scrollbars are themed too (5321c5b): every scroller uses a 10px hover-only rounded thumb (--radius-scrollbar), the OS arrow buttons are gone and the gutter shrank 15px -> 10px. The activity-bar placeholders are live views now (Search filters the loaded trees and marks the term in the editor, Run starts the selected project, Extensions shows Prettier + ESLint) and the toast stack landed. Next (human): link cloud Supabase + apply the 10 migrations, set the Vercel env, then deploy. Still optional: the iframe preview (needs public project URLs), Upstash hot cache (the DB snapshot works without it), blob SHA verification for non-default branches, and the V1 list in DOC/11. No pushes until the human says so.",
     "pending_verifications": [
+      "views + toasts (2026-10-21): Search -> 'store' gives 1 result (lib/store.ts), Enter/click opens it and the editor marks 7 occurrences (--color-vscode-find-match); Extensions -> Install raises the toast 'Installing Prettier... (demo)'; Ctrl+S -> 'Saved locally'; Run -> 'No preview URL for this project yet' (no project has a public URL yet); toasts are top-right cards, 4.5s auto-dismiss. tsc clean, pnpm build green, no console errors",
       "scrollbars (2026-10-21): one global layer in app/globals.css - 10px bar, transparent track/corner, ::-webkit-scrollbar-button hidden (no OS arrows), thumb = rounded pill (--radius-scrollbar 4px, 2px transparent border + background-clip: padding-box), transparent at rest and rgba(255,255,255,.22) on hover (.36 under the pointer), 120ms fade; Firefox via @supports not selector(::-webkit-scrollbar). CDP: sidebar gutter 15px -> 10px, thumbBg transparent -> rgba(255,255,255,.22) on hover, radius 4px, button display none; the xterm viewport follows the same layer; tsc clean, pnpm build green",
       "markdown same-tab (2026-10-20): tmp/preview.md and repo AGENTS.md open straight into the preview inside the same editor tab; Ctrl+Shift+V and the tab action switch preview <-> source; no split pane, no sash, no second Preview tab; the preview renders the blob FileViewer already loaded and updates 300ms after typing with the dirty strip; closing the tab clears the mode; the console is clean (the Shiki font-weight style error is gone)",
       "wave R (2026-10-21): /api/repo/branches -> storefront main+staging, querytohtml main+second; /api/commits -> 16/page + hasMore via Link, parents[] present, url_short -> commits []; tree cache -> x-cache HIT after the cron sync; bogus blob SHA -> 404; cron sync -> 9 synced / 0 failed; status bar -> project + branch pickers (friendly titles, README description), branch switch refetches the tree and the history (staging shows its own commits); Source Control -> 16 rows, View more, 16 rail dots; `pnpm build` green (12 routes) and `tsc --noEmit` clean; no console errors",
@@ -36,8 +37,17 @@
       "browser preview (PV-C-BROWSERPREVIEW): globe -> no browser tabs = opens an Integrated Browser tab; with tabs open = menu (New Integrated Browser Tab + a row per open tab, active marked); a fresh tab shows the welcome state (globe glyph, 'Browser', 'Enter a URL above to get started.') with the URL field focused + the picker open; navbar: back/forward/reload 28px (40% dimmed when unavailable, tooltips on hover), URL container #313131, 1px #3C3C3C, 6px radius, focus #0078D4, placeholder 'Search or enter URL'; typing 'localhost:3000' -> rows 'localhost:3000' + 'localhost:3000 - Bing Search' (go-to first), typing 'hello world' -> search row only, typing 'local' -> up to 6 History matches below; empty field -> top-3 'Recents' + other tabs under 'Open Tabs', group label right-aligned on the first row; 22px rows (focus #04395E/white, hover #2A2D2E); Enter/click navigates the current tab (label -> host, globe glyph); search rows open in THIS tab while it is still empty, else in a NEW browser tab; back/forward move the stack, reload remounts the frame; switching editor tabs keeps each page alive (hidden, not unloaded); ... menu: Copy URL / Open in External Browser / Reload / Suspend Tab (unmounts the frame -> 'Tab Suspended' card + Reload; menu becomes Resume Tab) / Clear Browser History (Recents empties); the two dimmed chat actions (codicon-comment 'Comment on Elements' + codicon-inspect 'Add Element to Chat' — CONFIRM these glyphs) sit right of the URL, no pointer cursor, tooltips still show; Ctrl+L focuses+selects the URL and reopens the picker (never while typing in another field/xterm; Esc closes the picker, a second Esc blurs); Recents/History survive reload (cap 200); terminal: 'open --preview localhost:3000' retargets the active/first browser tab (creates one when none; help lists a BROWSER section), 'reload' remounts it (dim note when no browser tab); palette: Browser: Open Integrated Browser / Focus URL Input (Ctrl+L chip) / Reload; Run > Open Integrated Browser; known web-clone limits: no title/favicon in the tab, in-page links do not move the address bar, Google/Bing/DDG refuse framing (escape hatch = Open in External Browser), Ctrl+L cannot be caught while focus is inside the framed page; welcome subtitle note: the real VS Code no-chat string is used ('Enter a URL above to get started.') — say the word if you want different copy",
       "markdown same-tab (2026-10-20): tmp/preview.md and repo AGENTS.md open straight into the preview inside the same editor tab; Ctrl+Shift+V and the tab action (Open Source / Open Preview) switch preview <-> source; no split pane, no sash, no second Preview tab; the preview renders the blob FileViewer already loaded (no second GitHub call) and updates 300ms after typing with the dirty strip; closing the tab clears the mode so a reopen starts in preview; the console is clean (the Shiki font-weight style error is gone)"
     ],
-    "tip": "df39953",
+    "tip": "0864a0d",
     "unpushed": [
+      "0864a0d",
+      "c5bfb24",
+      "9fac7e7",
+      "c049f0b",
+      "f7b2704",
+      "b8ce83a",
+      "72ed854",
+      "cfc4da3",
+      "97197fa",
       "df39953",
       "5321c5b",
       "2ccc623",
@@ -108,10 +118,10 @@
     "tokens": "app/globals.css @theme"
   },
   "summary": {
-    "total": 57,
-    "done": 41,
+    "total": 58,
+    "done": 43,
     "in_progress": 12,
-    "backlog": 4
+    "backlog": 3
   },
   "tasks": [
     {
@@ -420,7 +430,7 @@
       "title": "Portfolio page",
       "owner": "agent",
       "started": "2026-10-16",
-      "log": "0016f1d (shell mount only: TitleBar+ActivityBar+Explorer+placeholders; deep-links pending FileViewer) Responsive wave 5892aa7: workspace row min-w-0 + relative, page min-w-0, <768 sidebar absolute overlay drawer (sash hidden, auto-collapse on load, opening a file closes it); CDP 1500/1280/1024/768/640/390: shell == viewport, no visible overflow. 2026-10-21: the shell mounts the project + branch pickers and drops the branch->SCM shortcut (fed4be4 + 3f413ef)."
+      "log": "0016f1d (shell mount only: TitleBar+ActivityBar+Explorer+placeholders; deep-links pending FileViewer) Responsive wave 5892aa7: workspace row min-w-0 + relative, page min-w-0, <768 sidebar absolute overlay drawer (sash hidden, auto-collapse on load, opening a file closes it); CDP 1500/1280/1024/768/640/390: shell == viewport, no visible overflow. 2026-10-21: the shell mounts the project + branch pickers and drops the branch->SCM shortcut (fed4be4 + 3f413ef). 2026-10-21: the activity-bar placeholders are live views now (9fac7e7): Search (72ed854) filters the loaded trees + tmp client-side and marks the term in the editor (c049f0b + find-match token c5bfb24), Run (b8ce83a) starts the selected project (browser tab or new tab, disabled without a preview URL), Extensions (f7b2704) shows Prettier + ESLint with a dummy install."
     },
     {
       "description": "Visible join cache (app/api/projects/route.ts, per DOC/09 §1)",
@@ -674,7 +684,11 @@
       "title": "Toast stack",
       "description": "Bottom-right stacked toasts (VS Code notification style), mounted once in the page shell. First consumers: \"Saved locally\" after Ctrl+S in FileViewer edit mode (DOC/05 §6), \"Committed locally\" after a local commit (DOC/05 §7), dummy Install confirmations.",
       "file": "components/vscode/Toast.tsx",
-      "status": "backlog"
+      "status": "done",
+      "log": " 2026-10-21: toast stack landed (97197fa store slice + cfc4da3 Toast.tsx): top-right cards under the title bar, kind glyph + message + close, 4.5s auto-dismiss, last four kept; triggers = 'Saved locally' (Ctrl+S) and 'Committed locally: <msg>' (commit button + terminal).",
+      "finished": "2026-10-21",
+      "verified": true,
+      "owner": "agent"
     },
     {
       "id": "PV-UI-DIALOG",
@@ -722,6 +736,19 @@
       "finished": "2026-10-16",
       "log": "471e8aa..d1e84a7 + 9c3f447 (14 commits: globals tokens, layout, TitleBar, ActivityBar, SideBar, page, 2 skills, 6 docs; tsc clean, grep audit 0 leftovers, CSS emission + boot markup verified; visual vs screenshot pending)",
       "verified": true
+    },
+    {
+      "id": "PV-C-VIEWS",
+      "title": "Search / Run / Extensions views",
+      "description": "Live activity-bar views (components/vscode/SearchView.tsx, RunView.tsx, ExtensionsView.tsx) + the toast stack",
+      "file": "components/vscode/SearchView.tsx",
+      "status": "done",
+      "owner": "agent",
+      "started": "2026-10-21",
+      "finished": "2026-10-21",
+      "log": "Search (72ed854): client-side filter over the loaded trees + tmp, name match painted in the quick-match color, count line, Enter opens the first hit, Esc clears; FileViewer marks the term (c049f0b, --color-vscode-find-match rgba(234,92,0,.33) = VS Code findMatchHighlightBackground). Run (b8ce83a): the selected project's card, Run -> integrated browser or a new tab when preview_embeddable=false, disabled + explained without a preview URL. Extensions (f7b2704): Prettier + ESLint cards, Install -> toast. Toasts (97197fa + cfc4da3). Mounted in the page (9fac7e7). Verify: tsc clean, pnpm build green; CDP: search 'store' -> 1 result (lib/store.ts) -> opens + 7 marks, Extensions install -> toast, Ctrl+S -> 'Saved locally', Run pane -> 'No preview URL for this project yet'.",
+      "verified": true,
+      "vscode_match": true
     }
   ],
   "tracker_version": 1
