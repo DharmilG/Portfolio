@@ -18,9 +18,44 @@ import {
 import { isMarkdownPath } from "./langs";
 import type { TerminalShell } from "./terminal/parser";
 
-export type TabKind = "code" | "markdown" | "browser";
+export type TabKind = "code" | "markdown" | "browser" | "page";
 
 export type MarkdownViewMode = "preview" | "source";
+
+// Portfolio page content (GET /api/profile) — the About / Resume /
+// Certificates / Experience / Skills / Contact pages read from it.
+export type ProfileContent = {
+  profile: {
+    name: string;
+    avatar_url: string | null;
+    bio: string | null;
+    location: string | null;
+    website: string | null;
+    data: Record<string, unknown>;
+  } | null;
+  experiences: {
+    id: string;
+    company: string;
+    role: string;
+    period: string;
+    summary: string | null;
+    orders: number;
+  }[];
+  skills: { id: string; category: string; items: string[]; orders: number }[];
+  socials: { id: string; label: string; url: string; icon: string; orders: number }[];
+  certificates: {
+    id: string;
+    title: string;
+    issuer: string;
+    issued_at: string | null;
+    credential_id: string | null;
+    url: string | null;
+    summary: string | null;
+    icon: string | null;
+    orders: number;
+  }[];
+  settings: Record<string, unknown>;
+};
 
 // Toast kinds map to the codicons the toast host shows.
 export type ToastKind = "info" | "success" | "warning";
@@ -207,6 +242,10 @@ type State = {
   setProjects: (p: Project[]) => void;
   setTree: (repo: string, branch: string, tree: TreeEntry[]) => void;
   setExplorerLoading: (b: boolean) => void;
+
+  // Portfolio page content (About, Resume, ... — GET /api/profile).
+  profile: ProfileContent | null;
+  setProfile: (p: ProfileContent) => void;
 
   // Repo selection (session-only): the project the workbench points at, the
   // branch picked per project, the cached branch list, and the branch each
@@ -413,6 +452,9 @@ export const useStore = create<State>()(
         })),
       setExplorerLoading: (explorerLoading) => set({ explorerLoading }),
 
+      profile: null,
+      setProfile: (profile) => set({ profile }),
+
       // Repo selection — session-only (never persisted).
       activeRepo: null,
       branchByRepo: {},
@@ -469,7 +511,9 @@ export const useStore = create<State>()(
           // (browser previews hold URLs — nothing to reveal). A background
           // open (README auto-open) leaves the current editor alone.
           const reveal =
-            activate && t.kind !== "browser" ? revealed(s, t.path) : {};
+            activate && t.kind === "code"
+              ? revealed(s, t.path)
+              : {};
           // First open of a Markdown source starts in preview mode; a mode the
           // visitor explicitly chose for an already-open tab is preserved.
           const mdViewMode =
