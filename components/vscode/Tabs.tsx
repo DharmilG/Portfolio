@@ -39,6 +39,7 @@ export default function Tabs({ onReveal }: TabsProps) {
   const edits = useStore((s) => s.edits);
   const renames = useStore((s) => s.renames);
   const drafts = useStore((s) => s.drafts);
+  const sections = useStore((s) => s.sections);
   const setActiveTab = useStore((s) => s.setActiveTab);
   const closeTab = useStore((s) => s.closeTab);
   const saveDraft = useStore((s) => s.saveDraft);
@@ -139,19 +140,26 @@ export default function Tabs({ onReveal }: TabsProps) {
       >
         {tabs.map((t) => {
           const browser = t.kind === "browser";
+          // Portfolio pages carry their section title + glyph.
+          const section =
+            t.kind === "page"
+              ? sections.find((s) => s.slug === t.path)
+              : undefined;
           return (
             <Tab
               key={t.id}
               name={
                 browser
                   ? browserTabLabel(t.path)
-                  : resolveName(
-                      t.path,
-                      renames,
-                      t.path.split("/").pop() ?? t.path,
-                    )
+                  : section
+                    ? section.title
+                    : resolveName(
+                        t.path,
+                        renames,
+                        t.path.split("/").pop() ?? t.path,
+                      )
               }
-              icon={browser ? "globe" : undefined}
+              icon={browser ? "globe" : (section?.icon ?? undefined)}
               active={t.id === activeTabId}
               dirty={!browser && hasChanges(t.path, edits, drafts)}
               status={browser ? null : statusFor(t.path)}
