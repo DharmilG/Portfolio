@@ -8,8 +8,8 @@
 ```
 sections 1--* projects (via projects.folder_slug = sections.slug)
 profiles 1 row -> rendered as profile.json
-experiences / skills / social_links -> rendered as *.json
-site_settings (key/value) -> theme, statusbar, layout
+experiences / skills / social_links / certificates -> the portfolio pages
+site_settings (key/value) -> theme, statusbar, layout, resume url
 github_cache (repo_full_name PK) -> GitHub snapshot, 48h TTL
 ```
 
@@ -30,7 +30,7 @@ create extension if not exists "pgcrypto";
 -- ============ sections (Explorer folders) ============
 create table if not exists sections (
   id uuid primary key default gen_random_uuid(),
-  slug text unique not null check (slug in ('about','experience','projects','skills','contact','tmp')),
+  slug text unique not null check (slug in ('about','resume','certificates','experience','projects','skills','contact')),
   title text not null,
   icon text not null default 'folder',
   orders int not null default 0,
@@ -94,6 +94,22 @@ create table if not exists skills (
   orders int not null default 0,
   visible boolean not null default true
 );
+
+-- ============ certificates (Certificates + Resume pages) ============
+create table if not exists certificates (
+  id uuid primary key default gen_random_uuid(),
+  title text not null,
+  issuer text not null,
+  issued_at date null,
+  credential_id text null,
+  url text null check (url is null or url ~* '^https://'),
+  summary text null,
+  icon text null,
+  orders int not null default 0,
+  visible boolean not null default true,
+  created_at timestamptz not null default now()
+);
+create index if not exists idx_certificates_orders on certificates (orders) where visible = true;
 
 -- ============ social_links ============
 create table if not exists social_links (
@@ -164,6 +180,11 @@ on site_settings for select to anon, authenticated using (true);
 create policy "public read cache"
 on github_cache for select to anon, authenticated using (true);
 
+-- certificates: public read (migration 0011)
+alter table certificates enable row level security;
+create policy "public read certificates"
+  on certificates for select to anon, authenticated using (visible = true);
+
 -- no public writes: only service_role / dashboard (authenticated owner) can write.
 -- Do NOT create insert/update/delete policies for anon. Manage writes in dashboard as postgres owner.
 -- Cron / Route Handlers use SUPABASE_SERVICE_ROLE_KEY server-side to upsert github_cache + last_synced_at.
@@ -190,16 +211,33 @@ on storage.objects for update to authenticated using (bucket_id = 'avatars');
 
 Upload `logo.png` -> copy public URL -> paste into `profiles.avatar_url`.
 
+The resume PDF lives in its own public bucket (`resumes`, migration 0011):
+
+```sql
+insert into storage.buckets (id, name, public)
+values ('resumes','resumes', true)
+on conflict (id) do update set public = true;
+
+create policy "resumes public read"
+  on storage.objects for select to anon, authenticated using (bucket_id = 'resumes');
+```
+
+Upload the PDF -> point `site_settings` key `resume` at it
+(`{"url": "https://…/resumes/your-file.pdf", "label": "Resume (PDF)"}`) -> the
+Resume page embeds it and offers the download.
+
 ## 4. Seed (dashboard > SQL, run once)
 
 ```sql
--- sections
+-- sections (About first, then the rest)
 insert into sections (slug, title, icon, orders, visible, type) values
 ('about','About','person',10,true,'static'),
-('experience','Experience','briefcase',20,true,'static'),
-('projects','Projects','folder-github',30,true,'projects'),
-('skills','Skills','code',40,true,'static'),
-('contact','Contact','mail',50,true,'static')
+('resume','Resume','file-pdf',20,true,'static'),
+('certificates','Certificates','verified',30,true,'static'),
+('experience','Experience','briefcase',40,true,'static'),
+('projects','Projects','repo',50,true,'projects'),
+('skills','Skills','code',60,true,'static'),
+('contact','Contact','mail',70,true,'static')
 on conflict (slug) do nothing;
 
 -- profile (replace avatar_url after upload)
@@ -219,10 +257,15 @@ insert into social_links (label, url, icon, orders, visible) values
 ('GitHub','https://github.com/YOU','github',10,true),
 ('LinkedIn','https://linkedin.com/in/YOU','linkedin',20,true);
 
+-- certificates (your own rows)
+insert into certificates (title, issuer, issued_at, credential_id, url, summary, orders, visible) values
+('Example certificate','Example issuer','2025-01-01','ABC-123','https://example.com/cert','What it proves.',10,true);
+
 -- site settings
 insert into site_settings (key, value) values
 ('theme','{"mode":"dark","accent":"#007acc"}'),
 ('statusbar_branch','{"branch":"main"}'),
+('resume','{"url":null,"label":"Resume (PDF)","updated_at":null}'),
 ('default_preview_layout','{"split":"right"}')
 on conflict (key) do nothing;
 
@@ -238,7 +281,7 @@ Add real repo: `insert into projects (repo_owner, repo_name, visible, orders, pr
 ## 5. Access patterns (how code uses tables)
 
 - Explorer: `select * from sections where visible order by orders` + `select * from projects where visible and folder_slug='projects' order by orders`.
-- `profile.json` tab: `select * from profiles limit 1`.
+- Portfolio pages: `GET /api/profile` reads `profiles` (1 row), `experiences`, `skills`, `social_links`, `certificates` and `site_settings` in one public request; the store keeps it for the session.
 - `settings.json` tab: `select * from site_settings`.
 - Browser preview tab: shows iff `projects.preview_url is not null`. If `preview_embeddable=false`, show `Open in new tab` only.
 - Terminal `ls/open`: same queries, client-cached in Zustand 60s.
