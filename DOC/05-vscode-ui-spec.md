@@ -152,7 +152,7 @@ Header `Explorer` + `...` overflow button (shared `Tooltip`: `Views and More Act
 Static workspace root `Dharmil Gajjar` (always present, name in `--color-vscode-emphasis`, no rename affordance) — its row carries the view actions right-aligned (`new-file`/`new-folder`/`refresh`/`collapse-all` as 28px `ViewActionButton`s with VS Code tooltips; emit ids, page owns behavior), hidden at rest and revealed whenever the sidebar pane is hovered, no matter where the pointer is (VS Code `.pane:hover > .pane-header > .actions`, `paneview.css`; `group/pane` on the SideBar aside) so the name never truncates at the 170px minimum — with DB sections nested one level deeper.
 Sections as folders from `04`: `About/ Experience/ Projects/<repo>/ Skills/ Contact/` + pinned `tmp` scratch node (local-only `tmpFs`; renders when non-empty, open by default, dimmed italic; DB sections with slug `tmp` are ignored): files `untitled-N` + folders `New Folder N/` with `.gitkeep` inside, rows open/focus tabs like repo files.
 Folder rows: chevron + name only (no folder icon, chevron vertically centered). Row: 28px, indent 12px/level, chevron + `vscode-icons` by ext + `resolveName(): uiRenames ?? title_override ?? repo_name`. Decorations (git conventions): edited existing files get an amber name + `M` badge (`--color-vscode-modified`, once `Ctrl+S` saved the buffer); new `tmp/` files tint green (`--color-vscode-added`, untracked — no badge). Right-click: `Rename (session only) -> uiRenames`, `Open Preview (if preview_url)`, `Discard local changes`. Rows are shared `TreeRow`s (`data-path` each): clicking selects (folders too); opening/activating a file auto-reveals it (autoReveal in `lib/store` — expand ancestors, scroll into view, select). Selection renders blue `list-active` while the tree has focus, gray `list-inactive` otherwise.
-`Projects/<repo>/` expand -> `GET /api/repo/tree?owner&repo&branch` (the branch the status bar picked), skeleton shimmer rows while loading, README auto-open (background tab, the editor keeps its file). The README's opening paragraph is the project description (hover title on the row; the status-bar project picker shows it too).
+`Projects/<repo>/` expand -> `GET /api/repo/tree?owner&repo&branch` (the branch the status bar picked), skeleton shimmer rows while loading, README auto-open (background tab, the editor keeps its file). The README's opening paragraph is the project description (hover title on the row; the status-bar project picker shows it too). The section rows open their portfolio page (§11); the local scratchpad is not shown in the tree.
 
 Responsive (§1.1): <768px the sidebar card (rail + pane, 330px) leaves the flex flow — it starts collapsed on load and `Ctrl+B` opens it as an absolute overlay drawer above the editor (shadow, sash hidden, editor full width underneath); opening a file from it dismisses the drawer.
 
@@ -215,3 +215,37 @@ Behavior: `>` prefix = commands mode (backspace past it returns to files); file 
 Notification stack in the **top-right** corner, below the title bar: a 320px card with a kind glyph (`info` / `pass` / `warning`), the message and a close button; it fades out after 4.5s and the stack keeps the last four. The store owns the list (session-only, never persisted) and pushes from the actions that change something: `Saved locally` (`Ctrl+S`), `Committed locally: <msg>` (commit button + terminal `commit -m`).
 
 All surfaces flush/square; radii only for controls (`rounded-control`); colors/type/shadow from §2 tokens only.
+
+## 11. Portfolio pages (About, Resume, Certificates, Experience, Skills, Contact)
+
+The workspace sections (DB `sections`, ordered by `orders`) are the Explorer's
+folders. **Every section except Projects opens a designed page in the editor**
+(a `page` tab, path = the section slug); Projects keeps its tree (the row
+toggles the folder, the chevron shows the state). The local scratchpad is
+internal — it never appears in the tree or the quick open.
+
+Shared chrome (`components/vscode/pages/PageShell.tsx`): a 900px column on the
+editor surface, a header (glyph in a rounded tile + title + subtitle), the
+body, and a quiet footer. Cards use `--color-vscode-page-card`, borders
+`--color-vscode-page-border`, chips `--color-vscode-page-chip`; only theme
+tokens, no hard-coded colors.
+
+- **About** — hero (avatar or initials, name, role, bio, CTA row: email, social
+  links, Resume), a 4-tile status strip (availability, years, projects, location),
+  "Currently", the stack groups as chips, the selected work as cards (title,
+  README excerpt, language tags, branch; clicking reveals the repo in the
+  Explorer), the experience timeline and the contact row.
+- **Resume** — the PDF from the public `resumes` bucket (URL in
+  `site_settings.resume`): embedded in an iframe with a download button, or a
+  short "upload it" instruction while no PDF is set.
+- **Certificates** — one card per row (issuer, date, credential id, summary,
+  verify link); an empty state until rows exist.
+- **Experience** — a vertical rail with a dot per role (same shape as the Source
+  Control graph rail).
+- **Skills** — one block per category, chips.
+- **Contact** — the email (copy to clipboard + `mailto:`), the social links and
+  the location.
+
+The pages read `GET /api/profile` once per session (the store keeps it); the
+Explorer rows, the quick open and the tab strip all use the section title and
+its glyph.
