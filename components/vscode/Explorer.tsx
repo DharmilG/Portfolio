@@ -144,12 +144,12 @@ export default function Explorer({
   const trees = useStore((s) => s.trees);
   const renames = useStore((s) => s.renames);
   const edits = useStore((s) => s.edits);
-  const tmpFs = useStore((s) => s.tmpFs);
   const expanded = useStore((s) => s.expanded);
   const toggleExpanded = useStore((s) => s.toggleExpanded);
   const selectedPath = useStore((s) => s.selectedPath);
   const revealNonce = useStore((s) => s.revealNonce);
   const selectPath = useStore((s) => s.selectPath);
+  const openTab = useStore((s) => s.openTab);
   const setTree = useStore((s) => s.setTree);
   const setTreeBranch = useStore((s) => s.setTreeBranch);
   const setReadme = useStore((s) => s.setReadme);
@@ -371,40 +371,13 @@ export default function Explorer({
       );
     });
 
-  // Pinned tmp scratch (local-only) — appears when tmpFs has entries.
-  const tmpKeys = Object.keys(tmpFs).filter((k) => k.startsWith("tmp/"));
-  const tmpDirs = [
-    ...new Set(
-      tmpKeys
-        .filter((k) => k.slice(4).includes("/"))
-        .map((k) => k.slice(4).split("/")[0]),
-    ),
-  ].sort();
-  const tmpFiles = tmpKeys.filter((k) => !k.slice(4).includes("/")).sort();
-  const tmpOpen = expanded["tmp"] ?? false;
+  // The local scratchpad stays internal (no Explorer row): the terminal can
+  // still write files and they open as tabs, but the tree shows the real
+  // sections only.
 
   const commitRename = (fullPath: string, value: string) => {
     onRename?.(fullPath, value.trim() === "" ? null : value.trim());
     setRenaming(null);
-  };
-
-  const tmpFileRow = (k: string, indent: string) => {
-    const fname = resolveName(k, renames, k.split("/").pop() ?? k);
-    return (
-      <TreeRow
-        key={k}
-        path={k}
-        indent={indent}
-        selected={selectedPath === k}
-        focused={focused}
-        onClick={() => onOpenFile?.(k)}
-      >
-        <span className="text-vscode-dim">
-          <Codicon name={fileIcon(fname)} />
-        </span>
-        <span className="truncate text-vscode-added">{fname}</span>
-      </TreeRow>
-    );
   };
 
   return (
@@ -449,64 +422,6 @@ export default function Explorer({
               ))}
             </div>
           </TreeRow>
-          {rootOpen && tmpKeys.length > 0 ? (
-            <div>
-              <TreeRow
-                path="tmp"
-                indent="pl-6"
-                selected={selectedPath === "tmp"}
-                focused={focused}
-                onClick={() => {
-                  selectPath("tmp");
-                  toggleExpanded("tmp");
-                }}
-              >
-                <span className="flex w-4 shrink-0 items-center justify-center text-vscode-dim">
-                  <Codicon
-                    name={tmpOpen ? "chevron-down" : "chevron-right"}
-                    className="translate-y-px"
-                  />
-                </span>
-                <span className="truncate italic opacity-60">tmp</span>
-              </TreeRow>
-              {tmpOpen ? (
-                <div>
-                  {tmpDirs.map((dir) => {
-                    const dkey = `tmp/${dir}`;
-                    const dopen = expanded[dkey] ?? false;
-                    return (
-                      <div key={dkey}>
-                        <TreeRow
-                          path={dkey}
-                          indent="pl-10"
-                          selected={selectedPath === dkey}
-                          focused={focused}
-                          onClick={() => {
-                            selectPath(dkey);
-                            toggleExpanded(dkey);
-                          }}
-                        >
-                          <span className="flex w-4 shrink-0 items-center justify-center text-vscode-dim">
-                            <Codicon
-                              name={dopen ? "chevron-down" : "chevron-right"}
-                              className="translate-y-px"
-                            />
-                          </span>
-                          <span className="truncate">{dir}</span>
-                        </TreeRow>
-                        {dopen
-                          ? tmpKeys
-                              .filter((k) => k.startsWith(`${dkey}/`))
-                              .map((k) => tmpFileRow(k, "pl-14"))
-                          : null}
-                      </div>
-                    );
-                  })}
-                  {tmpFiles.map((k) => tmpFileRow(k, "pl-10"))}
-                </div>
-              ) : null}
-            </div>
-          ) : null}
           {rootOpen ? (
             sections.length === 0 ? (
               <p className="py-1 pl-6 pr-2 text-xs text-vscode-dim">
@@ -518,6 +433,7 @@ export default function Explorer({
                 const open = expanded[key] ?? false;
                 const title = resolveName(key, renames, sec.title);
                 if (!match(title)) return null;
+                const isProjects = sec.slug === "projects";
                 return (
                   <div key={sec.id}>
                     <TreeRow
@@ -527,16 +443,27 @@ export default function Explorer({
                       focused={focused}
                       onClick={() => {
                         selectPath(key);
-                        toggleExpanded(key);
+                        if (isProjects) {
+                          toggleExpanded(key);
+                          return;
+                        }
+                        // Every other section opens its designed page.
+                        openTab({ kind: "page", path: key, sha: null });
                       }}
                       onDoubleClick={() => setRenaming(key)}
                     >
-                      <span className="flex w-4 shrink-0 items-center justify-center text-vscode-dim">
-                        <Codicon
-                          name={open ? "chevron-down" : "chevron-right"}
-                          className="translate-y-px"
-                        />
-                      </span>
+                      {isProjects ? (
+                        <span className="flex w-4 shrink-0 items-center justify-center text-vscode-dim">
+                          <Codicon
+                            name={open ? "chevron-down" : "chevron-right"}
+                            className="translate-y-px"
+                          />
+                        </span>
+                      ) : (
+                        <span className="flex w-4 shrink-0 items-center justify-center text-vscode-dim">
+                          <Codicon name={sec.icon} />
+                        </span>
+                      )}
                       {renaming === key ? (
                         <RenameInput
                           defaultValue={title}
