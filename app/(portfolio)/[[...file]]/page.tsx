@@ -11,6 +11,7 @@ import CommandPalette from "@/components/vscode/CommandPalette";
 import Explorer from "@/components/vscode/Explorer";
 import ExtensionsView from "@/components/vscode/ExtensionsView";
 import FileViewer from "@/components/vscode/FileViewer";
+import PageSurface from "@/components/vscode/PageSurface";
 import PrimarySideBar from "@/components/vscode/PrimarySideBar";
 import RunView from "@/components/vscode/RunView";
 import Sash from "@/components/vscode/Sash";
@@ -76,6 +77,19 @@ async function loadProjects() {
     }
   } catch (error) {
     console.error("Could not load projects:", error);
+  }
+}
+
+// The portfolio pages (About, Resume, Certificates, ...) read one public
+// payload from /api/profile.
+async function loadProfile() {
+  try {
+    const res = await fetch("/api/profile", { cache: "no-store" });
+    if (!res.ok) throw new Error(`profile ${res.status}`);
+    const data = await res.json();
+    useStore.getState().setProfile(data);
+  } catch (error) {
+    console.error("Could not load profile:", error);
   }
 }
 
@@ -151,6 +165,7 @@ export default function PortfolioPage() {
     useStore.getState().initTerminal();
     loadSections();
     void loadProjects();
+    void loadProfile();
   }, []);
 
   // Phones start with the sidebar collapsed (Ctrl+B / the rail reveal it as
@@ -303,6 +318,18 @@ export default function PortfolioPage() {
     revealPath(path);
   };
 
+  const profileContent = useStore((s) => s.profile);
+  const avatarUrl = profileContent?.profile?.avatar_url ?? null;
+  const userInitial = (
+    profileContent?.profile?.name ??
+    "Dharmil Gajjar"
+  )
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? "")
+    .join("");
+
   return (
     <div className="flex min-h-0 min-w-0 flex-1 flex-col">
       <TitleBar
@@ -319,6 +346,8 @@ export default function PortfolioPage() {
               active={view}
               onSelect={selectView}
               title={VIEW_TITLES[view] ?? "Explorer"}
+              avatarUrl={avatarUrl}
+              userInitial={userInitial}
             >
               {view === "explorer" ? (
                 <Explorer onOpenFile={openCodeTab} onAction={handleViewAction} />
@@ -357,7 +386,10 @@ export default function PortfolioPage() {
                 <Tabs onReveal={handleReveal} />
                 <Breadcrumb onOpenFile={openCodeTab} />
                 {hasTabs ? (
-                  <FileViewer />
+                  <>
+                    <FileViewer />
+                    <PageSurface />
+                  </>
                 ) : (
                   <div className="flex min-h-0 flex-1 items-center justify-center text-sm text-vscode-dim">
                     Open a file from the Explorer
