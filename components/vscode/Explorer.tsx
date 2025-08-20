@@ -17,10 +17,10 @@ import { fileIcon } from "@/lib/fileIcons";
 import { readmeDescription } from "@/lib/readme";
 import {
   isDirty,
-  projectDescription,
   repoTreeKey,
   ROOT_NAME,
   useStore,
+  type Project,
   type TreeEntry,
 } from "@/lib/store";
 import Codicon from "./Codicon";
@@ -55,12 +55,12 @@ const EXPLORER_ACTIONS: ViewAction[] = [
 // classes (computed class names would not be emitted by the compiler).
 const REPO_INDENTS = [
   "pl-14",
-  "pl-[3.5rem]",
   "pl-[4.5rem]",
   "pl-[5.5rem]",
   "pl-[6.5rem]",
   "pl-[7.5rem]",
   "pl-[8.5rem]",
+  "pl-[9.5rem]",
 ];
 
 type VfsNode = {
@@ -141,6 +141,7 @@ export default function Explorer({
 }: ExplorerProps) {
   const sections = useStore((s) => s.sections);
   const projects = useStore((s) => s.projects);
+  const projectGroups = useStore((s) => s.projectGroups);
   const trees = useStore((s) => s.trees);
   const renames = useStore((s) => s.renames);
   const edits = useStore((s) => s.edits);
@@ -307,12 +308,16 @@ export default function Explorer({
     nodes: VfsNode[],
     repoKey: string,
     depth: number,
+    indentOffset = 0,
   ) =>
     nodes.map((node) => {
       if (!nodeMatches(node, repoKey)) return null;
       const key = `${repoKey}/${node.path}`;
       const name = resolveName(key, renames, node.name);
-      const indent = REPO_INDENTS[Math.min(depth, REPO_INDENTS.length - 1)];
+      const indent =
+        REPO_INDENTS[
+          Math.min(depth + indentOffset, REPO_INDENTS.length - 1)
+        ];
 
       if (node.type === "tree") {
         const open = expanded[key] ?? false;
@@ -339,7 +344,7 @@ export default function Explorer({
               </span>
               <span className="truncate">{name}</span>
             </TreeRow>
-            {open ? renderRepoNodes(node.children, repoKey, depth + 1) : null}
+            {open ? renderRepoNodes(node.children, repoKey, depth + 1, indentOffset) : null}
           </div>
         );
       }
@@ -378,6 +383,98 @@ export default function Explorer({
   const commitRename = (fullPath: string, value: string) => {
     onRename?.(fullPath, value.trim() === "" ? null : value.trim());
     setRenaming(null);
+  };
+
+  // One repository row + its lazy tree. Top-level repos sit at pl-10; repos
+  // inside a project group sit one step deeper and indent their contents.
+  const projectRow = (
+    p: Project,
+    rowIndent: string,
+    indentOffset: number,
+  ) => {
+    const repo = `${p.repo_owner}/${p.repo_name}`;
+    const name = resolveName(
+      `Projects/${repo}`,
+      renames,
+      p.title_override ?? p.repo_name,
+    );
+    if (!match(name)) return null;
+    const branch = branchByRepo[repo] ?? treeBranch[repo];
+    const treeKey = repoTreeKey(repo, branch);
+    const tree = trees[treeKey];
+    const rkey = `Projects/${repo}`;
+    const ropen = expanded[rkey] ?? false;
+    const contentIndent =
+      REPO_INDENTS[Math.min(indentOffset, REPO_INDENTS.length - 1)];
+    return (
+      <div key={p.id}>
+        <TreeRow
+          path={rkey}
+          indent={rowIndent}
+          selected={selectedPath === rkey}
+          focused={focused}
+          title={
+            p.description_override ??
+            readmes[repo] ??
+            p.description ??
+            repoMeta[repo]?.description ??
+            undefined
+          }
+          onClick={() => {
+            selectPath(rkey);
+            toggleExpanded(rkey);
+          }}
+          onDoubleClick={() => setRenaming(rkey)}
+        >
+          <span className="flex w-4 shrink-0 items-center justify-center text-vscode-dim">
+            <Codicon
+              name={ropen ? "chevron-down" : "chevron-right"}
+              className="translate-y-px"
+            />
+          </span>
+          {renaming === rkey ? (
+            <RenameInput
+              defaultValue={name}
+              label="Rename project"
+              onCommit={(v) => commitRename(rkey, v ?? "")}
+              onCancel={() => setRenaming(null)}
+            />
+          ) : (
+            <span className="truncate">{name}</span>
+          )}
+        </TreeRow>
+        {ropen ? (
+          treeErrors[treeKey] ? (
+            <button
+              type="button"
+              onClick={() => {
+                setTreeErrors((prev) => {
+                  const next = { ...prev };
+                  delete next[treeKey];
+                  return next;
+                });
+                requestTree(p);
+              }}
+              className={`w-full py-1 ${contentIndent} pr-2 text-left text-xs text-vscode-dim hover:text-vscode-fg`}
+            >
+              Could not load files · Retry
+            </button>
+          ) : !tree ? (
+            <p
+              className={`animate-pulse py-1 ${contentIndent} pr-2 text-xs text-vscode-dim`}
+            >
+              Loading files…
+            </p>
+          ) : tree.length === 0 ? (
+            <p className={`py-1 ${contentIndent} pr-2 text-xs text-vscode-dim`}>
+              No files
+            </p>
+          ) : (
+            renderRepoNodes(buildVfs(tree), rkey, 0, indentOffset)
+          )
+        ) : null}
+      </div>
+    );
   };
 
   return (
@@ -477,88 +574,78 @@ export default function Explorer({
                     </TreeRow>
                     {open && sec.slug === "projects" ? (
                       <div>
-                        {projects.map((p) => {
-                          const repo = `${p.repo_owner}/${p.repo_name}`;
-                          const name = resolveName(
-                            `Projects/${repo}`,
-                            renames,
-                            p.title_override ?? p.repo_name,
+                        {projectGroups.map((group) => {
+                          const gkey = `Projects/${group.slug}`;
+                          const gname = resolveName(gkey, renames, group.title);
+                          const gopen = expanded[gkey] ?? false;
+                          const children = projects.filter(
+                            (p) => p.group_slug === group.slug,
                           );
-                          if (!match(name)) return null;
-                          const branch = branchByRepo[repo] ?? treeBranch[repo];
-                          const treeKey = repoTreeKey(repo, branch);
-                          const tree = trees[treeKey];
-                          const rkey = `Projects/${repo}`;
-                          const ropen = expanded[rkey] ?? false;
+                          const matching = children.filter((p) => {
+                            const name = resolveName(
+                              `Projects/${p.repo_owner}/${p.repo_name}`,
+                              renames,
+                              p.title_override ?? p.repo_name,
+                            );
+                            return match(name);
+                          });
+                          if (!match(gname) && matching.length === 0) {
+                            return null;
+                          }
+                          // While filtering, open the group that holds matches.
+                          const showChildren =
+                            gopen || (!match(gname) && matching.length > 0);
                           return (
-                            <div key={p.id}>
+                            <div key={group.id}>
                               <TreeRow
-                                path={rkey}
+                                path={gkey}
                                 indent="pl-10"
-                                selected={selectedPath === rkey}
+                                selected={selectedPath === gkey}
                                 focused={focused}
-                                title={
-                                  readmes[repo] ??
-                                  p.description ??
-                                  repoMeta[repo]?.description ??
-                                  undefined
-                                }
+                                title={`${gname}${
+                                  group.description
+                                    ? ` — ${group.description}`
+                                    : ""
+                                }`}
                                 onClick={() => {
-                                  selectPath(rkey);
-                                  toggleExpanded(rkey);
+                                  selectPath(gkey);
+                                  toggleExpanded(gkey);
                                 }}
-                                onDoubleClick={() => setRenaming(rkey)}
+                                onDoubleClick={() => setRenaming(gkey)}
                               >
                                 <span className="flex w-4 shrink-0 items-center justify-center text-vscode-dim">
                                   <Codicon
                                     name={
-                                      ropen ? "chevron-down" : "chevron-right"
+                                      gopen ? "chevron-down" : "chevron-right"
                                     }
                                     className="translate-y-px"
                                   />
                                 </span>
-                                {renaming === rkey ? (
+                                <span className="text-vscode-dim">
+                                  <Codicon name={group.icon} />
+                                </span>
+                                {renaming === gkey ? (
                                   <RenameInput
-                                    defaultValue={name}
-                                    label="Rename project"
-                                    onCommit={(v) => commitRename(rkey, v ?? "")}
+                                    defaultValue={gname}
+                                    label="Rename group"
+                                    onCommit={(v) => commitRename(gkey, v ?? "")}
                                     onCancel={() => setRenaming(null)}
                                   />
                                 ) : (
-                                  <span className="truncate">{name}</span>
+                                  <span className="truncate">{gname}</span>
                                 )}
                               </TreeRow>
-                              {ropen ? (
-                                treeErrors[treeKey] ? (
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      setTreeErrors((prev) => {
-                                        const next = { ...prev };
-                                        delete next[treeKey];
-                                        return next;
-                                      });
-                                      requestTree(p);
-                                    }}
-                                    className="w-full py-1 pl-14 pr-2 text-left text-xs text-vscode-dim hover:text-vscode-fg"
-                                  >
-                                    Could not load files · Retry
-                                  </button>
-                                ) : !tree ? (
-                                  <p className="animate-pulse py-1 pl-14 pr-2 text-xs text-vscode-dim">
-                                    Loading files…
-                                  </p>
-                                ) : tree.length === 0 ? (
-                                  <p className="py-1 pl-14 pr-2 text-xs text-vscode-dim">
-                                    No files
-                                  </p>
-                                ) : (
-                                  renderRepoNodes(buildVfs(tree), rkey, 0)
-                                )
-                              ) : null}
+                              {showChildren
+                                ? matching.map((p) =>
+                                    projectRow(p, "pl-14", 1),
+                                  )
+                                : null}
                             </div>
                           );
                         })}
+                        {projects
+                          .filter((p) => !p.group_slug)
+                          .map((p) => projectRow(p, "pl-10", 0))}
                       </div>
                     ) : null}
                   </div>
