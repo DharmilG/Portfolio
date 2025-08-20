@@ -29,7 +29,7 @@ export default function CertificatesPage() {
           </p>
         </div>
       ) : (
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid gap-3 lg:grid-cols-2">
           {certificates.map((cert) => (
             <PageCard key={cert.id}>
               <div className="flex items-start gap-3">
