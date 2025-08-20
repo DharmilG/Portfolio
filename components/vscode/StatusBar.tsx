@@ -254,6 +254,7 @@ export default function StatusBar() {
                         key={p.id}
                         label={p.title_override ?? p.repo_name}
                         detail={
+                          p.description_override ??
                           readmes[repo] ??
                           p.description ??
                           repoMeta[repo]?.description ??
