@@ -1,6 +1,6 @@
 // GET /api/profile — the content behind the portfolio pages (About, Resume,
-// Certificates, Experience, Skills, Contact). One public read of the anon
-// tables; the browser never needs a service key and no GitHub request is
+// Experience, Education, Skills, Hackathons, Contact). One public read of the
+// anon tables; the browser never needs a service key and no GitHub request is
 // spent (DOC/04 §5).
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/db";
@@ -9,7 +9,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const [profile, experiences, skills, socials, certificates, settings] =
+  const [profile, experiences, education, skills, socials, certificates, settings] =
     await Promise.all([
       supabase
         .from("profiles")
@@ -18,7 +18,16 @@ export async function GET() {
         .maybeSingle(),
       supabase
         .from("experiences")
-        .select("id,company,role,period,summary,orders")
+        .select(
+          "id,company,role,period,summary,highlights,kind,tags,url,location,orders",
+        )
+        .eq("visible", true)
+        .order("orders"),
+      supabase
+        .from("education")
+        .select(
+          "id,institution,degree,field,location,period,score,summary,url,orders",
+        )
         .eq("visible", true)
         .order("orders"),
       supabase
@@ -41,7 +50,15 @@ export async function GET() {
       supabase.from("site_settings").select("key,value"),
     ]);
 
-  const failed = [profile, experiences, skills, socials, certificates, settings]
+  const failed = [
+    profile,
+    experiences,
+    education,
+    skills,
+    socials,
+    certificates,
+    settings,
+  ]
     .filter((r) => r.error)
     .map((r) => r.error?.message);
   if (failed.length > 0) {
@@ -58,6 +75,7 @@ export async function GET() {
     {
       profile: profile.data ?? null,
       experiences: experiences.data ?? [],
+      education: education.data ?? [],
       skills: skills.data ?? [],
       socials: socials.data ?? [],
       certificates: certificates.data ?? [],
