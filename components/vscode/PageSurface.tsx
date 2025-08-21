@@ -7,7 +7,9 @@ import { useStore } from "@/lib/store";
 import AboutPage from "./pages/About";
 import CertificatesPage from "./pages/Certificates";
 import ContactPage from "./pages/Contact";
+import EducationPage from "./pages/Education";
 import ExperiencePage from "./pages/Experience";
+import HackathonsPage from "./pages/Hackathons";
 import ResumePage from "./pages/Resume";
 import SkillsPage from "./pages/Skills";
 
@@ -26,8 +28,12 @@ export default function PageSurface() {
       return <CertificatesPage />;
     case "experience":
       return <ExperiencePage />;
+    case "education":
+      return <EducationPage />;
     case "skills":
       return <SkillsPage />;
+    case "hackathons":
+      return <HackathonsPage />;
     case "contact":
       return <ContactPage />;
     default:
