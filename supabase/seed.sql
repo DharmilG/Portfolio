@@ -113,6 +113,64 @@ values
     true
   );
 
+-- The Experience page narrative: two authored parts, one card per resume line.
+-- `highlights` above stays the flat list used by About and the hackathon cards.
+update experiences
+set phases = $json$[
+  {
+    "label": "Part 01",
+    "title": "Product & storefront",
+    "summary": "Odoo 19 theming, admin tooling and the account experience.",
+    "tags": ["Odoo 19", "Python", "JavaScript"],
+    "achievements": [
+      {
+        "lead": "A custom Odoo 19 storefront",
+        "body": "Built the homepage and reusable components for a perfume brand, editable through Odoo's website editor.",
+        "tags": ["Odoo 19", "JavaScript"]
+      },
+      {
+        "lead": "No-code layout controls",
+        "body": "Added admin controls for element padding, section spacing and image styling, so layout changes need no code.",
+        "tags": ["Odoo 19", "Python"]
+      },
+      {
+        "lead": "Category management",
+        "body": "Built a custom backend view to manage product categories, including which categories appear in the navbar.",
+        "tags": ["Odoo 19", "Python"]
+      },
+      {
+        "lead": "The My Account suite",
+        "body": "Shipped order-wise admin chat, recently viewed products, orders, returns, wishlist and account settings.",
+        "tags": ["Odoo 19", "JavaScript"]
+      }
+    ]
+  },
+  {
+    "label": "Part 02",
+    "title": "Quality & releases",
+    "summary": "Functional and integration QA across a React Native IoT app.",
+    "tags": ["QA", "React Native"],
+    "achievements": [
+      {
+        "lead": "BLE + Wi-Fi verification",
+        "body": "Verified that every feature sent and received the correct connection signals over BLE and Wi-Fi.",
+        "tags": ["QA", "React Native"]
+      },
+      {
+        "lead": "Scheduling & control flows",
+        "body": "Tested scheduling workflows and controls across the app, device and backend with functional and integration tests.",
+        "tags": ["QA", "React Native"]
+      },
+      {
+        "lead": "The defect loop",
+        "body": "Reproduced and reported defects, fixed some in the application, and retested each fix to confirm expected behavior.",
+        "tags": ["QA", "React Native"]
+      }
+    ]
+  }
+]$json$::jsonb
+where company = 'Northstar Innovations' and kind = 'work';
+
 -- === education ===
 delete from education;
 insert into education (
