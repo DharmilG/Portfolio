@@ -45,19 +45,19 @@ export default function ContactPage() {
     >
       <div className="grid gap-3 lg:grid-cols-2">
         <PageCard>
-          <div className="text-[12px] text-vscode-dim">Email</div>
+          <div className="text-page-micro text-vscode-dim">Email</div>
           {email ? (
             <div className="mt-1.5 flex items-center gap-2">
               <a
                 href={`mailto:${email}`}
-                className="truncate text-[14px] text-vscode-quick-match hover:underline"
+                className="truncate text-page-body text-vscode-quick-match hover:underline"
               >
                 {email}
               </a>
               <button
                 type="button"
                 onClick={() => copy(email, "email")}
-                className="ml-auto flex h-6 shrink-0 items-center gap-1 rounded-control border border-vscode-page-border bg-vscode-page-chip px-2 text-[11px] text-vscode-muted hover:border-vscode-accent/60 hover:text-vscode-fg"
+                className="ml-auto flex h-6 shrink-0 items-center gap-1 rounded-control border border-vscode-page-border bg-vscode-page-chip px-2 text-page-micro text-vscode-muted hover:border-vscode-accent/60 hover:text-vscode-fg"
               >
                 <Codicon
                   name={copied === "email" ? "check" : "copy"}
@@ -67,7 +67,7 @@ export default function ContactPage() {
               </button>
             </div>
           ) : (
-            <p className="mt-1.5 text-[13px] text-vscode-dim">
+            <p className="mt-1.5 text-page-body text-vscode-dim">
               Add your email to the profile ({"`profiles.data.email`"}) to show
               it here.
             </p>
@@ -75,18 +75,18 @@ export default function ContactPage() {
 
           {phone ? (
             <>
-              <div className="mt-4 text-[12px] text-vscode-dim">Phone</div>
+              <div className="mt-4 text-page-micro text-vscode-dim">Phone</div>
               <div className="mt-1.5 flex items-center gap-2">
                 <a
                   href={`tel:${phone.replace(/\s+/g, "")}`}
-                  className="truncate text-[14px] text-vscode-fg hover:underline"
+                  className="truncate text-page-body text-vscode-fg hover:underline"
                 >
                   {phone}
                 </a>
                 <button
                   type="button"
                   onClick={() => copy(phone, "phone")}
-                  className="ml-auto flex h-6 shrink-0 items-center gap-1 rounded-control border border-vscode-page-border bg-vscode-page-chip px-2 text-[11px] text-vscode-muted hover:border-vscode-accent/60 hover:text-vscode-fg"
+                  className="ml-auto flex h-6 shrink-0 items-center gap-1 rounded-control border border-vscode-page-border bg-vscode-page-chip px-2 text-page-micro text-vscode-muted hover:border-vscode-accent/60 hover:text-vscode-fg"
                 >
                   <Codicon
                     name={copied === "phone" ? "check" : "copy"}
@@ -100,8 +100,8 @@ export default function ContactPage() {
 
           {location ? (
             <>
-              <div className="mt-4 text-[12px] text-vscode-dim">Location</div>
-              <div className="mt-1.5 flex items-center gap-1.5 text-[13px] text-vscode-fg">
+              <div className="mt-4 text-page-micro text-vscode-dim">Location</div>
+              <div className="mt-1.5 flex items-center gap-1.5 text-page-body text-vscode-fg">
                 <Codicon name="location" size={13} className="text-vscode-dim" />
                 {location}
               </div>
@@ -110,9 +110,9 @@ export default function ContactPage() {
         </PageCard>
 
         <PageCard>
-          <div className="text-[12px] text-vscode-dim">Elsewhere</div>
+          <div className="text-page-micro text-vscode-dim">Elsewhere</div>
           {socials.length === 0 ? (
-            <p className="mt-1.5 text-[13px] text-vscode-dim">
+            <p className="mt-1.5 text-page-body text-vscode-dim">
               No links yet — add them to the <code>social_links</code> table.
             </p>
           ) : (
@@ -123,7 +123,7 @@ export default function ContactPage() {
                   href={social.url}
                   target="_blank"
                   rel="noreferrer noopener"
-                  className="flex items-center gap-2 rounded-control px-1 py-1 text-[13px] text-vscode-fg hover:bg-vscode-page-card-hover"
+                  className="flex items-center gap-2 rounded-control px-1 py-1 text-page-body text-vscode-fg hover:bg-vscode-page-card-hover"
                 >
                   <Codicon
                     name={social.icon}
@@ -141,7 +141,7 @@ export default function ContactPage() {
             </div>
           )}
           {availability ? (
-            <div className="mt-4 flex items-center gap-1.5 rounded-control bg-vscode-page-chip px-2.5 py-1.5 text-[11px] text-vscode-added">
+            <div className="mt-4 flex items-center gap-1.5 rounded-control bg-vscode-page-chip px-2.5 py-1.5 text-page-micro text-vscode-added">
               <Codicon name="circle-filled" size={10} />
               {availability}
             </div>
