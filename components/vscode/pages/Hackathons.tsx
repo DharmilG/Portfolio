@@ -21,7 +21,7 @@ export default function HackathonsPage() {
       footer="Rows live in `experiences` with `kind = 'hackathon'`."
     >
       {events.length === 0 ? (
-        <p className="text-[13px] text-vscode-dim">No hackathons listed yet.</p>
+        <p className="text-page-body text-vscode-dim">No hackathons listed yet.</p>
       ) : (
         <div className="grid gap-3 lg:grid-cols-2">
           {events.map((event) => (
@@ -31,20 +31,20 @@ export default function HackathonsPage() {
                   <Codicon name="flame" size={16} />
                 </span>
                 <div className="min-w-0 flex-1">
-                  <div className="text-[13px] font-medium text-vscode-fg">
+                  <div className="text-page-body font-medium text-vscode-fg">
                     {event.role}
                   </div>
-                  <div className="mt-0.5 text-[12px] text-vscode-muted">
+                  <div className="mt-0.5 text-page-meta text-vscode-muted">
                     {event.company}
                   </div>
-                  <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-vscode-dim">
+                  <div className="mt-1 flex flex-wrap items-center gap-2 text-page-micro text-vscode-dim">
                     <span>{event.period}</span>
                     {event.location ? <span>· {event.location}</span> : null}
                   </div>
                 </div>
               </div>
               {event.summary ? (
-                <p className="mt-3 text-[12px] leading-relaxed text-vscode-muted">
+                <p className="mt-3 text-page-meta leading-relaxed text-vscode-muted">
                   {event.summary}
                 </p>
               ) : null}
@@ -53,7 +53,7 @@ export default function HackathonsPage() {
                   {event.highlights.map((line) => (
                     <li
                       key={line}
-                      className="flex gap-1.5 text-[11px] leading-relaxed text-vscode-dim"
+                      className="flex gap-1.5 text-page-micro leading-relaxed text-vscode-dim"
                     >
                       <span className="mt-[6px] h-1 w-1 shrink-0 rounded-full bg-vscode-accent/60" />
                       <span>{line}</span>
@@ -73,7 +73,7 @@ export default function HackathonsPage() {
                   href={event.url}
                   target="_blank"
                   rel="noreferrer noopener"
-                  className="mt-3 inline-flex items-center gap-1 text-[11px] text-vscode-quick-match hover:underline"
+                  className="mt-3 inline-flex items-center gap-1 text-page-micro text-vscode-quick-match hover:underline"
                 >
                   <Codicon name="link-external" size={11} />
                   Visit
