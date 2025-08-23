@@ -17,12 +17,12 @@ export default function SkillsPage() {
       footer="Rows live in the `skills` table (category + items)."
     >
       {groups.length === 0 ? (
-        <p className="text-[13px] text-vscode-dim">No skills listed yet.</p>
+        <p className="text-page-body text-vscode-dim">No skills listed yet.</p>
       ) : (
         <div className="space-y-6">
           {groups.map((group) => (
             <div key={group.id}>
-              <div className="text-[12px] font-medium uppercase tracking-wide text-vscode-emphasis">
+              <div className="text-page-meta font-medium uppercase tracking-wide text-vscode-emphasis">
                 {group.category}
               </div>
               <div className="mt-2.5 flex flex-wrap gap-1.5">
