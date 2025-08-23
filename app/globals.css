@@ -127,7 +127,25 @@
   --font-vscode-ui: "Segoe WPC", "Segoe UI", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   --font-vscode-code: "Cascadia Code", "JetBrains Mono", Consolas, "Courier New", monospace;
   --font-vscode-term: "Fira Code", "Cascadia Code", Consolas, "Courier New", monospace;
+
+  /* === Portfolio page type scale (content only — workbench chrome stays 11–13px) === */
+  --text-page-micro: 12px;
+  --text-page-micro--line-height: 1.45;
+  --text-page-meta: 13px;
+  --text-page-meta--line-height: 1.5;
+  --text-page-body: 15px;
+  --text-page-body--line-height: 1.65;
+  --text-page-lead: 17px;
+  --text-page-lead--line-height: 1.45;
+  --text-page-title: 24px;
+  --text-page-title--line-height: 1.25;
+  --text-page-display: 30px;
+  --text-page-display--line-height: 1.15;
+
   --shadow-vscode: 0 8px 24px rgb(0 0 0 / 0.45);
+  --shadow-page-glow:
+    0 0 0 1px rgb(0 120 212 / 0.3),
+    0 18px 52px -18px rgb(0 120 212 / 0.55);
 }
 
 /* Code editor + terminal font utilities (single source: the tokens above).
