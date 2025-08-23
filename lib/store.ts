@@ -24,6 +24,35 @@ export type MarkdownViewMode = "preview" | "source";
 
 // Portfolio page content (GET /api/profile) — the About / Resume /
 // Certificates / Experience / Skills / Contact pages read from it.
+export type ExperienceAchievement = {
+  lead: string;
+  body: string;
+  tags?: string[];
+};
+
+export type ExperiencePhase = {
+  label: string;
+  title: string;
+  summary?: string;
+  tags?: string[];
+  achievements: ExperienceAchievement[];
+};
+
+export type Experience = {
+  id: string;
+  company: string;
+  role: string;
+  period: string;
+  summary: string | null;
+  highlights: string[];
+  phases: ExperiencePhase[];
+  kind: "work" | "hackathon";
+  tags: string[];
+  url: string | null;
+  location: string | null;
+  orders: number;
+};
+
 export type ProfileContent = {
   profile: {
     name: string;
@@ -33,19 +62,7 @@ export type ProfileContent = {
     website: string | null;
     data: Record<string, unknown>;
   } | null;
-  experiences: {
-    id: string;
-    company: string;
-    role: string;
-    period: string;
-    summary: string | null;
-    highlights: string[];
-    kind: "work" | "hackathon";
-    tags: string[];
-    url: string | null;
-    location: string | null;
-    orders: number;
-  }[];
+  experiences: Experience[];
   education: {
     id: string;
     institution: string;
