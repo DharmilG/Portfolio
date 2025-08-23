@@ -99,6 +99,7 @@ create table if not exists experiences (
   period text not null,
   summary text null,
   highlights text[] not null default '{}',
+  phases jsonb not null default '[]', -- authored Experience narrative (0013)
   tags text[] not null default '{}',
   kind text not null default 'work' check (kind in ('work','hackathon')),
   url text null check (url is null or url ~* '^https://'),
@@ -108,6 +109,9 @@ create table if not exists experiences (
   created_at timestamptz not null default now()
 );
 create index if not exists idx_experiences_orders on experiences (orders) where visible = true;
+-- 0013: phases = [{ label, title, summary, tags, achievements: [{ lead, body, tags }] }]
+-- `highlights` stays the flat list used by About and the hackathon cards; the
+-- Experience page falls back to it when a row has no phases.
 
 -- ============ education (-> Education page + About strip) ============
 create table if not exists education (
@@ -296,8 +300,9 @@ It seeds the real portfolio content:
   **Education**, Projects, Skills, **Hackathons**, Contact.
 - Profile (name, bio, location, website, `data` JSON: role, availability,
   hireable, class year, focus, email, phone, summary, stack).
-- 8 skill groups, 3 experiences (`kind` = work / hackathon) with bullets and
-  stack tags, 2 education rows, 2 social links.
+- 8 skill groups, 3 experiences (`kind` = work / hackathon) with bullets,
+  stack tags and the Northstar `phases` narrative, 2 education rows, 2 social
+  links.
 - 1 project group (`e-commerce` → Composable E-Commerce Platform) + 10
   projects, with resume-grade `description_override` / `highlights` on the
   flagship rows.
@@ -323,7 +328,7 @@ cloud SQL editor.
 ## 5. Access patterns (how code uses tables)
 
 - Explorer: `select * from sections where visible order by orders` + `select * from project_groups where visible order by orders` + `select * from projects where visible order by orders`. Repos with a `group_slug` render under their group row (`Projects > Composable E-Commerce Platform > Storefront Frontend / Auth Service`); the rest render flat under Projects.
-- Portfolio pages: `GET /api/profile` reads `profiles` (1 row), `experiences` (both kinds, with bullets/tags), `education`, `skills`, `social_links`, `certificates` and `site_settings` in one public request; the store keeps it for the session.
+- Portfolio pages: `GET /api/profile` reads `profiles` (1 row), `experiences` (both kinds, with bullets/tags/phases), `education`, `skills`, `social_links`, `certificates` and `site_settings` in one public request; the store keeps it for the session.
 - `GET /api/projects` reads `projects` + `project_groups` + the `github_cache` snapshot and returns `{projects, groups}`. Project copy precedence: `description_override` → live README excerpt (fresh cache) → GitHub description.
 - Project cards/tooltips prefer `description_override` too; tags fall back to GitHub languages.
 - Resume: `site_settings.resume` → `lib/resume.ts` → public `resumes` object URL + `?download=<label>` (download-only page).
