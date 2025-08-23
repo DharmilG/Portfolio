@@ -19,11 +19,11 @@ export default function CertificatesPage() {
     >
       {certificates.length === 0 ? (
         <div className="rounded-control border border-vscode-page-border bg-vscode-page-card p-6">
-          <div className="flex items-center gap-2 text-[13px] font-medium text-vscode-fg">
+          <div className="flex items-center gap-2 text-page-body font-medium text-vscode-fg">
             <Codicon name="info" size={14} className="text-vscode-accent" />
             No certificates yet
           </div>
-          <p className="mt-2 text-[12px] leading-relaxed text-vscode-muted">
+          <p className="mt-2 text-page-meta leading-relaxed text-vscode-muted">
             Add rows to the <code>certificates</code> table (title, issuer,
             issued_at, credential_id, url) and they appear here as cards.
           </p>
@@ -37,13 +37,13 @@ export default function CertificatesPage() {
                   <Codicon name={cert.icon ?? "verified"} size={16} />
                 </span>
                 <div className="min-w-0 flex-1">
-                  <div className="text-[13px] font-medium text-vscode-fg">
+                  <div className="text-page-body font-medium text-vscode-fg">
                     {cert.title}
                   </div>
-                  <div className="mt-0.5 text-[12px] text-vscode-muted">
+                  <div className="mt-0.5 text-page-meta text-vscode-muted">
                     {cert.issuer}
                   </div>
-                  <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px] text-vscode-dim">
+                  <div className="mt-2 flex flex-wrap items-center gap-2 text-page-micro text-vscode-dim">
                     {cert.issued_at ? (
                       <span>
                         {new Date(cert.issued_at).toLocaleDateString(undefined, {
@@ -57,7 +57,7 @@ export default function CertificatesPage() {
                     ) : null}
                   </div>
                   {cert.summary ? (
-                    <p className="mt-2 text-[12px] leading-relaxed text-vscode-muted">
+                    <p className="mt-2 text-page-meta leading-relaxed text-vscode-muted">
                       {cert.summary}
                     </p>
                   ) : null}
@@ -66,7 +66,7 @@ export default function CertificatesPage() {
                       href={cert.url}
                       target="_blank"
                       rel="noreferrer noopener"
-                      className="mt-3 inline-flex items-center gap-1 text-[11px] text-vscode-quick-match hover:underline"
+                      className="mt-3 inline-flex items-center gap-1 text-page-micro text-vscode-quick-match hover:underline"
                     >
                       <Codicon name="link-external" size={11} />
                       Verify
