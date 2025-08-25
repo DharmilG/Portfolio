@@ -13,7 +13,7 @@ export async function GET() {
     await Promise.all([
       supabase
         .from("profiles")
-        .select("name,avatar_url,bio,location,website,data")
+        .select("name,avatar_url,bio,location,website,data,about")
         .limit(1)
         .maybeSingle(),
       supabase
