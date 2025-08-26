@@ -248,27 +248,30 @@ tree or the quick open. The first visit opens About once the profile arrives,
 so the site never lands on an empty editor.
 
 Shared chrome (`components/vscode/pages/PageShell.tsx`): a 900px column on the
-editor surface (1120px with `width="wide"`, used by Experience and About), a
-header (glyph in a rounded tile + title + subtitle), the body, and a quiet footer.
+editor surface (1120px with `width="wide"`, used by Experience), a header
+(glyph in a rounded tile + title + subtitle), the body, and a quiet footer.
 Cards use `--color-vscode-page-card`, borders
 `--color-vscode-page-border`, chips `--color-vscode-page-chip`; only theme
 tokens, no hard-coded colors. The header title is `text-page-title` (24px); the
 page type scale lives in §2.
 
-- **About** — a wide two-column editorial page (`width="wide"`). The left rail
-  is sticky once the content is at least 672px: monogram or avatar with a status
-  dot, name, role, availability, location, email/social icon buttons, a direct
-  Resume download and a jump-to list that tracks the section in view. The right
-  column is the story: Story (lead + paragraphs + pull quote from
-  `profiles.about`), Now rows, How I work cards, a Path timeline (education →
-  hackathon → work, each linking to its page), Selected work (the featured group
-  card + two featured repositories with description, one highlight and three
-  language tags; clicking reveals it in the Explorer), Toolbox (grouped chips,
-  five per group + `+N`), Beyond the editor, and an email/resume CTA. Authored
-  copy comes from `profiles.about`; timeline, work and toolbox stay derived from
-  `education`, `experiences`, `projects` and `skills`. The page falls back to
-  `bio` when the story is empty. The rail is 240px at ≥672px, 280px at ≥896px,
-  and stacks above the narrative below 672px.
+- **About** — a compact terminal-first profile (`width="default"`). One card
+  carries the VS Code terminal chrome (35px title, transcript, live prompt and
+  hint row). `whoami` runs automatically and answers with name, role, location,
+  headline, availability and links to Experience, Projects and Contact. `help`
+  lists the commands: `whoami`, `about`, `story`, `now`, `principles`, `beyond`,
+  `experience`, `education`, `projects`, `skills`, `contact`, `resume`,
+  `open <page>` and `clear`. Up/Down recall history, Tab completes and Ctrl+L
+  clears. The transcript is DOM, not xterm, so page/project actions,
+  `mailto:`/`tel:` links and the resume download stay real controls. Page
+  commands call `openTab`; project commands switch to the Explorer and reveal
+  the group or repository; external/mail/tel/resume links are anchors. Authored
+  copy comes from `profiles.about`; experience, education, projects and skills
+  stay derived from the content tables, with project descriptions already
+  resolved by `/api/projects` (`description_override` → README → GitHub). The
+  transcript and history are session-only, so tab round-trips keep the session;
+  a cleared terminal stays cleared until reload. It falls back to `bio` + focus
+  when the story is empty.
 - **Resume** — download only: a file card (label, `PDF`, updated date) with
   `Download resume` and `Open in a new tab`. The URL is the public `resumes`
   object plus `?download=<label>` (Content-Disposition: attachment). The PDF is
@@ -296,7 +299,9 @@ page type scale lives in §2.
   location, availability and the social links.
 
 The pages read `GET /api/profile` once per session (the store keeps it); About's
-authored story is `profiles.about`, its selected work reads `GET /api/projects`
-(projects + groups), and the Resume page resolves `site_settings.resume` through
-`lib/resume.ts`. The Explorer rows, the
-quick open and the tab strip all use the section title and its glyph.
+authored story is `profiles.about`, and its experience, education, projects and
+skills commands render the loaded content tables. Its project snapshot reads
+`GET /api/projects` (projects + groups), so descriptions keep the
+`description_override` → README → GitHub precedence. The Resume page resolves
+`site_settings.resume` through `lib/resume.ts`. The Explorer rows, the quick open
+and the tab strip all use the section title and its glyph.
