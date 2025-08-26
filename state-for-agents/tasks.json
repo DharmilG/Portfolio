@@ -4,8 +4,9 @@
   "pushed_count": 418,
   "session": {
     "branch": "main",
-    "next_up": "Editorial Experience wave is in (16 commits, tip 996ed32): migration 0013 adds experiences.phases jsonb and the seed carries the Northstar Part 01/02 narrative; /api/profile + the store expose phases. Experience is now a 1120px wide two-column page: sticky 220/280px rail (period/company/role/location + multi-select stack filter), Part 01/02 achievement cards with bold lead-ins, dim-in-place filter that scrolls the first match into view, and a Focus Spotlight hover (accent ring + --shadow-page-glow, no lift/scale). The --text-page-micro/meta/body/lead/title/display scale (12/13/15/17/24/30) is reused across About/Resume/Education/Skills/Hackathons/Certificates/Contact; About's hero stacks below 512px and its location tile wraps. tsc + pnpm build green, db reset 13 migrations + seed, CDP 1440/1280/1024/768/390 no overflow, console clean. Human next: link cloud Supabase + apply migrations 0001-0013 + seed, run scripts/upload-resume.mjs against the cloud project, set the Vercel env, then deploy. No pushes until you say so.",
+    "next_up": "About 2.0 is in (8 commits, tip 57c1c1b): migration 0014 adds profiles.about jsonb (headline, story, quote, principles, now, beyond) and the seed carries the authored story; /api/profile + the store expose it, and lib/about.ts parses it defensively. About is now a 1120px editorial page with a sticky 240/280px identity rail and a narrative column: Story, Now, How I work, Path, Selected work (featured group + Stock + Hostel), Toolbox, Beyond the editor and an email/resume CTA; it falls back to bio. tsc + pnpm build green; db reset 14 migrations + seed; resume re-uploaded and the cron re-synced 10/0; CDP 1440/1280/1024/768/390 no overflow, console clean. Human next: link cloud Supabase + apply migrations 0001-0014 + seed, run scripts/upload-resume.mjs against the cloud project, set the Vercel env, then deploy. No pushes until you say so.",
     "pending_verifications": [
+      "about 2.0 (2026-10-22, 318d15d..57c1c1b): migration 0014 adds profiles.about as a JSON object; seed -> 3 story paragraphs + quote + 3 principles + 3 now + 3 beyond; /api/profile and the store expose about; lib/about.ts parses defensively; About is 1120px wide with a sticky identity rail (240px at 672px content / 280px at 896px, measured 240 at 1280 and 280 at 1440 with the sidebar open; stacked at 1024/768/390 with the sidebar open); jump-to lands 32px below the scroller top and tracks the section; the featured group card reveals the group in the Explorer; selected work is Stock Direction Predictor + Hostel Management System (no repository list); resume re-uploaded and the cron re-synced 10/0 after reset; CDP 1440/1280/1024/768/390 no horizontal overflow, console clean; tsc + pnpm build green.",
       "editorial experience (2026-10-21, fec8e7e..996ed32): migration 0013 + seed -> Northstar phases 2 parts / 7 achievements; /api/profile returns phases; Experience sticky rail (top 32 inside the page scroller), 220px at 1280 / 280px at 1440, stacked at 1024/768/390 with no horizontal overflow; filter QA -> '3 of 7 shown', non-matches 0.28, first QA card scrolled into view, Clear restores 7; hover -> other cards 0.42, hovered border accent + shadow-page-glow, transform none; all page H1s 24px and body 15px; Resume filename wraps to 2 lines at 390; console clean; db reset + tsc + pnpm build green.",
       "resume content (2026-10-21): db reset -> 8 visible sections + hidden certificates, 1 group, 10 projects, 8 skill groups, 3 experiences, 2 education rows, 2 socials; /api/projects -> groups + description_override precedence; /api/profile -> education; About auto-opens on first visit; Resume -> exactly one download link, 0 iframes/embeds, the URL answers 200 + content-disposition: attachment; quick open 'educt' -> Education page only; CDP 1440/768/390 -> no horizontal overflow (status strip 2x2 below xl), console clean; tsc + pnpm build green.",
       "portfolio pages (2026-10-21): 7 sections seeded (About first) + migration 0011 (certificates table, resumes bucket, tmp removed from the workspace); every section except Projects opens a designed page in the editor; the local scratchpad is hidden from the tree and the quick open; About shows the hero, status strip, stack chips, 6 project cards with README excerpts (after a cron sync) and the experience timeline; Resume/Certificates show their empty states until you upload the PDF + add rows; the activity-bar avatar follows the profile. tsc clean, pnpm build green, no console errors",
@@ -40,8 +41,16 @@
       "browser preview (PV-C-BROWSERPREVIEW): globe -> no browser tabs = opens an Integrated Browser tab; with tabs open = menu (New Integrated Browser Tab + a row per open tab, active marked); a fresh tab shows the welcome state (globe glyph, 'Browser', 'Enter a URL above to get started.') with the URL field focused + the picker open; navbar: back/forward/reload 28px (40% dimmed when unavailable, tooltips on hover), URL container #313131, 1px #3C3C3C, 6px radius, focus #0078D4, placeholder 'Search or enter URL'; typing 'localhost:3000' -> rows 'localhost:3000' + 'localhost:3000 - Bing Search' (go-to first), typing 'hello world' -> search row only, typing 'local' -> up to 6 History matches below; empty field -> top-3 'Recents' + other tabs under 'Open Tabs', group label right-aligned on the first row; 22px rows (focus #04395E/white, hover #2A2D2E); Enter/click navigates the current tab (label -> host, globe glyph); search rows open in THIS tab while it is still empty, else in a NEW browser tab; back/forward move the stack, reload remounts the frame; switching editor tabs keeps each page alive (hidden, not unloaded); ... menu: Copy URL / Open in External Browser / Reload / Suspend Tab (unmounts the frame -> 'Tab Suspended' card + Reload; menu becomes Resume Tab) / Clear Browser History (Recents empties); the two dimmed chat actions (codicon-comment 'Comment on Elements' + codicon-inspect 'Add Element to Chat' — CONFIRM these glyphs) sit right of the URL, no pointer cursor, tooltips still show; Ctrl+L focuses+selects the URL and reopens the picker (never while typing in another field/xterm; Esc closes the picker, a second Esc blurs); Recents/History survive reload (cap 200); terminal: 'open --preview localhost:3000' retargets the active/first browser tab (creates one when none; help lists a BROWSER section), 'reload' remounts it (dim note when no browser tab); palette: Browser: Open Integrated Browser / Focus URL Input (Ctrl+L chip) / Reload; Run > Open Integrated Browser; known web-clone limits: no title/favicon in the tab, in-page links do not move the address bar, Google/Bing/DDG refuse framing (escape hatch = Open in External Browser), Ctrl+L cannot be caught while focus is inside the framed page; welcome subtitle note: the real VS Code no-chat string is used ('Enter a URL above to get started.') — say the word if you want different copy",
       "markdown same-tab (2026-10-20): tmp/preview.md and repo AGENTS.md open straight into the preview inside the same editor tab; Ctrl+Shift+V and the tab action (Open Source / Open Preview) switch preview <-> source; no split pane, no sash, no second Preview tab; the preview renders the blob FileViewer already loaded (no second GitHub call) and updates 300ms after typing with the dirty strip; closing the tab clears the mode so a reopen starts in preview; the console is clean (the Shiki font-weight style error is gone)"
     ],
-    "tip": "996ed32",
+    "tip": "57c1c1b",
     "unpushed": [
+      "57c1c1b",
+      "c690ff9",
+      "2180193",
+      "4df035d",
+      "3c4db97",
+      "75b813d",
+      "a0bddbf",
+      "318d15d",
       "996ed32",
       "0f22b5e",
       "ecfc3e0",
@@ -169,7 +178,7 @@
       "102623c",
       "6976b52"
     ],
-    "last_updated": "2026-10-21"
+    "last_updated": "2026-10-22"
   },
   "source_of_truth": {
     "code": "E:/Portfolio (branch main, no origin)",
@@ -178,10 +187,10 @@
     "tokens": "app/globals.css @theme"
   },
   "summary": {
-    "done": 46,
+    "done": 47,
     "in_progress": 12,
     "backlog": 3,
-    "total": 61
+    "total": 62
   },
   "tasks": [
     {
@@ -850,6 +859,26 @@
         "page type scale namespaced `--text-page-*` so workbench chrome stays 11-13px; Experience wide column 1120px, rail 220px at 672px content / 280px at 896px, stacked below 672px"
       ],
       "log": "fec8e7e..996ed32 (16 one-file commits): migration 0013 `experiences.phases jsonb`; seed Northstar Part 01/02 narrative; /api/profile + store expose phases; globals page type tokens + --shadow-page-glow; PageShell wide + type scale; Experience rewrite (sticky rail, multi-select stack filter, auto-scroll to first match, Part 01/02 cards, spotlight dim/glow); About name/hero/status fixes + all remaining pages onto the scale. Verify: db reset (13 migrations + seed) -> 2 phases / 7 achievements; /api/profile phases; CDP 1440/1280/1024/768/390 no overflow, sticky rail top 32 inside the page scroller, QA filter -> 3 of 7 + scrolls first match into view, spotlight dims others and glow has no transform, console clean; tsc + pnpm build green."
+    },
+    {
+      "id": "PV-ABOUT-EDITORIAL",
+      "title": "About editorial profile (About 2.0)",
+      "description": "Wide sticky-rail About page driven by an authored profiles.about story; personal narrative, principles, now, path, selected work, toolbox, beyond and CTA",
+      "file": "components/vscode/pages/About.tsx",
+      "status": "done",
+      "owner": "agent",
+      "started": "2026-10-22",
+      "finished": "2026-10-22",
+      "verified": true,
+      "vscode_match": true,
+      "key_decisions": [
+        "Authored story lives in profiles.about (0014) as a JSON object: headline, story[], quote, principles[], now[], beyond[]; timeline, selected work and toolbox stay derived so they cannot drift",
+        "1120px wide page with a 240px sticky identity rail at 672px content / 280px at 896px; stacked below 672px; the jump-to list tracks the section in view",
+        "Curated: one featured project group + two featured repositories (Stock Direction Predictor, Hostel Management System); no repository list and no separate Currently / Experience / Education / Hackathons blocks",
+        "Designed DG monogram + status dot (avatar_url stays null); no invented headshot or hobbies; Beyond is grounded in the actual project and skill interests",
+        "Falls back to bio + focus when profiles.about.story is empty; all colors come from the page tokens"
+      ],
+      "log": "318d15d..57c1c1b (8 one-file commits): migration 0014 profiles.about jsonb object + seed story/quote/principles/now/beyond; /api/profile + store expose about; lib/about.ts defensive parser; About rewrite (sticky rail, story, now, how I work, path, selected work, toolbox, beyond, CTA); DOC 04 + 05. Verify: db reset -> 14 migrations + seed, /api/profile.about -> 3 story paragraphs, 3 principles, 3 now, 3 beyond; scripts/upload-resume.mjs + authenticated cron sync (10 synced / 0 failed) after the reset; CDP 1440/1280/1024/768/390 no horizontal overflow, sticky rail top 32 at 1440/1280, stacked at 1024/768/390 with the sidebar open, jump-to Toolbox lands 32px below the scroller top, group/project cards reveal in Explorer, selected work = Stock + Hostel, console clean; tsc + pnpm build green."
     }
   ],
   "tracker_version": 1
