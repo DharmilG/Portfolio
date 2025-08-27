@@ -57,7 +57,7 @@ export default function BooksPage() {
   return (
     <PageShell
       icon="book"
-      iconClassName="text-white"
+      iconClassName="text-[#e5ba7d]"
       title="Books"
       width="wide"
     >

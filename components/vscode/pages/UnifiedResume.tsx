@@ -16,6 +16,7 @@ import {
 } from "@/lib/store";
 import Codicon from "../Codicon";
 import SkillIcon from "../SkillIcon";
+import Tooltip from "../Tooltip";
 
 type SectionItem = {
   id: string;
@@ -27,15 +28,16 @@ type SectionItem = {
 
 const SECTIONS: SectionItem[] = [
   { id: "sec-about", slug: "about", title: "About", icon: "person", iconColor: "text-[#38bdf8]" },
-  { id: "sec-experience", slug: "experience", title: "Experience", icon: "briefcase", iconColor: "text-white" },
-  { id: "sec-education", slug: "education", title: "Education", icon: "mortar-board", iconColor: "text-white" },
-  { id: "sec-skills", slug: "skills", title: "Skills", icon: "code", iconColor: "text-white" },
-  { id: "sec-hackathons", slug: "hackathons", title: "Hackathons", icon: "flame", iconColor: "text-white" },
+  { id: "sec-experience", slug: "experience", title: "Experience", icon: "briefcase", iconColor: "text-[#60a5fa]" },
+  { id: "sec-education", slug: "education", title: "Education", icon: "mortar-board", iconColor: "text-[#c084fc]" },
+  { id: "sec-skills", slug: "skills", title: "Skills", icon: "code", iconColor: "text-[#4ade80]" },
+  { id: "sec-hackathons", slug: "hackathons", title: "Hackathons", icon: "flame", iconColor: "text-[#fb923c]" },
   { id: "sec-contact", slug: "contact", title: "Contact", icon: "mail", iconColor: "text-[#facc15]" },
 ];
 
 export default function UnifiedResume() {
   const content = useStore((s) => s.profile);
+  const openTab = useStore((s) => s.openTab);
   const activeSection = useStore((s) => s.activeSection);
   const setActiveSection = useStore((s) => s.setActiveSection);
   const scrollTargetSection = useStore((s) => s.scrollTargetSection);
@@ -358,17 +360,14 @@ export default function UnifiedResume() {
 
             <button
               type="button"
-              onClick={() => {
-                showView("explorer");
-                revealPath("Projects");
-              }}
+              onClick={() => openTab({ kind: "page", path: "projects", sha: null })}
               className="group flex flex-col justify-between rounded-control border border-vscode-page-border bg-vscode-page-card p-4 text-left transition-all hover:border-vscode-accent/60 hover:bg-vscode-page-card-hover"
             >
               <div className="flex items-center justify-between">
                 <Codicon
-                  name="globe"
+                  name="repo"
                   size={18}
-                  className="text-[#38bdf8]"
+                  className="text-[#e5ba7d]"
                 />
                 <span className="text-base font-semibold font-mono text-vscode-dim transition-transform group-hover:translate-x-1">
                   →
@@ -376,10 +375,10 @@ export default function UnifiedResume() {
               </div>
               <div className="mt-3">
                 <div className="text-page-body font-semibold text-vscode-fg-active">
-                  Live Previews
+                  Projects
                 </div>
                 <div className="mt-0.5 text-page-meta text-vscode-muted">
-                  Open integrated browser
+                  Explore full builds & repos
                 </div>
               </div>
             </button>
@@ -394,7 +393,7 @@ export default function UnifiedResume() {
         {/* ================================================================= */}
         <section id="sec-experience" className="scroll-mt-6 space-y-6">
           <div className="flex items-center gap-3">
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-control bg-vscode-activity-active-bg text-white">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-control bg-vscode-activity-active-bg text-[#60a5fa]">
               <Codicon name="briefcase" size={18} />
             </span>
             <h2 className="text-page-title font-semibold text-vscode-fg-active">
@@ -514,7 +513,7 @@ export default function UnifiedResume() {
         {/* ================================================================= */}
         <section id="sec-education" className="scroll-mt-6 space-y-6">
           <div className="flex items-center gap-3">
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-control bg-vscode-activity-active-bg text-white">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-control bg-vscode-activity-active-bg text-[#c084fc]">
               <Codicon name="mortar-board" size={18} />
             </span>
             <h2 className="text-page-title font-semibold text-vscode-fg-active">
@@ -593,7 +592,7 @@ export default function UnifiedResume() {
         {/* ================================================================= */}
         <section id="sec-skills" className="scroll-mt-6 space-y-6">
           <div className="flex items-center gap-3">
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-control bg-vscode-activity-active-bg text-white">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-control bg-vscode-activity-active-bg text-[#4ade80]">
               <Codicon name="code" size={18} />
             </span>
             <h2 className="text-page-title font-semibold text-vscode-fg-active">
@@ -617,15 +616,14 @@ export default function UnifiedResume() {
                 </div>
                 <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5">
                   {group.items.map((item) => (
-                    <div
-                      key={item}
-                      className="flex items-center gap-2.5 rounded-control border border-vscode-page-border bg-[#141516] px-3.5 py-2.5 transition-colors hover:border-vscode-accent/50 hover:bg-vscode-page-card-hover"
-                    >
-                      <SkillIcon name={item} size={16} />
-                      <span className="truncate text-page-meta font-medium text-vscode-fg-active">
-                        {item}
-                      </span>
-                    </div>
+                    <Tooltip key={item} text={item} position="top" delay={true} className="w-full">
+                      <div className="flex w-full items-center gap-2.5 rounded-control border border-vscode-page-border bg-[#141516] px-3.5 py-2.5 transition-colors hover:border-vscode-accent/50 hover:bg-vscode-page-card-hover">
+                        <SkillIcon name={item} size={16} />
+                        <span className="truncate text-page-meta font-medium text-vscode-fg-active">
+                          {item}
+                        </span>
+                      </div>
+                    </Tooltip>
                   ))}
                 </div>
               </div>
@@ -641,7 +639,7 @@ export default function UnifiedResume() {
         {/* ================================================================= */}
         <section id="sec-hackathons" className="scroll-mt-6 space-y-6">
           <div className="flex items-center gap-3">
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-control bg-vscode-activity-active-bg text-white">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-control bg-vscode-activity-active-bg text-[#fb923c]">
               <Codicon name="flame" size={18} />
             </span>
             <h2 className="text-page-title font-semibold text-vscode-fg-active">

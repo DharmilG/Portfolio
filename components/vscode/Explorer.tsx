@@ -192,10 +192,19 @@ export default function Explorer({
   const treeRef = useRef<HTMLDivElement>(null);
 
   // autoReveal scroll: openTab/setActiveTab bump revealNonce; bring the
-  // selected row into view (rows carry data-path).
+  // selected row into view (rows carry data-path). Top-level sections and root
+  // stay put so the Explorer header is never scrolled off-screen.
   useEffect(() => {
     const tree = treeRef.current;
     if (!tree || !selectedPath) return;
+    if (
+      UNIFIED_SECTIONS.has(selectedPath) ||
+      selectedPath === ROOT_NAME ||
+      selectedPath === "books" ||
+      selectedPath === "projects"
+    ) {
+      return;
+    }
     let row: HTMLElement | undefined;
     tree.querySelectorAll<HTMLElement>("[data-path]").forEach((n) => {
       if (n.dataset.path === selectedPath) row = n;
@@ -585,13 +594,12 @@ export default function Explorer({
                     activeTabId === "page:hackathons" ||
                     activeTabId === "page:contact";
 
-                  const isSelected = isUnified && isUnifiedTabActive
-                    ? activeSection === sec.slug
-                    : selectedPath === key;
-
-                  const isActiveIndicator = isUnified
+                  const isCurrent = isUnified
                     ? isUnifiedTabActive && activeSection === sec.slug
                     : activeTabId === `page:${sec.slug}`;
+
+                  const isSelected = isCurrent || (!isUnified && selectedPath === key);
+                  const isActiveIndicator = isCurrent;
 
                   return (
                     <div key={sec.id}>

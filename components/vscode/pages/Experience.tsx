@@ -327,7 +327,7 @@ export default function ExperiencePage() {
   return (
     <PageShell
       icon="briefcase"
-      iconClassName="text-white"
+      iconClassName="text-[#60a5fa]"
       title="Experience"
       width="wide"
     >

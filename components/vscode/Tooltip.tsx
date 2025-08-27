@@ -8,6 +8,7 @@ type TooltipProps = {
   position?: "top" | "bottom" | "left" | "right";
   align?: "center" | "start" | "end";
   className?: string;
+  delay?: boolean | number;
   children: ReactNode;
 };
 
@@ -29,16 +30,20 @@ export default function Tooltip({
   position = "bottom",
   align = "center",
   className = "",
+  delay,
   children,
 }: TooltipProps) {
   const side =
     position === "left" || position === "right" ? "" : ` ${ALIGN[align]}`;
+  const delayClass = delay
+    ? "opacity-0 group-hover:opacity-100 transition-opacity duration-150 delay-500"
+    : "";
   return (
     <span className={`group relative inline-flex shrink-0 ${className}`}>
       {children}
       <span
         role="tooltip"
-        className={`pointer-events-none invisible absolute z-30 whitespace-nowrap rounded-control border border-vscode-widget-border bg-vscode-widget-bg px-2 py-1 text-xs text-vscode-fg shadow-vscode group-hover:visible ${POSITION[position]}${side}`}
+        className={`pointer-events-none invisible absolute z-30 whitespace-nowrap rounded-control border border-vscode-widget-border bg-vscode-widget-bg px-2 py-1 text-xs text-vscode-fg shadow-vscode group-hover:visible ${delayClass} ${POSITION[position]}${side}`}
       >
         {text}
       </span>

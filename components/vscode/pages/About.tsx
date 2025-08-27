@@ -197,14 +197,14 @@ export default function AboutPage() {
 
           <button
             type="button"
-            onClick={handleOpenPreviews}
+            onClick={() => openTab({ kind: "page", path: "projects", sha: null })}
             className="group flex flex-col justify-between rounded-control border border-vscode-page-border bg-vscode-page-card p-4 text-left transition-all hover:border-vscode-accent/60 hover:bg-vscode-page-card-hover"
           >
             <div className="flex items-center justify-between">
               <Codicon
-                name="globe"
+                name="repo"
                 size={18}
-                className="text-[#38bdf8]"
+                className="text-[#e5ba7d]"
               />
               <span className="text-base font-semibold font-mono text-vscode-dim transition-transform group-hover:translate-x-1">
                 →
@@ -212,10 +212,10 @@ export default function AboutPage() {
             </div>
             <div className="mt-3">
               <div className="text-page-body font-semibold text-vscode-fg-active">
-                Live Previews
+                Projects
               </div>
               <div className="mt-0.5 text-page-meta text-vscode-muted">
-                Open integrated browser
+                Explore full builds & repos
               </div>
             </div>
           </button>
