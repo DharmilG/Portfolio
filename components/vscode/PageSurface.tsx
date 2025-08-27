@@ -12,6 +12,7 @@ import ExperiencePage from "./pages/Experience";
 import HackathonsPage from "./pages/Hackathons";
 import ResumePage from "./pages/Resume";
 import SkillsPage from "./pages/Skills";
+import BooksPage from "./pages/Books";
 
 export default function PageSurface() {
   const tabs = useStore((s) => s.tabs);
@@ -34,6 +35,8 @@ export default function PageSurface() {
       return <SkillsPage />;
     case "hackathons":
       return <HackathonsPage />;
+    case "books":
+      return <BooksPage />;
     case "contact":
       return <ContactPage />;
     default:

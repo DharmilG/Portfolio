@@ -46,6 +46,7 @@ export const SECTION_COLOR_MAP: Record<string, string> = {
   contact: "text-[#facc15]",
   resume: "text-[#f87171]",
   projects: "text-[#e5ba7d]",
+  books: "text-[#e5ba7d]",
   previews: "text-[#38bdf8]",
   "live-previews": "text-[#38bdf8]",
 };

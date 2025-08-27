@@ -527,15 +527,7 @@ export const useStore = create<State>()(
               ? `${projects[0].repo_owner}/${projects[0].repo_name}`
               : null),
         })),
-      // Featured groups start expanded so the platform's repos are visible.
-      setProjectGroups: (projectGroups) =>
-        set((s) => {
-          const expanded = { ...s.expanded };
-          for (const group of projectGroups) {
-            if (group.featured) expanded[`Projects/${group.slug}`] = true;
-          }
-          return { projectGroups, expanded };
-        }),
+      setProjectGroups: (projectGroups) => set({ projectGroups }),
       setTree: (repo, branch, tree) =>
         set((s) => ({
           trees: { ...s.trees, [repoTreeKey(repo, branch)]: tree },
@@ -610,7 +602,7 @@ export const useStore = create<State>()(
       // Default-open roots (mirrors Explorer ROOT_NAME) + tmp scratch.
       // Session-only: expanded is intentionally absent from persist
       // partialize below.
-      expanded: { "Dharmil Gajjar": true, projects: true, tmp: true },
+      expanded: { [ROOT_NAME]: true },
       openTab: (t, activate = true) =>
         set((s) => {
           const id = `${t.kind}:${t.path}`;

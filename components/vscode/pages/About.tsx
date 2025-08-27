@@ -1,7 +1,7 @@
 "use client";
 
 // About — visual profile hero, core capability pillars, quick navigation,
-// recommended books, and embedded interactive terminal (Dark Modern aesthetic).
+// and embedded interactive terminal (Dark Modern aesthetic).
 // Exclusively consumes global font tokens (--text-page-*).
 import { useMemo } from "react";
 import { buildAboutTerminalData } from "@/lib/about-terminal";
@@ -10,45 +10,6 @@ import { useStore } from "@/lib/store";
 import Codicon from "../Codicon";
 import AboutTerminal from "./AboutTerminal";
 import { PageShell } from "./PageShell";
-
-const FEATURED_BOOKS = [
-  {
-    title: "Designing Data-Intensive Applications",
-    tag: "Distributed Systems",
-    author: "Martin Kleppmann",
-    borderClass: "border-l-[#3b8eea]",
-    tagClass: "text-[#3b8eea] border-[#3b8eea]/30 bg-[#3b8eea]/10",
-    description:
-      "Shaped how I think about replication, indexing, idempotency, and event-driven consistency in Go backends.",
-  },
-  {
-    title: "Let Us Go / Concurrency in Go",
-    tag: "Backend & Go",
-    author: "Katherine Cox-Buday",
-    borderClass: "border-l-[#00c7d4]",
-    tagClass: "text-[#00c7d4] border-[#00c7d4]/30 bg-[#00c7d4]/10",
-    description:
-      "Taught me clean goroutine lifecycles, worker pools, and backpressure patterns without race conditions.",
-  },
-  {
-    title: "The Pragmatic Programmer",
-    tag: "Engineering Craft",
-    author: "Andrew Hunt & David Thomas",
-    borderClass: "border-l-[#23d18b]",
-    tagClass: "text-[#23d18b] border-[#23d18b]/30 bg-[#23d18b]/10",
-    description:
-      'Where my habit of "testing what I ship" and owning end-to-end reliability from DB to UI comes from.',
-  },
-  {
-    title: "Atomic Habits",
-    tag: "Mindset",
-    author: "James Clear",
-    borderClass: "border-l-[#e5ba7d]",
-    tagClass: "text-[#e5ba7d] border-[#e5ba7d]/30 bg-[#e5ba7d]/10",
-    description:
-      "Small daily compounding: writing one clean module, fixing one edge case, and shipping consistently.",
-  },
-];
 
 export default function AboutPage() {
   const content = useStore((s) => s.profile);
@@ -82,13 +43,6 @@ export default function AboutPage() {
         .join("")
         .toUpperCase()
     : "DG";
-
-  const handleOpenBooks = () => {
-    const el = document.getElementById("about-terminal-container");
-    if (el) {
-      el.scrollIntoView({ behavior: "smooth" });
-    }
-  };
 
   const handleOpenPreviews = () => {
     showView("explorer");
@@ -165,34 +119,22 @@ export default function AboutPage() {
             </div>
           </div>
 
-          {/* Narrative Story / Intro */}
+          {/* Narrative Story / Intro in 2 paragraphs */}
           <div className="mt-6 space-y-4 border-t border-vscode-border/50 pt-5 text-page-body leading-relaxed text-vscode-fg">
             <p>
-              I&apos;m a final-year Information & Communication Technology student at{" "}
-              <strong className="font-semibold text-vscode-fg-active">
-                Adani University
-              </strong>{" "}
-              who loves building software from the database schema all the way to
-              the user interface. My sweet spot is{" "}
-              <strong className="font-semibold text-vscode-fg-active">
-                backend engineering in Go, TypeScript, and Python
-              </strong>{" "}
-              — designing clean APIs, event-driven workflows, and systems that
-              stay fast under real load.
+              I am Dharmil Gajjar, a final year ICT student at Adani University
+              who enjoys building reliable software with Go, TypeScript, Python,
+              and Next.js. Recently at Northstar Innovations, I developed a
+              customizable Odoo 19 theme with reusable components for perfume
+              shops and verified Bluetooth and WiFi workflows for a React
+              Native IoT app.
             </p>
             <p>
-              What sets how I work apart is simple:{" "}
-              <strong className="font-semibold text-vscode-fg-active">
-                I test what I ship.
-              </strong>{" "}
-              Whether I&apos;m architecting a custom Odoo 19 e-commerce storefront
-              or verifying BLE and Wi-Fi hardware signals across a React Native
-              IoT app at{" "}
-              <strong className="font-semibold text-vscode-fg-active">
-                Northstar Innovations
-              </strong>
-              , I care deeply about edge cases, reliability, and making products
-              effortless for real people to use.
+              Working across both development and testing taught me to care
+              about edge cases and how products behave in the real world. When
+              I step away from my development environment, you will usually find
+              me reading a good book, queuing up music, or out on the pitch
+              playing and watching football.
             </p>
           </div>
 
@@ -264,8 +206,8 @@ export default function AboutPage() {
                 size={18}
                 className="text-[#60a5fa]"
               />
-              <span className="text-page-meta text-vscode-dim transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5">
-                ↗
+              <span className="text-page-body font-mono text-vscode-dim transition-transform group-hover:translate-x-1">
+                →
               </span>
             </div>
             <div className="mt-3">
@@ -285,8 +227,8 @@ export default function AboutPage() {
           >
             <div className="flex items-center justify-between">
               <Codicon name="code" size={18} className="text-[#4ade80]" />
-              <span className="text-page-meta text-vscode-dim transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5">
-                ↗
+              <span className="text-page-body font-mono text-vscode-dim transition-transform group-hover:translate-x-1">
+                →
               </span>
             </div>
             <div className="mt-3">
@@ -310,8 +252,8 @@ export default function AboutPage() {
                 size={18}
                 className="text-[#fb923c]"
               />
-              <span className="text-page-meta text-vscode-dim transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5">
-                ↗
+              <span className="text-page-body font-mono text-vscode-dim transition-transform group-hover:translate-x-1">
+                →
               </span>
             </div>
             <div className="mt-3">
@@ -319,7 +261,7 @@ export default function AboutPage() {
                 Hackathons
               </div>
               <div className="mt-0.5 text-page-meta text-vscode-muted">
-                2-day rapid team builds
+                participated in 2 hackathons
               </div>
             </div>
           </button>
@@ -335,8 +277,8 @@ export default function AboutPage() {
                 size={18}
                 className="text-[#38bdf8]"
               />
-              <span className="text-page-meta text-vscode-dim transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5">
-                ↗
+              <span className="text-page-body font-mono text-vscode-dim transition-transform group-hover:translate-x-1">
+                →
               </span>
             </div>
             <div className="mt-3">
@@ -350,52 +292,7 @@ export default function AboutPage() {
           </button>
         </div>
 
-        {/* 3. Books I've Read Section */}
-        <section aria-label="Books I've read" className="space-y-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Codicon name="book" size={16} className="text-[#38bdf8]" />
-              <h3 className="text-page-meta font-semibold uppercase tracking-wider text-vscode-emphasis">
-                Books I&apos;ve Read
-              </h3>
-            </div>
-            <button
-              type="button"
-              onClick={handleOpenBooks}
-              className="text-page-micro text-vscode-markdown-link hover:underline"
-            >
-              Open full bookshelf →
-            </button>
-          </div>
-
-          <div className="grid gap-3.5 sm:grid-cols-2">
-            {FEATURED_BOOKS.map((book) => (
-              <div
-                key={book.title}
-                className={`rounded-control border-y border-r border-l-4 border-vscode-page-border bg-vscode-page-card p-4.5 transition-colors hover:bg-vscode-page-card-hover ${book.borderClass}`}
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <h4 className="text-page-body font-semibold text-vscode-fg-active">
-                    {book.title}
-                  </h4>
-                  <span
-                    className={`shrink-0 rounded-full border px-2 py-0.5 text-page-micro font-medium ${book.tagClass}`}
-                  >
-                    {book.tag}
-                  </span>
-                </div>
-                <div className="mt-1 text-page-meta text-vscode-muted">
-                  {book.author}
-                </div>
-                <p className="mt-2.5 text-page-meta leading-relaxed text-vscode-dim">
-                  {book.description}
-                </p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* 4. Embedded Interactive Terminal */}
+        {/* 3. Embedded Interactive Terminal */}
         <div id="about-terminal-container" className="pt-2">
           <AboutTerminal data={data} />
         </div>
