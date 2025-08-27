@@ -99,16 +99,34 @@ export default function UnifiedResume() {
     const container = containerRef.current;
     if (!container) return;
 
-    const targetEl = document.getElementById(`sec-${slug}`);
-    if (!targetEl) return;
-
     // Cancel any active animation
     if (scrollCancelRef.current) scrollCancelRef.current();
 
     isProgrammaticScroll.current = true;
     setActiveSection(slug);
+    useStore.getState().selectPath(slug);
 
-    const targetTop = targetEl.offsetTop - 24;
+    if (slug === "about") {
+      scrollCancelRef.current = smoothScrollTo(container, 0, 550, () => {
+        isProgrammaticScroll.current = false;
+        setScrollTargetSection(null);
+        scrollCancelRef.current = null;
+      });
+      return;
+    }
+
+    const targetEl = document.getElementById(`sec-${slug}`);
+    if (!targetEl) {
+      isProgrammaticScroll.current = false;
+      return;
+    }
+
+    const containerRect = container.getBoundingClientRect();
+    const targetRect = targetEl.getBoundingClientRect();
+    const currentRelativeTop = targetRect.top - containerRect.top;
+    // Keep 20px padding above the section heading so it remains comfortably in view
+    const targetTop = Math.max(0, container.scrollTop + currentRelativeTop - 20);
+
     scrollCancelRef.current = smoothScrollTo(container, targetTop, 550, () => {
       isProgrammaticScroll.current = false;
       setScrollTargetSection(null);
@@ -129,19 +147,35 @@ export default function UnifiedResume() {
     const container = containerRef.current;
     if (!container) return;
 
-    const scrollTop = container.scrollTop;
-    const scrollTriggerOffset = scrollTop + 160;
+    // When scrolled to or very near the bottom of the scrollable container, lock to the last section
+    const isAtBottom =
+      container.scrollTop + container.clientHeight >= container.scrollHeight - 40;
 
+    if (isAtBottom) {
+      const lastSection = SECTIONS[SECTIONS.length - 1];
+      if (lastSection && activeSection !== lastSection.slug) {
+        setActiveSection(lastSection.slug);
+        useStore.getState().selectPath(lastSection.slug);
+      }
+      return;
+    }
+
+    const containerRect = container.getBoundingClientRect();
     let currentSlug = SECTIONS[0].slug;
+
     for (const sec of SECTIONS) {
       const el = document.getElementById(sec.id);
-      if (el && el.offsetTop <= scrollTriggerOffset) {
-        currentSlug = sec.slug;
+      if (el) {
+        const topRelativeToContainer = el.getBoundingClientRect().top - containerRect.top;
+        if (topRelativeToContainer <= 100) {
+          currentSlug = sec.slug;
+        }
       }
     }
 
     if (currentSlug !== activeSection) {
       setActiveSection(currentSlug);
+      useStore.getState().selectPath(currentSlug);
     }
   };
 
@@ -164,7 +198,7 @@ export default function UnifiedResume() {
     <div
       ref={containerRef}
       onScroll={handleScroll}
-      className="min-h-0 flex-1 overflow-y-auto bg-vscode-editor selection:bg-vscode-quick-match/30"
+      className="relative min-h-0 flex-1 overflow-y-auto bg-vscode-editor selection:bg-vscode-quick-match/30"
     >
       <div className="mx-auto w-full max-w-[860px] px-6 py-10 pb-20 sm:px-9 space-y-16">
         {/* ================================================================= */}
@@ -246,60 +280,6 @@ export default function UnifiedResume() {
                 me reading a good book, queuing up music, or out on the pitch
                 playing and watching football.
               </p>
-            </div>
-
-            {/* 3 Core Capability Pillars */}
-            <div className="mt-7 grid gap-3.5 sm:grid-cols-2 lg:grid-cols-3">
-              <div className="rounded-control border border-vscode-page-border bg-[#141516] p-4.5 transition-colors hover:border-vscode-border">
-                <div className="flex items-center gap-2.5">
-                  <Codicon
-                    name="server-process"
-                    size={18}
-                    className="text-[#38bdf8]"
-                  />
-                  <h3 className="text-page-body font-semibold text-vscode-fg-active">
-                    Backend & Distributed Systems
-                  </h3>
-                </div>
-                <p className="mt-2 text-page-meta leading-relaxed text-vscode-muted">
-                  Building high-throughput services in Go & Node.js with
-                  PostgreSQL, Redis caching, and AWS queues.
-                </p>
-              </div>
-
-              <div className="rounded-control border border-vscode-page-border bg-[#141516] p-4.5 transition-colors hover:border-vscode-border">
-                <div className="flex items-center gap-2.5">
-                  <Codicon
-                    name="verified"
-                    size={18}
-                    className="text-[#4ade80]"
-                  />
-                  <h3 className="text-page-body font-semibold text-vscode-fg-active">
-                    I Test What I Ship
-                  </h3>
-                </div>
-                <p className="mt-2 text-page-meta leading-relaxed text-vscode-muted">
-                  End-to-end ownership across functional, integration, and
-                  hardware-level BLE/Wi-Fi verification.
-                </p>
-              </div>
-
-              <div className="rounded-control border border-vscode-page-border bg-[#141516] p-4.5 transition-colors hover:border-vscode-border sm:col-span-2 lg:col-span-1">
-                <div className="flex items-center gap-2.5">
-                  <Codicon
-                    name="zap"
-                    size={18}
-                    className="text-[#fb923c]"
-                  />
-                  <h3 className="text-page-body font-semibold text-vscode-fg-active">
-                    Product-Minded Full-Stack
-                  </h3>
-                </div>
-                <p className="mt-2 text-page-meta leading-relaxed text-vscode-muted">
-                  Turning complex admin & storefront workflows into clean
-                  Next.js, React, and Odoo 19 interfaces.
-                </p>
-              </div>
             </div>
           </div>
 
