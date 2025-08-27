@@ -9,22 +9,27 @@
 @theme {
   /* === Core Surfaces & Chrome (VS Code Dark Modern) === */
   --color-vscode-bg: #1e1e1e;
-  --color-vscode-editor: #121314; /* opened-file surface (active tab merges into it) */
+  --color-vscode-editor: #121314;
+  /* opened-file surface (active tab merges into it) */
   --color-vscode-side: #181818;
   --color-vscode-titlebar: #191a1b;
   --color-vscode-tab: #181818;
   --color-vscode-tab-hover: #1f1f1f;
-  --color-vscode-tab-active: #121314; /* = --color-vscode-editor so the active tab merges */
+  --color-vscode-tab-active: #121314;
+  /* = --color-vscode-editor so the active tab merges */
   --color-vscode-border: #2b2b2b;
-  --color-vscode-statusbar: #181818; /* statusBar.background (Dark Modern) */
-  --color-vscode-statusbar-hover: #f1f1f133; /* statusBarItem.hoverBackground */
+  --color-vscode-statusbar: #181818;
+  /* statusBar.background (Dark Modern) */
+  --color-vscode-statusbar-hover: #f1f1f133;
+  /* statusBarItem.hoverBackground */
 
   /* === Typography & Hierarchy === */
   --color-vscode-fg: #cccccc;
   --color-vscode-fg-active: #ffffff;
   --color-vscode-dim: #858585;
   --color-vscode-muted: #9d9d9d;
-  --color-vscode-emphasis: #bfbfbf; /* sidebar header + static root folder */
+  --color-vscode-emphasis: #bfbfbf;
+  /* sidebar header + static root folder */
 
   /* === Brand Accent & Interactive States === */
   --color-vscode-accent: #0078d4;
@@ -32,7 +37,8 @@
 
   /* === Git, Status & Diagnostics === */
   --color-vscode-dot: #e2c08d;
-  --color-vscode-modified: #e5ba7d; /* M badge, edited names, dirty dots */
+  --color-vscode-modified: #e5ba7d;
+  /* M badge, edited names, dirty dots */
   --color-vscode-added: #73c991;
   --color-vscode-error: #f14c4c;
   --color-vscode-warning: #cca700;
@@ -42,24 +48,34 @@
   /* === Lists, Inputs, Command Center & Widgets === */
   --color-vscode-list-hover: #2a2d2e;
   --color-vscode-list-active: #04395e;
-  --color-vscode-list-inactive: #37373d; /* tree selection while unfocused */
+  --color-vscode-list-inactive: #37373d;
+  /* tree selection while unfocused */
   --color-vscode-input-bg: #3c3c3c;
   --color-vscode-command-bg: #242424;
   --color-vscode-widget-bg: #252526;
   --color-vscode-widget-border: #454545;
 
   /* === Quick Input / Command Palette (quickInput.css, dark_modern.json) === */
-  --color-vscode-quick-bg: #222222; /* quickInput.background */
-  --color-vscode-quick-border: #313131; /* widget.border (widget 1px frame) */
-  --color-vscode-quick-input-bg: #313131; /* input.background */
-  --color-vscode-quick-input-border: #3c3c3c; /* input.border (static — no focus ring) */
-  --color-vscode-quick-placeholder: #989898; /* input.placeholderForeground */
-  --color-vscode-quick-match: #2AAAFF; /* list.highlightForeground (bold match) */
+  --color-vscode-quick-bg: #222222;
+  /* quickInput.background */
+  --color-vscode-quick-border: #313131;
+  /* widget.border (widget 1px frame) */
+  --color-vscode-quick-input-bg: #313131;
+  /* input.background */
+  --color-vscode-quick-input-border: #3c3c3c;
+  /* input.border (static — no focus ring) */
+  --color-vscode-quick-placeholder: #989898;
+  /* input.placeholderForeground */
+  --color-vscode-quick-match: #2AAAFF;
+  /* list.highlightForeground (bold match) */
 
   /* === Keybinding chips (keybindingLabel defaults, dark) === */
-  --color-vscode-keybinding-bg: #8080802b; /* keybindingLabel.background, rgba(128,128,128,.17) */
-  --color-vscode-keybinding-border: #33333399; /* keybindingLabel.border, rgba(51,51,51,.6) */
-  --color-vscode-keybinding-border-bottom: #44444499; /* keybindingLabel.bottomBorder, rgba(68,68,68,.6) */
+  --color-vscode-keybinding-bg: #8080802b;
+  /* keybindingLabel.background, rgba(128,128,128,.17) */
+  --color-vscode-keybinding-border: #33333399;
+  /* keybindingLabel.border, rgba(51,51,51,.6) */
+  --color-vscode-keybinding-border-bottom: #44444499;
+  /* keybindingLabel.bottomBorder, rgba(68,68,68,.6) */
 
   /* === Editor Selection, Line Highlight & Scrollbars === */
   --color-vscode-selection: #264f78;
@@ -88,22 +104,32 @@
 
   /* === Bottom Panel / Integrated Terminal (panelPart.css, terminal.css,
      terminalColorRegistry.ts, Dark Modern) === */
-  --color-vscode-panel-bg: #181818; /* panel.background + terminal.background */
-  --color-vscode-panel-fg: #cccccc; /* terminal.foreground */
-  --color-vscode-panel-tab-active: #cccccc; /* panelTitle.activeForeground */
-  --color-vscode-panel-tab-inactive: #9d9d9d; /* panelTitle.inactiveForeground */
-  --color-vscode-panel-tab-border: #2b2b2b; /* panelTitle.border (title hairline) */
-  --color-vscode-toolbar-hover: #5a5d5e50; /* toolbar.hoverBackground */
-  --color-vscode-terminal-tab-border: #0078d4; /* terminal.tab.activeBorder */
-  --color-vscode-terminal-cursor: #cccccc; /* terminalCursor.foreground */
-  --color-vscode-terminal-selection: #264f78; /* terminal.selectionBackground */
+  --color-vscode-panel-bg: #181818;
+  /* panel.background + terminal.background */
+  --color-vscode-panel-fg: #cccccc;
+  /* terminal.foreground */
+  --color-vscode-panel-tab-active: #cccccc;
+  /* panelTitle.activeForeground */
+  --color-vscode-panel-tab-inactive: #9d9d9d;
+  /* panelTitle.inactiveForeground */
+  --color-vscode-panel-tab-border: #2b2b2b;
+  /* panelTitle.border (title hairline) */
+  --color-vscode-toolbar-hover: #5a5d5e50;
+  /* toolbar.hoverBackground */
+  --color-vscode-terminal-tab-border: #0078d4;
+  /* terminal.tab.activeBorder */
+  --color-vscode-terminal-cursor: #cccccc;
+  /* terminalCursor.foreground */
+  --color-vscode-terminal-selection: #264f78;
+  /* terminal.selectionBackground */
 
   /* === Activity Bar states (2025 refresh: pill, no left bar) === */
   --color-vscode-activity-active-bg: #ffffff1a;
   --color-vscode-activity-hover-bg: #ffffff0d;
 
   /* === Markdown preview (DOC/10 §5) === */
-  --color-vscode-markdown-link: #4daafc; /* textLink.foreground */
+  --color-vscode-markdown-link: #4daafc;
+  /* textLink.foreground */
   --color-vscode-markdown-code-bg: #1e1e1e;
   --color-vscode-markdown-inline-code-bg: #ffffff14;
   --color-vscode-markdown-quote-border: #3c3c3c;
@@ -115,32 +141,63 @@
   --color-vscode-page-glow: rgba(0, 120, 212, 0.16);
   --color-vscode-page-chip: #26282a;
 
+  /* === Icon & Tech Identity Colors === */
+  --color-icon-ts: #3178c6;
+  --color-icon-js: #f7df1e;
+  --color-icon-go: #00add8;
+  --color-icon-py: #38bdf8;
+  --color-icon-json: #f59e0b;
+  --color-icon-md: #60a5fa;
+  --color-icon-css: #38bdf8;
+  --color-icon-html: #f97316;
+  --color-icon-pdf: #ef4444;
+  --color-icon-sql: #ec4899;
+  --color-icon-gear: #94a3b8;
+  --color-icon-folder: #e5ba7d;
+  --color-icon-about: #38bdf8;
+  --color-icon-experience: #60a5fa;
+  --color-icon-skills: #4ade80;
+  --color-icon-hackathons: #fb923c;
+  --color-icon-education: #c084fc;
+  --color-icon-certificates: #2dd4bf;
+  --color-icon-contact: #facc15;
+  --color-icon-resume: #f87171;
+  --color-icon-previews: #38bdf8;
+  --color-brand-linkedin: #0a66c2;
+
   /* === Radii, Fonts & Elevation === */
-  --radius-control: 5px;  --radius-tab: 6px;
+  --radius-control: 5px;
+  --radius-tab: 6px;
   --radius-section: 8px;
-  --radius-quick: 12px; /* quick-input widget (cornerRadius-xLarge) */
-  --radius-quick-input: 6px; /* quick-input field (cornerRadius-medium) */
-  --radius-quick-row: 3px; /* quick-input list rows */
-  --radius-keybinding: 3px; /* keybinding chips (keybindingLabel.css) */
-  --radius-scm: 4px; /* SCM editor + Commit button (scm.css / button.css) */
-  --radius-scrollbar: 4px; /* scrollbar thumb (rounded pill) */
+  --radius-quick: 12px;
+  /* quick-input widget (cornerRadius-xLarge) */
+  --radius-quick-input: 6px;
+  /* quick-input field (cornerRadius-medium) */
+  --radius-quick-row: 3px;
+  /* quick-input list rows */
+  --radius-keybinding: 3px;
+  /* keybinding chips (keybindingLabel.css) */
+  --radius-scm: 4px;
+  /* SCM editor + Commit button (scm.css / button.css) */
+  --radius-scrollbar: 4px;
+  /* scrollbar thumb (rounded pill) */
   --font-vscode-ui: "Segoe WPC", "Segoe UI", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   --font-vscode-code: "Cascadia Code", "JetBrains Mono", Consolas, "Courier New", monospace;
   --font-vscode-term: "Fira Code", "Cascadia Code", Consolas, "Courier New", monospace;
 
   /* === Portfolio page type scale (content only — workbench chrome stays 11–13px) === */
-  --text-page-micro: 12px;
-  --text-page-micro--line-height: 1.45;
-  --text-page-meta: 13px;
-  --text-page-meta--line-height: 1.5;
-  --text-page-body: 15px;
+  --text-page-micro: 13px;
+  --text-page-micro--line-height: 1.5;
+  --text-page-meta: 14.5px;
+  --text-page-meta--line-height: 1.55;
+  --text-page-body: 16.5px;
   --text-page-body--line-height: 1.65;
-  --text-page-lead: 17px;
-  --text-page-lead--line-height: 1.45;
-  --text-page-title: 24px;
+  --text-page-lead: 18.5px;
+  --text-page-lead--line-height: 1.5;
+  --text-page-title: 26px;
   --text-page-title--line-height: 1.25;
-  --text-page-display: 30px;
-  --text-page-display--line-height: 1.15;
+  --text-page-display: 32px;
+  --text-page-display--line-height: 1.2;
 
   --shadow-vscode: 0 8px 24px rgb(0 0 0 / 0.45);
   --shadow-page-glow:
@@ -154,7 +211,8 @@
   font-family: var(--font-vscode-code);
   font-size: 14px;
   line-height: 1.6;
-  font-variant-ligatures: none; /* metric parity between stacked editor layers */
+  font-variant-ligatures: none;
+  /* metric parity between stacked editor layers */
 }
 
 @utility font-term {
@@ -261,11 +319,11 @@ body {
   overflow-wrap: anywhere;
 }
 
-.markdown-body > :first-child {
+.markdown-body> :first-child {
   margin-top: 0 !important;
 }
 
-.markdown-body > :last-child {
+.markdown-body> :last-child {
   margin-bottom: 0 !important;
 }
 
@@ -282,32 +340,32 @@ body {
 }
 
 .markdown-body h1 {
-  font-size: 2em;
-  padding-bottom: 0.3em;
+  font-size: 32px;
+  padding-bottom: 4.8px;
   border-bottom: 1px solid var(--color-vscode-border);
 }
 
 .markdown-body h2 {
-  font-size: 1.5em;
-  padding-bottom: 0.3em;
+  font-size: 24px;
+  padding-bottom: 4.8px;
   border-bottom: 1px solid var(--color-vscode-border);
 }
 
 .markdown-body h3 {
-  font-size: 1.25em;
+  font-size: 20px;
 }
 
 .markdown-body h4 {
-  font-size: 1em;
+  font-size: 16px;
 }
 
 .markdown-body h5 {
-  font-size: 0.875em;
+  font-size: 14px;
 }
 
 .markdown-body h6 {
   color: var(--color-vscode-muted);
-  font-size: 0.85em;
+  font-size: 13.6px;
 }
 
 .markdown-body p,
@@ -318,25 +376,25 @@ body {
 .markdown-body pre,
 .markdown-body blockquote,
 .markdown-body details {
-  margin: 0 0 1em;
+  margin: 0 0 16px;
 }
 
 .markdown-body ul,
 .markdown-body ol {
-  padding-left: 2em;
+  padding-left: 32px;
 }
 
-.markdown-body li + li {
-  margin-top: 0.25em;
+.markdown-body li+li {
+  margin-top: 4px;
 }
 
-.markdown-body li > ul,
-.markdown-body li > ol {
-  margin: 0.25em 0 0;
+.markdown-body li>ul,
+.markdown-body li>ol {
+  margin: 4px 0 0;
 }
 
 .markdown-body .contains-task-list {
-  padding-left: 1.4em;
+  padding-left: 22.4px;
 }
 
 .markdown-body .task-list-item {
@@ -344,7 +402,7 @@ body {
 }
 
 .markdown-body .task-list-item input {
-  margin: 0 0.45em 0.25em -1.4em;
+  margin: 0 7.2px 4px -22.4px;
   vertical-align: middle;
   accent-color: var(--color-vscode-accent);
 }
@@ -372,14 +430,14 @@ body {
 .markdown-body blockquote {
   border-left: 4px solid var(--color-vscode-markdown-quote-border);
   color: var(--color-vscode-muted);
-  padding: 0 1em;
+  padding: 0 16px;
 }
 
 .markdown-body hr {
   border: 0;
   border-top: 1px solid var(--color-vscode-border);
   height: 0;
-  margin: 1.5em 0;
+  margin: 24px 0;
 }
 
 .markdown-body img {
@@ -413,12 +471,12 @@ body {
   background: var(--color-vscode-tab-hover);
 }
 
-.markdown-body :not(pre) > code {
+.markdown-body :not(pre)>code {
   background: var(--color-vscode-markdown-inline-code-bg);
   border-radius: 3px;
   font-family: var(--font-vscode-code);
-  font-size: 0.875em;
-  padding: 0.15em 0.35em;
+  font-size: 14px;
+  padding: 2.4px 5.6px;
 }
 
 .markdown-body pre {
@@ -527,6 +585,7 @@ body {
     transform: translateX(calc(100% + 32px));
     opacity: 0;
   }
+
   to {
     transform: translateX(0);
     opacity: 1;
@@ -538,6 +597,7 @@ body {
     transform: translateX(0);
     opacity: 1;
   }
+
   to {
     transform: translateX(calc(100% + 32px));
     opacity: 0;
@@ -551,5 +611,3 @@ body {
 .animate-vscode-slide-out {
   animation: vscode-slide-out-right 0.25s cubic-bezier(0.7, 0, 0.84, 0) forwards;
 }
-
-

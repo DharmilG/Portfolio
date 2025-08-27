@@ -28,6 +28,7 @@ export default function ResumePage() {
   return (
     <PageShell
       icon="file-pdf"
+      iconClassName="text-white"
       title="Resume"
       subtitle="One page, the whole story — grab the PDF, or read the same details across these pages."
       footer="PDF served from the public `resumes` bucket in Supabase Storage — never committed to git."

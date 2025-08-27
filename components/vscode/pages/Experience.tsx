@@ -327,6 +327,7 @@ export default function ExperiencePage() {
   return (
     <PageShell
       icon="briefcase"
+      iconClassName="text-white"
       title="Experience"
       subtitle="Where I worked, what I built and what I owned."
       footer="Rows live in the `experiences` table — `phases` carries the Part 01/02 narrative, `kind` splits work from hackathons."

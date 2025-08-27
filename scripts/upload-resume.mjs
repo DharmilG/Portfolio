@@ -12,7 +12,7 @@ const ROOT = process.cwd();
 
 function readEnv() {
   const env = { ...process.env };
-  for (const name of [".env.local", ".env"]) {
+  for (const name of [".env", ".env.local"]) {
     const file = path.join(ROOT, name);
     if (!fs.existsSync(file)) continue;
     for (const line of fs.readFileSync(file, "utf8").split(/\r?\n/)) {
@@ -34,8 +34,9 @@ if (!url || !serviceKey) {
 }
 
 const file =
+  process.argv[2] ??
   process.env.RESUME_FILE ??
-  path.join(ROOT, "private", "Dharmil_Gajjar_Resume_Latest.pdf");
+  path.join(ROOT, "private", "Dharmil_Gajjar_Resume.pdf");
 const objectName =
   process.env.RESUME_OBJECT ?? "Dharmil_Gajjar_Resume.pdf";
 const label =
@@ -51,6 +52,16 @@ console.log(`uploading ${path.basename(file)} (${bytes.length} bytes) -> ${objec
 const supabase = createClient(url, serviceKey, {
   auth: { persistSession: false },
 });
+
+// Remove any other existing files in the bucket to keep it clean
+const { data: existingFiles } = await supabase.storage.from("resumes").list();
+if (existingFiles && existingFiles.length > 0) {
+  const oldFiles = existingFiles.map((f) => f.name).filter((name) => name !== objectName);
+  if (oldFiles.length > 0) {
+    console.log(`cleaning up old file(s): ${oldFiles.join(", ")}`);
+    await supabase.storage.from("resumes").remove(oldFiles);
+  }
+}
 
 const { data: uploadData, error: uploadError } = await supabase.storage
   .from("resumes")

@@ -3,7 +3,11 @@
 // supabaseAdmin: service role, SERVER-ONLY. Never import in client components.
 import { createClient } from "@supabase/supabase-js";
 
-const rawUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+// When running in Node.js server-side inside Docker, allow INTERNAL_SUPABASE_URL (e.g. http://host.docker.internal:54321).
+// Browser client components and Vercel production cleanly fall back to NEXT_PUBLIC_SUPABASE_URL.
+const rawUrl =
+  (typeof window === "undefined" && process.env.INTERNAL_SUPABASE_URL) ||
+  process.env.NEXT_PUBLIC_SUPABASE_URL;
 const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 if (!rawUrl || !anonKey) {

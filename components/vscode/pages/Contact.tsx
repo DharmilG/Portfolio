@@ -4,6 +4,7 @@
 // the clipboard on click; the social links open in a new tab. Availability and
 // location come from the profile, not from hardcoded copy.
 import { useState } from "react";
+import { BrandIcon } from "@/lib/iconThemes";
 import { useStore } from "@/lib/store";
 import Codicon from "../Codicon";
 import { PageCard, PageShell } from "./PageShell";
@@ -25,7 +26,7 @@ export default function ContactPage() {
       await navigator.clipboard.writeText(value);
       setCopied(kind);
       pushToast(
-        `${kind === "email" ? "Email" : "Phone"} copied to the clipboard`,
+        `${kind === "email" ? "Email" : "Phone number"} ${value} copied to clipboard`,
         "success",
       );
       window.setTimeout(() => setCopied(null), 2000);
@@ -37,33 +38,31 @@ export default function ContactPage() {
   return (
     <PageShell
       icon="mail"
+      iconClassName="text-[#facc15]"
       title="Contact"
-      subtitle={
-        availability || "Open to work, collaborations and interesting problems."
-      }
-      footer="Prefer the terminal? `open --preview <url>` opens any link in the integrated browser."
     >
-      <div className="grid gap-3 lg:grid-cols-2">
-        <PageCard>
-          <div className="text-page-micro text-vscode-dim">Email</div>
+      <div className="grid gap-4 lg:grid-cols-2">
+        <PageCard className="p-5">
+          <div className="text-page-micro font-medium text-vscode-dim">Email</div>
           {email ? (
-            <div className="mt-1.5 flex items-center gap-2">
+            <div className="mt-2 flex items-center justify-between gap-3">
               <a
                 href={`mailto:${email}`}
-                className="truncate text-page-body text-vscode-quick-match hover:underline"
+                className="truncate font-mono text-page-body font-medium text-vscode-quick-match hover:underline"
               >
                 {email}
               </a>
               <button
                 type="button"
                 onClick={() => copy(email, "email")}
-                className="ml-auto flex h-6 shrink-0 items-center gap-1 rounded-control border border-vscode-page-border bg-vscode-page-chip px-2 text-page-micro text-vscode-muted hover:border-vscode-accent/60 hover:text-vscode-fg"
+                className="flex shrink-0 items-center gap-1.5 rounded-control border border-vscode-page-border bg-vscode-page-chip px-3 py-1 text-page-micro text-vscode-fg transition-colors hover:border-vscode-accent/60 hover:bg-vscode-page-card-hover"
               >
                 <Codicon
                   name={copied === "email" ? "check" : "copy"}
                   size={12}
+                  className={copied === "email" ? "text-vscode-added" : "text-vscode-dim"}
                 />
-                {copied === "email" ? "Copied" : "Copy"}
+                <span>{copied === "email" ? "Copied" : "Copy"}</span>
               </button>
             </div>
           ) : (
@@ -75,24 +74,25 @@ export default function ContactPage() {
 
           {phone ? (
             <>
-              <div className="mt-4 text-page-micro text-vscode-dim">Phone</div>
-              <div className="mt-1.5 flex items-center gap-2">
+              <div className="mt-5 text-page-micro font-medium text-vscode-dim">Phone</div>
+              <div className="mt-2 flex items-center justify-between gap-3">
                 <a
                   href={`tel:${phone.replace(/\s+/g, "")}`}
-                  className="truncate text-page-body text-vscode-fg hover:underline"
+                  className="truncate text-page-body font-medium text-vscode-fg-active hover:underline"
                 >
                   {phone}
                 </a>
                 <button
                   type="button"
                   onClick={() => copy(phone, "phone")}
-                  className="ml-auto flex h-6 shrink-0 items-center gap-1 rounded-control border border-vscode-page-border bg-vscode-page-chip px-2 text-page-micro text-vscode-muted hover:border-vscode-accent/60 hover:text-vscode-fg"
+                  className="flex shrink-0 items-center gap-1.5 rounded-control border border-vscode-page-border bg-vscode-page-chip px-3 py-1 text-page-micro text-vscode-fg transition-colors hover:border-vscode-accent/60 hover:bg-vscode-page-card-hover"
                 >
                   <Codicon
                     name={copied === "phone" ? "check" : "copy"}
                     size={12}
+                    className={copied === "phone" ? "text-vscode-added" : "text-vscode-dim"}
                   />
-                  {copied === "phone" ? "Copied" : "Copy"}
+                  <span>{copied === "phone" ? "Copied" : "Copy"}</span>
                 </button>
               </div>
             </>
@@ -100,50 +100,67 @@ export default function ContactPage() {
 
           {location ? (
             <>
-              <div className="mt-4 text-page-micro text-vscode-dim">Location</div>
-              <div className="mt-1.5 flex items-center gap-1.5 text-page-body text-vscode-fg">
-                <Codicon name="location" size={13} className="text-vscode-dim" />
-                {location}
+              <div className="mt-5 text-page-micro font-medium text-vscode-dim">Location</div>
+              <div className="mt-2 flex items-center gap-2 text-page-body text-vscode-fg">
+                <Codicon name="location" size={14} className="text-vscode-dim" />
+                <span>{location}</span>
               </div>
             </>
           ) : null}
         </PageCard>
 
-        <PageCard>
-          <div className="text-page-micro text-vscode-dim">Elsewhere</div>
+        <PageCard className="p-5">
+          <div className="text-page-micro font-medium text-vscode-dim">Elsewhere</div>
           {socials.length === 0 ? (
-            <p className="mt-1.5 text-page-body text-vscode-dim">
+            <p className="mt-2 text-page-body text-vscode-dim">
               No links yet — add them to the <code>social_links</code> table.
             </p>
           ) : (
-            <div className="mt-2 space-y-1.5">
-              {socials.map((social) => (
-                <a
-                  key={social.id}
-                  href={social.url}
-                  target="_blank"
-                  rel="noreferrer noopener"
-                  className="flex items-center gap-2 rounded-control px-1 py-1 text-page-body text-vscode-fg hover:bg-vscode-page-card-hover"
-                >
-                  <Codicon
-                    name={social.icon}
-                    size={13}
-                    className="text-vscode-dim"
-                  />
-                  <span className="truncate">{social.label}</span>
-                  <Codicon
-                    name="link-external"
-                    size={11}
-                    className="ml-auto text-vscode-dim"
-                  />
-                </a>
-              ))}
+            <div className="mt-3 space-y-2">
+              {socials.map((social) => {
+                const isGitHub = /github/i.test(social.label) || social.icon === "github";
+                const isLinkedIn =
+                  /linkedin/i.test(social.label) ||
+                  social.icon === "linkedin" ||
+                  social.icon === "globe";
+
+                return (
+                  <a
+                    key={social.id}
+                    href={social.url}
+                    target="_blank"
+                    rel="noreferrer noopener"
+                    className="flex items-center gap-3 rounded-control border border-vscode-page-border bg-vscode-page-chip px-4 py-2.5 text-page-body text-vscode-fg transition-colors hover:border-vscode-accent/60 hover:bg-vscode-page-card-hover"
+                  >
+                    {isGitHub ? (
+                      <BrandIcon name="github" size={16} />
+                    ) : isLinkedIn ? (
+                      <BrandIcon name="linkedin" size={16} />
+                    ) : (
+                      <Codicon
+                        name={social.icon}
+                        size={15}
+                        className="text-vscode-dim"
+                      />
+                    )}
+                    <span className="truncate font-medium text-vscode-fg-active">
+                      {social.label}
+                    </span>
+                    <Codicon
+                      name="link-external"
+                      size={13}
+                      className="ml-auto text-vscode-dim"
+                    />
+                  </a>
+                );
+              })}
             </div>
           )}
+
           {availability ? (
-            <div className="mt-4 flex items-center gap-1.5 rounded-control bg-vscode-page-chip px-2.5 py-1.5 text-page-micro text-vscode-added">
-              <Codicon name="circle-filled" size={10} />
-              {availability}
+            <div className="mt-4 flex items-center gap-2 rounded-control border border-emerald-900/40 bg-emerald-950/20 px-3.5 py-2.5 text-page-micro text-emerald-400">
+              <span className="h-2 w-2 shrink-0 rounded-full bg-emerald-400" />
+              <span>{availability}</span>
             </div>
           ) : null}
         </PageCard>

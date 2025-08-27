@@ -1,14 +1,13 @@
 "use client";
 
-// Toast — the notification stack (PV-UI-TOAST). VS Code shows notifications
-// in the top-right corner of the window: a small card with an icon, the
-// message and a close button; it fades away on its own. The stack lives in
-// the store (session-only) and is mounted once by the portfolio page.
+// Toast — the notification stack (PV-UI-TOAST).
+// Desktop & tablet: VS Code notification toast sliding in from bottom-right
+// above the status bar, styled like native VS Code notification widgets.
 import { useEffect } from "react";
 import { useStore, type ToastKind } from "@/lib/store";
 import Codicon from "./Codicon";
 
-const LIFETIME = 4500;
+const LIFETIME = 3500;
 
 const ICON: Record<ToastKind, string> = {
   info: "info",
@@ -20,7 +19,7 @@ export default function Toast() {
   const toasts = useStore((s) => s.toasts);
   const dismissToast = useStore((s) => s.dismissToast);
 
-  // Each toast dismisses itself; the timer is keyed by the toast id.
+  // Auto-dismiss each toast after LIFETIME
   useEffect(() => {
     if (toasts.length === 0) return;
     const timers = toasts.map((t) =>
@@ -32,38 +31,43 @@ export default function Toast() {
   if (toasts.length === 0) return null;
 
   return (
-    <div
+    <aside
       role="status"
       aria-live="polite"
-      className="pointer-events-none fixed right-4 top-11 z-40 flex w-80 flex-col gap-2"
+      aria-label="Notifications"
+      className="pointer-events-none fixed bottom-8 right-4 z-50 flex w-[380px] max-w-[calc(100vw-2rem)] flex-col gap-2.5 select-none"
     >
       {toasts.map((t) => (
         <div
           key={t.id}
-          className="pointer-events-auto flex items-start gap-2 rounded-control border border-vscode-widget-border bg-vscode-widget-bg px-3 py-2 text-xs text-vscode-fg shadow-vscode"
+          className="pointer-events-auto flex items-start gap-3 rounded-control border border-vscode-widget-border bg-vscode-widget-bg p-3.5 text-vscode-fg shadow-vscode animate-vscode-slide-in"
         >
           <Codicon
             name={ICON[t.kind]}
-            size={14}
+            size={16}
             className={`mt-0.5 shrink-0 ${
               t.kind === "success"
-                ? "text-vscode-added"
+                ? "text-[#23d18b]"
                 : t.kind === "warning"
-                  ? "text-vscode-warning"
-                  : "text-vscode-accent"
+                  ? "text-[#cca700]"
+                  : "text-[#0078d4]"
             }`}
           />
-          <span className="min-w-0 flex-1 break-words">{t.message}</span>
+          <div className="min-w-0 flex-1">
+            <p className="text-[12.5px] leading-relaxed text-vscode-fg select-text">
+              {t.message}
+            </p>
+          </div>
           <button
             type="button"
-            aria-label={`Dismiss: ${t.message}`}
+            aria-label="Dismiss notification"
             onClick={() => dismissToast(t.id)}
-            className="flex h-4 w-4 shrink-0 items-center justify-center rounded-control text-vscode-dim hover:bg-vscode-list-hover hover:text-vscode-fg"
+            className="flex h-5 w-5 shrink-0 items-center justify-center rounded-control text-vscode-dim hover:bg-vscode-list-hover hover:text-vscode-fg focus-visible:outline focus-visible:outline-1 focus-visible:outline-vscode-accent transition-colors"
           >
-            <Codicon name="close" size={12} />
+            <Codicon name="close" size={14} />
           </button>
         </div>
       ))}
-    </div>
+    </aside>
   );
 }

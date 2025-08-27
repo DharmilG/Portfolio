@@ -8,6 +8,7 @@
 // badge just left of the dot/close button. Corners use --radius-tab (top only
 // — the tile sits on the editor group header band). See DOC/05 §6.
 import { fileIcon } from "@/lib/fileIcons";
+import { getFileIconColor, getSectionIconColor } from "@/lib/iconThemes";
 import Codicon from "./Codicon";
 
 type TabProps = {
@@ -52,7 +53,16 @@ export default function Tab({
           : "text-vscode-muted hover:bg-vscode-tab-hover hover:text-vscode-fg"
       }`}
     >
-      <Codicon name={icon ?? fileIcon(name)} />
+      <Codicon
+        name={icon ?? fileIcon(name)}
+        className={
+          icon
+            ? getSectionIconColor(name)
+            : getFileIconColor(name) !== "text-vscode-dim"
+              ? getFileIconColor(name)
+              : getSectionIconColor(name)
+        }
+      />
       <span className={`min-w-0 flex-1 truncate ${nameTone}`}>{name}</span>
       <span className="flex shrink-0 items-center gap-1">
         {status === "modified" ? (

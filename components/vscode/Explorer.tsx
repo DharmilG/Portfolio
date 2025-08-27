@@ -14,6 +14,7 @@
 // See DOC/05 §5, skills vscode-tokens + local-git.
 import { useEffect, useRef, useState } from "react";
 import { fileIcon } from "@/lib/fileIcons";
+import { getFileIconColor, getSectionIconColor } from "@/lib/iconThemes";
 import { readmeDescription } from "@/lib/readme";
 import {
   isDirty,
@@ -339,7 +340,7 @@ export default function Explorer({
                   className="translate-y-px"
                 />
               </span>
-              <span className="text-vscode-dim">
+              <span className="text-[#e5ba7d]">
                 <Codicon name="folder" />
               </span>
               <span className="truncate">{name}</span>
@@ -359,8 +360,8 @@ export default function Explorer({
           focused={focused}
           onClick={() => onOpenFile?.(key, node.sha)}
         >
-          <span className="text-vscode-dim">
-            <Codicon name={fileIcon(name)} />
+          <span className="flex w-4 shrink-0 items-center justify-center">
+            <Codicon name={fileIcon(name)} className={getFileIconColor(name)} />
           </span>
           <span
             className={`truncate ${dirty ? "text-vscode-modified" : ""}`}
@@ -550,15 +551,15 @@ export default function Explorer({
                       onDoubleClick={() => setRenaming(key)}
                     >
                       {isProjects ? (
-                        <span className="flex w-4 shrink-0 items-center justify-center text-vscode-dim">
+                        <span className="flex w-4 shrink-0 items-center justify-center text-[#e5ba7d]">
                           <Codicon
                             name={open ? "chevron-down" : "chevron-right"}
                             className="translate-y-px"
                           />
                         </span>
                       ) : (
-                        <span className="flex w-4 shrink-0 items-center justify-center text-vscode-dim">
-                          <Codicon name={sec.icon} />
+                        <span className="flex w-4 shrink-0 items-center justify-center">
+                          <Codicon name={sec.icon} className={getSectionIconColor(sec.slug)} />
                         </span>
                       )}
                       {renaming === key ? (
