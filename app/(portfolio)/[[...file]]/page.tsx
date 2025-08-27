@@ -23,6 +23,7 @@ import Tabs from "@/components/vscode/Tabs";
 import TerminalPanel from "@/components/vscode/TerminalPanel";
 import TitleBar from "@/components/vscode/TitleBar";
 import Toast from "@/components/vscode/Toast";
+import WorkInProgressNotice from "@/components/vscode/WorkInProgressNotice";
 import { COMMANDS, newTextFile, nextFreeKey } from "@/lib/commands";
 import { supabase } from "@/lib/db";
 import { isMarkdownPath } from "@/lib/langs";
@@ -450,6 +451,7 @@ export default function PortfolioPage() {
       <StatusBar />
       <CommandPalette />
       <Toast />
+      <WorkInProgressNotice />
     </div>
   );
 }
