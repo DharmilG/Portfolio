@@ -1,31 +1,36 @@
 // scripts/upload-resume.mjs — upload the resume PDF to the public `resumes`
-// bucket and point site_settings.resume at it. The PDF never lives in git
-// (private/ is ignored): this script is the only path from disk to the web.
+// bucket and point site_settings.resume at it using @supabase/supabase-js.
+// The PDF never lives in git (private/ is ignored).
 //
 // Usage: node scripts/upload-resume.mjs
-// Reads .env.local (NEXT_PUBLIC_SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY).
-// Works against the local stack and, by swapping the env values, against the
-// cloud project — the same public URL shape in both.
+// Reads .env or .env.local (NEXT_PUBLIC_SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY).
 import fs from "node:fs";
 import path from "node:path";
+import { createClient } from "@supabase/supabase-js";
 
 const ROOT = process.cwd();
 
 function readEnv() {
-  const file = path.join(ROOT, ".env.local");
-  const env = {};
-  for (const line of fs.readFileSync(file, "utf8").split(/\r?\n/)) {
-    const m = line.match(/^([A-Z0-9_]+)=(.*)$/);
-    if (m) env[m[1]] = m[2].trim();
+  const env = { ...process.env };
+  for (const name of [".env.local", ".env"]) {
+    const file = path.join(ROOT, name);
+    if (!fs.existsSync(file)) continue;
+    for (const line of fs.readFileSync(file, "utf8").split(/\r?\n/)) {
+      const m = line.match(/^([A-Z0-9_]+)=(.*)$/);
+      if (m && m[2].trim()) env[m[1]] = m[2].trim();
+    }
   }
   return env;
 }
 
 const env = readEnv();
-const url = env.NEXT_PUBLIC_SUPABASE_URL;
+let url = env.NEXT_PUBLIC_SUPABASE_URL;
+if (url) {
+  url = url.replace(/\/rest\/v1\/?$/, "").replace(/\/+$/, "");
+}
 const serviceKey = env.SUPABASE_SERVICE_ROLE_KEY;
 if (!url || !serviceKey) {
-  throw new Error("NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required in .env.local");
+  throw new Error("NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required in .env or .env.local");
 }
 
 const file =
@@ -43,22 +48,26 @@ if (!fs.existsSync(file)) {
 const bytes = fs.readFileSync(file);
 console.log(`uploading ${path.basename(file)} (${bytes.length} bytes) -> ${objectName}`);
 
-const upload = await fetch(`${url}/storage/v1/object/resumes/${encodeURIComponent(objectName)}`, {
-  method: "POST",
-  headers: {
-    Authorization: `Bearer ${serviceKey}`,
-    "Content-Type": "application/pdf",
-    "x-upsert": "true",
-    "cache-control": "3600",
-  },
-  body: bytes,
+const supabase = createClient(url, serviceKey, {
+  auth: { persistSession: false },
 });
 
-if (!upload.ok) {
-  throw new Error(`upload failed ${upload.status}: ${await upload.text()}`);
+const { data: uploadData, error: uploadError } = await supabase.storage
+  .from("resumes")
+  .upload(objectName, bytes, {
+    contentType: "application/pdf",
+    upsert: true,
+  });
+
+if (uploadError) {
+  throw new Error(`Upload failed: ${uploadError.message}`);
 }
 
-const publicUrl = `${url}/storage/v1/object/public/resumes/${encodeURIComponent(objectName)}`;
+const { data: pubData } = supabase.storage
+  .from("resumes")
+  .getPublicUrl(objectName);
+
+const publicUrl = pubData.publicUrl;
 const downloadUrl = `${publicUrl}?download=${encodeURIComponent(label)}`;
 const value = {
   path: objectName,
@@ -66,21 +75,15 @@ const value = {
   updated_at: new Date().toISOString().slice(0, 10),
 };
 
-const save = await fetch(`${url}/rest/v1/site_settings?key=eq.resume`, {
-  method: "PATCH",
-  headers: {
-    apikey: serviceKey,
-    Authorization: `Bearer ${serviceKey}`,
-    "Content-Type": "application/json",
-    Prefer: "return=minimal",
-  },
-  body: JSON.stringify({ value }),
-});
+const { error: dbError } = await supabase
+  .from("site_settings")
+  .upsert({ key: "resume", value });
 
-if (!save.ok) {
-  throw new Error(`site_settings update failed ${save.status}: ${await save.text()}`);
+if (dbError) {
+  throw new Error(`site_settings update failed: ${dbError.message}`);
 }
 
 console.log(`public:   ${publicUrl}`);
 console.log(`download: ${downloadUrl}`);
 console.log(`setting:  ${JSON.stringify(value)}`);
+console.log("Resume uploaded successfully!");
