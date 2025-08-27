@@ -30,8 +30,6 @@ export default function ResumePage() {
       icon="file-pdf"
       iconClassName="text-white"
       title="Resume"
-      subtitle="One page, the whole story — grab the PDF, or read the same details across these pages."
-      footer="PDF served from the public `resumes` bucket in Supabase Storage — never committed to git."
     >
       {url && download ? (
         <div className="rounded-control border border-vscode-page-border bg-vscode-page-card p-6">

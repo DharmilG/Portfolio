@@ -353,6 +353,10 @@ type State = {
 
   tabs: EditorTab[];
   activeTabId: string | null;
+  activeSection: string;
+  setActiveSection: (section: string) => void;
+  scrollTargetSection: string | null;
+  setScrollTargetSection: (target: string | null) => void;
   // `activate: false` opens a tab in the background (README auto-open).
   openTab: (t: Omit<EditorTab, "id">, activate?: boolean) => void;
   closeTab: (id: string) => void;
@@ -599,6 +603,10 @@ export const useStore = create<State>()(
 
       tabs: [],
       activeTabId: null,
+      activeSection: "about",
+      setActiveSection: (activeSection) => set({ activeSection }),
+      scrollTargetSection: null,
+      setScrollTargetSection: (scrollTargetSection) => set({ scrollTargetSection }),
       // Default-open roots (mirrors Explorer ROOT_NAME) + tmp scratch.
       // Session-only: expanded is intentionally absent from persist
       // partialize below.

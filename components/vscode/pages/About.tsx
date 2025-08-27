@@ -8,7 +8,6 @@ import { buildAboutTerminalData } from "@/lib/about-terminal";
 import { resumeDownloadUrl } from "@/lib/resume";
 import { useStore } from "@/lib/store";
 import Codicon from "../Codicon";
-import AboutTerminal from "./AboutTerminal";
 import { PageShell } from "./PageShell";
 
 export default function AboutPage() {
@@ -292,10 +291,7 @@ export default function AboutPage() {
           </button>
         </div>
 
-        {/* 3. Embedded Interactive Terminal */}
-        <div id="about-terminal-container" className="pt-2">
-          <AboutTerminal data={data} />
-        </div>
+
       </div>
     </PageShell>
   );

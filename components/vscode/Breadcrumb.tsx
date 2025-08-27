@@ -288,6 +288,7 @@ export default function Breadcrumb({ onOpenFile }: BreadcrumbProps) {
   const treeBranch = useStore((s) => s.treeBranch);
   const tmpFs = useStore((s) => s.tmpFs);
   const renames = useStore((s) => s.renames);
+  const activeSection = useStore((s) => s.activeSection);
 
   // Open picker: list = level browsed ("" = root), crumb anchors the dropdown,
   // focus = outlined row, expanded = in-place open folders (tree rows).
@@ -332,7 +333,33 @@ export default function Breadcrumb({ onOpenFile }: BreadcrumbProps) {
   // Browser tabs hold URLs (previews) — no crumb surface for those.
   if (!tab || tab.kind === "browser") return null;
 
-  const crumbs = crumbsFor(tab.path, sections, projects, renames);
+  const UNIFIED_TITLES: Record<string, string> = {
+    about: "About",
+    resume: "Resume",
+    experience: "Experience",
+    education: "Education",
+    skills: "Skills",
+    hackathons: "Hackathons",
+    contact: "Contact",
+  };
+
+  let crumbs = crumbsFor(tab.path, sections, projects, renames);
+  if (tab.kind === "page") {
+    const isUnified = tab.path === "about" || tab.path in UNIFIED_TITLES;
+    if (isUnified) {
+      const activeTitle = UNIFIED_TITLES[activeSection] ?? "About";
+      crumbs = [
+        { key: "root", label: "Dharmil Gajjar", file: false },
+        { key: activeSection, label: activeTitle, file: true },
+      ];
+    } else {
+      const secTitle = sections.find((s) => s.slug === tab.path)?.title ?? tab.path;
+      crumbs = [
+        { key: "root", label: "Dharmil Gajjar", file: false },
+        { key: tab.path, label: resolveName(tab.path, renames, secTitle), file: true },
+      ];
+    }
+  }
   const rows = picker
     ? rowsFor(
         picker.list,
