@@ -335,7 +335,6 @@ export default function Breadcrumb({ onOpenFile }: BreadcrumbProps) {
 
   const UNIFIED_TITLES: Record<string, string> = {
     about: "About",
-    resume: "Resume",
     experience: "Experience",
     education: "Education",
     skills: "Skills",

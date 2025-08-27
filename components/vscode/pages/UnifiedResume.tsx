@@ -27,7 +27,6 @@ type SectionItem = {
 
 const SECTIONS: SectionItem[] = [
   { id: "sec-about", slug: "about", title: "About", icon: "person", iconColor: "text-[#38bdf8]" },
-  { id: "sec-resume", slug: "resume", title: "Resume", icon: "file-pdf", iconColor: "text-white" },
   { id: "sec-experience", slug: "experience", title: "Experience", icon: "briefcase", iconColor: "text-white" },
   { id: "sec-education", slug: "education", title: "Education", icon: "mortar-board", iconColor: "text-white" },
   { id: "sec-skills", slug: "skills", title: "Skills", icon: "code", iconColor: "text-white" },
@@ -209,14 +208,15 @@ export default function UnifiedResume() {
               </div>
 
               <div className="flex items-center gap-2.5">
-                <button
-                  type="button"
-                  onClick={() => scrollToAnchor("resume")}
+                <a
+                  href={resumeHref || "/Dharmil_Gajjar_Resume.pdf"}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 rounded-control bg-vscode-accent px-4 py-1.5 text-page-meta font-medium text-white transition-colors hover:bg-vscode-accent-hover"
                 >
                   <Codicon name="file-pdf" size={15} />
                   <span>Resume</span>
-                </button>
+                </a>
 
                 <button
                   type="button"
@@ -316,7 +316,7 @@ export default function UnifiedResume() {
                   size={18}
                   className="text-[#60a5fa]"
                 />
-                <span className="text-page-body font-mono text-vscode-dim transition-transform group-hover:translate-x-1">
+                <span className="text-base font-semibold font-mono text-vscode-dim transition-transform group-hover:translate-x-1">
                   →
                 </span>
               </div>
@@ -337,7 +337,7 @@ export default function UnifiedResume() {
             >
               <div className="flex items-center justify-between">
                 <Codicon name="code" size={18} className="text-[#4ade80]" />
-                <span className="text-page-body font-mono text-vscode-dim transition-transform group-hover:translate-x-1">
+                <span className="text-base font-semibold font-mono text-vscode-dim transition-transform group-hover:translate-x-1">
                   →
                 </span>
               </div>
@@ -362,7 +362,7 @@ export default function UnifiedResume() {
                   size={18}
                   className="text-[#fb923c]"
                 />
-                <span className="text-page-body font-mono text-vscode-dim transition-transform group-hover:translate-x-1">
+                <span className="text-base font-semibold font-mono text-vscode-dim transition-transform group-hover:translate-x-1">
                   →
                 </span>
               </div>
@@ -390,7 +390,7 @@ export default function UnifiedResume() {
                   size={18}
                   className="text-[#38bdf8]"
                 />
-                <span className="text-page-body font-mono text-vscode-dim transition-transform group-hover:translate-x-1">
+                <span className="text-base font-semibold font-mono text-vscode-dim transition-transform group-hover:translate-x-1">
                   →
                 </span>
               </div>
@@ -410,69 +410,7 @@ export default function UnifiedResume() {
         <div className="h-px w-full bg-[#232323]" />
 
         {/* ================================================================= */}
-        {/* 2. RESUME SECTION                                                 */}
-        {/* ================================================================= */}
-        <section id="sec-resume" className="scroll-mt-6 space-y-6">
-          <div className="flex items-center gap-3">
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-control bg-vscode-activity-active-bg text-white">
-              <Codicon name="file-pdf" size={18} />
-            </span>
-            <h2 className="text-page-title font-semibold text-vscode-fg-active">
-              Resume
-            </h2>
-          </div>
-
-          <div className="rounded-control border border-vscode-page-border bg-vscode-page-card p-6">
-            <div className="flex flex-wrap items-start gap-4">
-              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-control bg-vscode-activity-active-bg text-vscode-accent">
-                <Codicon name="file-pdf" size={24} />
-              </span>
-              <div className="min-w-0 flex-1">
-                <div className="break-all text-page-lead font-medium text-vscode-fg-active">
-                  {resumeSet?.label ?? "Resume (PDF)"}
-                </div>
-                <div className="mt-1 text-page-meta text-vscode-muted">
-                  PDF
-                  {resumeSet?.updated_at
-                    ? ` · updated ${new Date(resumeSet.updated_at).toLocaleDateString(
-                      undefined,
-                      { year: "numeric", month: "short", day: "numeric" },
-                    )}`
-                    : " · updated Nov 2026"}
-                </div>
-                <div className="mt-4 flex flex-wrap items-center gap-2">
-                  {resumeDownload ? (
-                    <a
-                      href={resumeDownload}
-                      download
-                      className="flex h-7 items-center gap-1.5 rounded-control bg-vscode-accent px-3.5 text-page-meta font-medium text-white hover:bg-vscode-accent-hover transition-colors"
-                    >
-                      <Codicon name="cloud-download" size={13} />
-                      Download resume
-                    </a>
-                  ) : null}
-                  {resumeHref ? (
-                    <a
-                      href={resumeHref}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex h-7 items-center gap-1.5 rounded-control border border-vscode-page-border bg-vscode-page-card px-3.5 text-page-meta font-medium text-vscode-fg hover:border-vscode-accent/60 hover:bg-vscode-page-card-hover transition-colors"
-                    >
-                      <Codicon name="link-external" size={13} />
-                      Open in a new tab
-                    </a>
-                  ) : null}
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Subtle Horizontal Divider */}
-        <div className="h-px w-full bg-[#232323]" />
-
-        {/* ================================================================= */}
-        {/* 3. EXPERIENCE SECTION                                             */}
+        {/* 2. EXPERIENCE SECTION                                             */}
         {/* ================================================================= */}
         <section id="sec-experience" className="scroll-mt-6 space-y-6">
           <div className="flex items-center gap-3">
@@ -592,7 +530,7 @@ export default function UnifiedResume() {
         <div className="h-px w-full bg-[#232323]" />
 
         {/* ================================================================= */}
-        {/* 4. EDUCATION SECTION                                              */}
+        {/* 3. EDUCATION SECTION                                              */}
         {/* ================================================================= */}
         <section id="sec-education" className="scroll-mt-6 space-y-6">
           <div className="flex items-center gap-3">
@@ -671,7 +609,7 @@ export default function UnifiedResume() {
         <div className="h-px w-full bg-[#232323]" />
 
         {/* ================================================================= */}
-        {/* 5. SKILLS SECTION                                                 */}
+        {/* 4. SKILLS SECTION                                                 */}
         {/* ================================================================= */}
         <section id="sec-skills" className="scroll-mt-6 space-y-6">
           <div className="flex items-center gap-3">
@@ -719,7 +657,7 @@ export default function UnifiedResume() {
         <div className="h-px w-full bg-[#232323]" />
 
         {/* ================================================================= */}
-        {/* 6. HACKATHONS SECTION                                             */}
+        {/* 5. HACKATHONS SECTION                                             */}
         {/* ================================================================= */}
         <section id="sec-hackathons" className="scroll-mt-6 space-y-6">
           <div className="flex items-center gap-3">
@@ -820,7 +758,7 @@ export default function UnifiedResume() {
         <div className="h-px w-full bg-[#232323]" />
 
         {/* ================================================================= */}
-        {/* 7. CONTACT SECTION                                                */}
+        {/* 6. CONTACT SECTION                                                */}
         {/* ================================================================= */}
         <section id="sec-contact" className="scroll-mt-6 space-y-6">
           <div className="flex items-center gap-3">

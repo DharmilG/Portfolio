@@ -340,7 +340,13 @@ export default function CommandPalette() {
     });
     // The portfolio pages are workspace items too — they open as page tabs.
     const pageRows: PageRow[] = sections
-      .filter((section) => section.slug !== "projects")
+      .filter(
+        (section) =>
+          section.slug !== "projects" &&
+          section.slug !== "resume" &&
+          section.slug !== "tmp" &&
+          section.slug !== "certificates",
+      )
       .flatMap((section) => {
         const m = fuzzyScore(query, section.title);
         if (!m) return [];

@@ -2,7 +2,7 @@
 
 // About — visual profile hero, core capability pillars, and quick navigation.
 // Exclusively consumes global font tokens (--text-page-*).
-import { resumeDownloadUrl } from "@/lib/resume";
+import { resumeDownloadUrl, resumeUrl } from "@/lib/resume";
 import { useStore } from "@/lib/store";
 import Codicon from "../Codicon";
 import { PageShell } from "./PageShell";
@@ -13,7 +13,7 @@ export default function AboutPage() {
   const showView = useStore((s) => s.showView);
   const revealPath = useStore((s) => s.revealPath);
 
-  const resumeHref = resumeDownloadUrl(content?.settings?.resume);
+  const resumeHref = resumeUrl(content?.settings?.resume) || "/Dharmil_Gajjar_Resume.pdf";
 
   if (!content) {
     return (
@@ -81,25 +81,15 @@ export default function AboutPage() {
             </div>
 
             <div className="flex items-center gap-2.5">
-              {resumeHref ? (
-                <a
-                  href={resumeHref}
-                  download
-                  className="inline-flex items-center gap-2 rounded-control bg-vscode-accent px-4 py-1.5 text-page-meta font-medium text-white transition-colors hover:bg-vscode-accent-hover"
-                >
-                  <Codicon name="file-pdf" size={15} />
-                  <span>Resume</span>
-                </a>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => openTab({ kind: "page", path: "resume", sha: null })}
-                  className="inline-flex items-center gap-2 rounded-control bg-vscode-accent px-4 py-1.5 text-page-meta font-medium text-white transition-colors hover:bg-vscode-accent-hover"
-                >
-                  <Codicon name="file-pdf" size={15} />
-                  <span>Resume</span>
-                </button>
-              )}
+              <a
+                href={resumeHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-control bg-vscode-accent px-4 py-1.5 text-page-meta font-medium text-white transition-colors hover:bg-vscode-accent-hover"
+              >
+                <Codicon name="file-pdf" size={15} />
+                <span>Resume</span>
+              </a>
 
               <button
                 type="button"
@@ -199,7 +189,7 @@ export default function AboutPage() {
                 size={18}
                 className="text-[#60a5fa]"
               />
-              <span className="text-page-body font-mono text-vscode-dim transition-transform group-hover:translate-x-1">
+              <span className="text-base font-semibold font-mono text-vscode-dim transition-transform group-hover:translate-x-1">
                 →
               </span>
             </div>
@@ -220,7 +210,7 @@ export default function AboutPage() {
           >
             <div className="flex items-center justify-between">
               <Codicon name="code" size={18} className="text-[#4ade80]" />
-              <span className="text-page-body font-mono text-vscode-dim transition-transform group-hover:translate-x-1">
+              <span className="text-base font-semibold font-mono text-vscode-dim transition-transform group-hover:translate-x-1">
                 →
               </span>
             </div>
@@ -245,7 +235,7 @@ export default function AboutPage() {
                 size={18}
                 className="text-[#fb923c]"
               />
-              <span className="text-page-body font-mono text-vscode-dim transition-transform group-hover:translate-x-1">
+              <span className="text-base font-semibold font-mono text-vscode-dim transition-transform group-hover:translate-x-1">
                 →
               </span>
             </div>
@@ -270,7 +260,7 @@ export default function AboutPage() {
                 size={18}
                 className="text-[#38bdf8]"
               />
-              <span className="text-page-body font-mono text-vscode-dim transition-transform group-hover:translate-x-1">
+              <span className="text-base font-semibold font-mono text-vscode-dim transition-transform group-hover:translate-x-1">
                 →
               </span>
             </div>
