@@ -7,6 +7,7 @@ import { dirtyCount, useStore, type ActivityId } from "@/lib/store";
 import Badge from "./Badge";
 import IconButton from "./IconButton";
 import Menu from "./Menu";
+import { useTheme } from "./ThemeContext";
 
 // ActivityId now lives in the store (shared with the page + palette).
 export type { ActivityId };
@@ -45,8 +46,27 @@ export default function ActivityBar({
   avatarUrl,
   userInitial = "R",
 }: ActivityBarProps) {
+  const { toggleTheme, isLight } = useTheme();
   const badge =
     dirtyCount(useStore((s) => s.edits)) + useStore((s) => s.commits).length;
+
+  const gearItems = [
+    { id: "settings", label: "Settings" },
+    {
+      id: "appearance",
+      label: isLight ? "Color Theme: Dark Modern" : "Color Theme: Light Modern",
+      icon: "color-mode",
+    },
+    { id: "profile", label: "Profile" },
+    { id: "reset", label: "Reset local edits" },
+  ];
+
+  const handleGearAction = (id: string) => {
+    if (id === "appearance") {
+      toggleTheme();
+    }
+    onSettings?.(id as GearAction);
+  };
 
   return (
     <nav
@@ -85,11 +105,11 @@ export default function ActivityBar({
         <div className="group relative">
           <IconButton icon="gear" label="Settings" size="md" tooltip="off" />
           <Menu
-            items={GEAR_MENU}
-            onAction={(id) => onSettings?.(id as GearAction)}
+            items={gearItems}
+            onAction={handleGearAction}
             density="compact"
             label="Settings"
-            className="invisible absolute bottom-0 left-10 z-10 w-44 group-hover:visible"
+            className="invisible absolute bottom-0 left-10 z-10 w-48 group-hover:visible"
           />
         </div>
       </div>

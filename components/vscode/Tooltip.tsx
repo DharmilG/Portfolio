@@ -36,14 +36,14 @@ export default function Tooltip({
   const side =
     position === "left" || position === "right" ? "" : ` ${ALIGN[align]}`;
   const delayClass = delay
-    ? "opacity-0 group-hover:opacity-100 transition-opacity duration-150 delay-500"
+    ? "opacity-0 group-hover/tooltip:opacity-100 transition-opacity duration-150 delay-500"
     : "";
   return (
-    <span className={`group relative inline-flex shrink-0 ${className}`}>
+    <span className={`group/tooltip relative inline-flex shrink-0 ${className}`}>
       {children}
       <span
         role="tooltip"
-        className={`pointer-events-none invisible absolute z-30 whitespace-nowrap rounded-control border border-vscode-widget-border bg-vscode-widget-bg px-2 py-1 text-xs text-vscode-fg shadow-vscode group-hover:visible ${delayClass} ${POSITION[position]}${side}`}
+        className={`pointer-events-none invisible absolute z-30 whitespace-nowrap rounded-control border border-vscode-widget-border bg-vscode-widget-bg px-2 py-1 text-xs text-vscode-fg shadow-vscode group-hover/tooltip:visible ${delayClass} ${POSITION[position]}${side}`}
       >
         {text}
       </span>

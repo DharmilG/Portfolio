@@ -26,6 +26,7 @@ import {
 import { createHighlighterCore, getTokenStyleObject } from "shiki/core";
 import { createJavaScriptRegexEngine } from "shiki/engine/javascript";
 import darkPlus from "shiki/themes/dark-plus.mjs";
+import lightPlus from "shiki/themes/light-plus.mjs";
 import ts from "shiki/langs/typescript.mjs";
 import tsx from "shiki/langs/tsx.mjs";
 import js from "shiki/langs/javascript.mjs";
@@ -70,7 +71,7 @@ type RepoBlob = {
 
 function getHighlighter(): Promise<Highlighter> {
   highlighterPromise ??= createHighlighterCore({
-    themes: [darkPlus],
+    themes: [darkPlus, lightPlus],
     langs: [ts, tsx, js, jsx, json, md, css, scss, html, yaml, py, sh, sql, dotenv],
     engine: createJavaScriptRegexEngine({ forgiving: true }),
   });
@@ -126,6 +127,7 @@ export default function FileViewer() {
   const caret = useStore((s) => s.caret);
   const setCaret = useStore((s) => s.setCaret);
   const searchQuery = useStore((s) => s.searchQuery);
+  const mode = useStore((s) => s.mode);
 
   const [highlighter, setHighlighter] = useState<Highlighter | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -243,9 +245,9 @@ export default function FileViewer() {
     }
     return highlighter.codeToTokens(content, {
       lang: langFor(path),
-      theme: "dark-plus",
+      theme: mode === "light" ? "light-plus" : "dark-plus",
     });
-  }, [highlighter, path, content, previewing]);
+  }, [highlighter, path, content, previewing, mode]);
 
   const plainLines =
     tokens === null && content !== undefined ? content.split("\n") : null;
