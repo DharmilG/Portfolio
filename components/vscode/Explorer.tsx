@@ -44,6 +44,26 @@ type ViewAction = {
 };
 
 // Root-row view actions (VS Code tooltips; behavior owned by the page).
+const UNIFIED_SECTIONS = new Set([
+  "about",
+  "experience",
+  "education",
+  "skills",
+  "hackathons",
+  "contact",
+]);
+
+const SECTION_ORDER = [
+  "about",
+  "experience",
+  "education",
+  "skills",
+  "hackathons",
+  "contact",
+  "books",
+  "projects",
+];
+
 const EXPLORER_ACTIONS: ViewAction[] = [
   { id: "new-file", icon: "new-file", label: "New File..." },
   { id: "new-folder", icon: "new-folder", label: "New Folder..." },
@@ -159,6 +179,10 @@ export default function Explorer({
   const repoMeta = useStore((s) => s.repoMeta);
   const branchByRepo = useStore((s) => s.branchByRepo);
   const treeBranch = useStore((s) => s.treeBranch);
+  const activeTabId = useStore((s) => s.activeTabId);
+  const activeSection = useStore((s) => s.activeSection);
+  const setActiveSection = useStore((s) => s.setActiveSection);
+  const setScrollTargetSection = useStore((s) => s.setScrollTargetSection);
   const [renaming, setRenaming] = useState<string | null>(null);
   const [focused, setFocused] = useState(false);
   const [treeLoading, setTreeLoading] = useState<Record<string, boolean>>({});
@@ -168,10 +192,19 @@ export default function Explorer({
   const treeRef = useRef<HTMLDivElement>(null);
 
   // autoReveal scroll: openTab/setActiveTab bump revealNonce; bring the
-  // selected row into view (rows carry data-path).
+  // selected row into view (rows carry data-path). Top-level sections and root
+  // stay put so the Explorer header is never scrolled off-screen.
   useEffect(() => {
     const tree = treeRef.current;
     if (!tree || !selectedPath) return;
+    if (
+      UNIFIED_SECTIONS.has(selectedPath) ||
+      selectedPath === ROOT_NAME ||
+      selectedPath === "books" ||
+      selectedPath === "projects"
+    ) {
+      return;
+    }
     let row: HTMLElement | undefined;
     tree.querySelectorAll<HTMLElement>("[data-path]").forEach((n) => {
       if (n.dataset.path === selectedPath) row = n;
@@ -317,7 +350,7 @@ export default function Explorer({
       const name = resolveName(key, renames, node.name);
       const indent =
         REPO_INDENTS[
-          Math.min(depth + indentOffset, REPO_INDENTS.length - 1)
+        Math.min(depth + indentOffset, REPO_INDENTS.length - 1)
         ];
 
       if (node.type === "tree") {
@@ -334,14 +367,15 @@ export default function Explorer({
                 toggleExpanded(key);
               }}
             >
-              <span className="flex w-4 shrink-0 items-center justify-center text-vscode-dim">
+              <span className="flex w-5 shrink-0 items-center justify-center text-vscode-dim">
                 <Codicon
                   name={open ? "chevron-down" : "chevron-right"}
+                  size={18}
                   className="translate-y-px"
                 />
               </span>
               <span className="text-[#e5ba7d]">
-                <Codicon name="folder" />
+                <Codicon name="folder" size={18} />
               </span>
               <span className="truncate">{name}</span>
             </TreeRow>
@@ -360,8 +394,8 @@ export default function Explorer({
           focused={focused}
           onClick={() => onOpenFile?.(key, node.sha)}
         >
-          <span className="flex w-4 shrink-0 items-center justify-center">
-            <Codicon name={fileIcon(name)} className={getFileIconColor(name)} />
+          <span className="flex w-5 shrink-0 items-center justify-center">
+            <Codicon name={fileIcon(name)} size={18} className={getFileIconColor(name)} />
           </span>
           <span
             className={`truncate ${dirty ? "text-vscode-modified" : ""}`}
@@ -427,9 +461,10 @@ export default function Explorer({
           }}
           onDoubleClick={() => setRenaming(rkey)}
         >
-          <span className="flex w-4 shrink-0 items-center justify-center text-vscode-dim">
+          <span className="flex w-5 shrink-0 items-center justify-center text-vscode-dim">
             <Codicon
               name={ropen ? "chevron-down" : "chevron-right"}
+              size={18}
               className="translate-y-px"
             />
           </span>
@@ -485,7 +520,7 @@ export default function Explorer({
       onFocus={() => setFocused(true)}
       onBlur={() => setFocused(false)}
       onMouseDownCapture={() => treeRef.current?.focus({ preventScroll: true })}
-      className="py-1 text-[13px] focus:outline-none"
+      className="py-[5px] text-[14px] focus:outline-none"
     >
       {showRoot ? (
         <div>
@@ -500,9 +535,10 @@ export default function Explorer({
               toggleExpanded(ROOT_NAME);
             }}
           >
-            <span className="flex w-4 shrink-0 items-center justify-center text-vscode-dim">
+            <span className="flex w-5 shrink-0 items-center justify-center text-vscode-dim">
               <Codicon
                 name={rootOpen ? "chevron-down" : "chevron-right"}
+                size={18}
                 className="translate-y-px"
               />
             </span>
@@ -526,132 +562,201 @@ export default function Explorer({
                 No folders yet — add rows in Supabase Studio.
               </p>
             ) : (
-              sections.filter((sec) => sec.slug !== "tmp").map((sec) => {
-                const key = sec.slug;
-                const open = expanded[key] ?? false;
-                const title = resolveName(key, renames, sec.title);
-                if (!match(title)) return null;
-                const isProjects = sec.slug === "projects";
-                return (
-                  <div key={sec.id}>
-                    <TreeRow
-                      path={key}
-                      indent="pl-6"
-                      selected={selectedPath === key}
-                      focused={focused}
-                      onClick={() => {
-                        selectPath(key);
-                        if (isProjects) {
-                          toggleExpanded(key);
-                          return;
-                        }
-                        // Every other section opens its designed page.
-                        openTab({ kind: "page", path: key, sha: null });
-                      }}
-                      onDoubleClick={() => setRenaming(key)}
-                    >
+              [...sections]
+                .filter(
+                  (sec) =>
+                    sec.slug !== "tmp" &&
+                    sec.slug !== "resume" &&
+                    sec.slug !== "certificates",
+                )
+                .sort((a, b) => {
+                  const iA = SECTION_ORDER.indexOf(a.slug);
+                  const iB = SECTION_ORDER.indexOf(b.slug);
+                  if (iA !== -1 && iB !== -1) return iA - iB;
+                  if (iA !== -1) return -1;
+                  if (iB !== -1) return 1;
+                  return (a.orders ?? 0) - (b.orders ?? 0);
+                })
+                .map((sec) => {
+                  const key = sec.slug;
+                  const open = expanded[key] ?? false;
+                  const title = resolveName(key, renames, sec.title);
+                  if (!match(title)) return null;
+                  const isProjects = sec.slug === "projects";
+                  const isBooks = sec.slug === "books";
+                  const isUnified = UNIFIED_SECTIONS.has(sec.slug);
+
+                  const isUnifiedTabActive =
+                    activeTabId === "page:about" ||
+                    activeTabId === "page:experience" ||
+                    activeTabId === "page:education" ||
+                    activeTabId === "page:skills" ||
+                    activeTabId === "page:hackathons" ||
+                    activeTabId === "page:contact";
+
+                  const isCurrent = isUnified
+                    ? isUnifiedTabActive && activeSection === sec.slug
+                    : activeTabId === `page:${sec.slug}`;
+
+                  const isSelected = isCurrent || (!isUnified && selectedPath === key);
+                  const isActiveIndicator = isCurrent;
+
+                  return (
+                    <div key={sec.id}>
                       {isProjects ? (
-                        <span className="flex w-4 shrink-0 items-center justify-center text-[#e5ba7d]">
-                          <Codicon
-                            name={open ? "chevron-down" : "chevron-right"}
-                            className="translate-y-px"
-                          />
-                        </span>
-                      ) : (
-                        <span className="flex w-4 shrink-0 items-center justify-center">
-                          <Codicon name={sec.icon} className={getSectionIconColor(sec.slug)} />
-                        </span>
-                      )}
-                      {renaming === key ? (
-                        <RenameInput
-                          defaultValue={title}
-                          label="Rename folder"
-                          onCommit={(v) => commitRename(key, v ?? "")}
-                          onCancel={() => setRenaming(null)}
-                        />
-                      ) : (
-                        <span className="truncate">{title}</span>
-                      )}
-                    </TreeRow>
-                    {open && sec.slug === "projects" ? (
-                      <div>
-                        {projectGroups.map((group) => {
-                          const gkey = `Projects/${group.slug}`;
-                          const gname = resolveName(gkey, renames, group.title);
-                          const gopen = expanded[gkey] ?? false;
-                          const children = projects.filter(
-                            (p) => p.group_slug === group.slug,
-                          );
-                          const matching = children.filter((p) => {
-                            const name = resolveName(
-                              `Projects/${p.repo_owner}/${p.repo_name}`,
-                              renames,
-                              p.title_override ?? p.repo_name,
-                            );
-                            return match(name);
-                          });
-                          if (!match(gname) && matching.length === 0) {
-                            return null;
+                        <div className="my-[5px] mx-3 border-t border-[#333333]" />
+                      ) : null}
+                      <TreeRow
+                        path={key}
+                        indent="pl-5"
+                        selected={isSelected}
+                        focused={focused}
+                        activeIndicator={isActiveIndicator}
+                        onClick={() => {
+                          selectPath(key);
+                          if (isProjects) {
+                            toggleExpanded(key);
+                            return;
                           }
-                          // While filtering, open the group that holds matches.
-                          const showChildren =
-                            gopen || (!match(gname) && matching.length > 0);
-                          return (
-                            <div key={group.id}>
-                              <TreeRow
-                                path={gkey}
-                                indent="pl-10"
-                                selected={selectedPath === gkey}
-                                focused={focused}
-                                title={`${gname}${
-                                  group.description
-                                    ? ` — ${group.description}`
-                                    : ""
-                                }`}
-                                onClick={() => {
-                                  selectPath(gkey);
-                                  toggleExpanded(gkey);
+                          if (isBooks) {
+                            openTab({ kind: "page", path: "books", sha: null });
+                            return;
+                          }
+                          if (isUnified) {
+                            openTab({ kind: "page", path: "about", sha: null });
+                            setActiveSection(sec.slug);
+                            setScrollTargetSection(sec.slug);
+                            return;
+                          }
+                          openTab({ kind: "page", path: key, sha: null });
+                        }}
+                        onDoubleClick={() => setRenaming(key)}
+                      >
+                        {isProjects ? (
+                          <span className="flex w-5 shrink-0 items-center justify-center text-vscode-dim">
+                            <Codicon
+                              name={open ? "chevron-down" : "chevron-right"}
+                              size={18}
+                              className="translate-y-px"
+                            />
+                          </span>
+                        ) : (
+                          <span className="flex w-5 shrink-0 items-center justify-center">
+                            <Codicon name={sec.icon} size={18} className={getSectionIconColor(sec.slug)} />
+                          </span>
+                        )}
+                        {renaming === key ? (
+                          <RenameInput
+                            defaultValue={title}
+                            label="Rename folder"
+                            onCommit={(v) => commitRename(key, v ?? "")}
+                            onCancel={() => setRenaming(null)}
+                          />
+                        ) : (
+                          <>
+                            <span className="truncate">{title}</span>
+                            {isProjects ? (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  openTab({ kind: "page", path: "projects", sha: null });
                                 }}
-                                onDoubleClick={() => setRenaming(gkey)}
+                                className="ml-auto mr-1 rounded bg-[#0078d4] px-2.5 py-0.5 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-[#0078d4]/90"
                               >
-                                <span className="flex w-4 shrink-0 items-center justify-center text-vscode-dim">
-                                  <Codicon
-                                    name={
-                                      gopen ? "chevron-down" : "chevron-right"
-                                    }
-                                    className="translate-y-px"
-                                  />
-                                </span>
-                                <span className="text-vscode-dim">
-                                  <Codicon name={group.icon} />
-                                </span>
-                                {renaming === gkey ? (
-                                  <RenameInput
-                                    defaultValue={gname}
-                                    label="Rename group"
-                                    onCommit={(v) => commitRename(gkey, v ?? "")}
-                                    onCancel={() => setRenaming(null)}
-                                  />
-                                ) : (
-                                  <span className="truncate">{gname}</span>
-                                )}
-                              </TreeRow>
-                              {showChildren
-                                ? matching.map((p) =>
+                                All Projects
+                              </button>
+                            ) : null}
+                          </>
+                        )}
+                      </TreeRow>
+                      {open && sec.slug === "projects" ? (
+                        <div>
+                          {projectGroups.map((group) => {
+                            const gkey = `Projects/${group.slug}`;
+                            const gname = resolveName(gkey, renames, group.title);
+                            const gopen = expanded[gkey] ?? false;
+                            const children = projects.filter(
+                              (p) =>
+                                p.group_slug === group.slug &&
+                                p.repo_name.toLowerCase() !== "books" &&
+                                (p.title_override ?? "").toLowerCase() !== "books",
+                            );
+                            const matching = children.filter((p) => {
+                              const name = resolveName(
+                                `Projects/${p.repo_owner}/${p.repo_name}`,
+                                renames,
+                                p.title_override ?? p.repo_name,
+                              );
+                              return match(name);
+                            });
+                            if (!match(gname) && matching.length === 0) {
+                              return null;
+                            }
+                            // While filtering, open the group that holds matches.
+                            const showChildren =
+                              gopen || (!match(gname) && matching.length > 0);
+                            return (
+                              <div key={group.id}>
+                                <TreeRow
+                                  path={gkey}
+                                  indent="pl-10"
+                                  selected={selectedPath === gkey}
+                                  focused={focused}
+                                  title={`${gname}${group.description
+                                      ? ` — ${group.description}`
+                                      : ""
+                                    }`}
+                                  onClick={() => {
+                                    selectPath(gkey);
+                                    toggleExpanded(gkey);
+                                  }}
+                                  onDoubleClick={() => setRenaming(gkey)}
+                                >
+                                  <span className="flex w-5 shrink-0 items-center justify-center text-vscode-dim">
+                                    <Codicon
+                                      name={
+                                        gopen ? "chevron-down" : "chevron-right"
+                                      }
+                                      size={18}
+                                      className="translate-y-px"
+                                    />
+                                  </span>
+                                  <span className="text-vscode-dim">
+                                    <Codicon name={group.icon} size={18} />
+                                  </span>
+                                  {renaming === gkey ? (
+                                    <RenameInput
+                                      defaultValue={gname}
+                                      label="Rename group"
+                                      onCommit={(v) => commitRename(gkey, v ?? "")}
+                                      onCancel={() => setRenaming(null)}
+                                    />
+                                  ) : (
+                                    <span className="truncate">{gname}</span>
+                                  )}
+                                </TreeRow>
+                                {showChildren
+                                  ? matching.map((p) =>
                                     projectRow(p, "pl-14", 1),
                                   )
-                                : null}
-                            </div>
-                          );
-                        })}
-                        {projects
-                          .filter((p) => !p.group_slug)
-                          .map((p) => projectRow(p, "pl-10", 0))}
-                      </div>
-                    ) : null}
-                  </div>
-                );
-              })
+                                  : null}
+                              </div>
+                            );
+                          })}
+                          {projects
+                            .filter(
+                              (p) =>
+                                !p.group_slug &&
+                                p.repo_name.toLowerCase() !== "books" &&
+                                (p.title_override ?? "").toLowerCase() !== "books",
+                            )
+                            .map((p) => projectRow(p, "pl-9", 0))}
+                        </div>
+                      ) : null}
+                    </div>
+                  );
+                })
             )
           ) : null}
         </div>

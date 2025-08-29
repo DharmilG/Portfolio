@@ -11,6 +11,7 @@ values
   ('projects', 'Projects', 'repo', 60, true, 'projects'),
   ('skills', 'Skills', 'code', 70, true, 'static'),
   ('hackathons', 'Hackathons', 'flame', 80, true, 'static'),
+  ('books', 'Books', 'book', 85, true, 'static'),
   ('contact', 'Contact', 'mail', 90, true, 'static')
 on conflict (slug) do update set
   title = excluded.title,
@@ -101,11 +102,11 @@ values
   ('Languages', array['Go','TypeScript','JavaScript','Python','SQL']::text[], 10, true),
   ('Frontend', array['HTML','CSS','React','Next.js','Tailwind CSS']::text[], 20, true),
   ('Backend', array['Go (Golang)','Node.js','Express.js','NestJS','FastAPI','REST APIs','Microservices','Event-Driven Architecture']::text[], 30, true),
-  ('Databases', array['PostgreSQL','MongoDB','Redis']::text[], 40, true),
+  ('Databases', array['PostgreSQL','Supabase','MongoDB','Redis']::text[], 40, true),
   ('Cloud & DevOps', array['AWS (S3, RDS, SQS)','Docker','Nginx','Git','GitHub','GitHub Actions']::text[], 50, true),
   ('Platforms', array['Odoo 19','Theme development','Website editor components','Backend views']::text[], 60, true),
   ('Testing & QA', array['Functional testing','Integration testing','Manual testing','Bug reproduction and retesting','BLE/Wi-Fi device testing','React Native app testing']::text[], 70, true),
-  ('Data & ML', array['Machine Learning','LightGBM','Classification','Pandas','Optuna','SHAP','Data processing']::text[], 80, true);
+  ('Data & ML', array['Machine Learning','RAG','LightGBM','Classification','Pandas','Optuna','SHAP','Data processing']::text[], 80, true);
 
 -- Experiences
 delete from experiences;

@@ -25,6 +25,8 @@ import {
   SiOptuna,
   SiFirebase,
   SiSocketdotio,
+  SiOdoo,
+  SiSupabase,
 } from "react-icons/si";
 import { FaAws, FaGithub, FaCss3Alt, FaDatabase } from "react-icons/fa6";
 import Codicon from "./Codicon";
@@ -108,6 +110,9 @@ export default function SkillIcon({
   if (norm === "postgresql" || norm === "postgres") {
     return <SiPostgresql size={size} className="shrink-0 text-[#336791]" aria-hidden="true" />;
   }
+  if (norm === "supabase") {
+    return <SiSupabase size={size} className="shrink-0 text-[#3ecf8e]" aria-hidden="true" />;
+  }
   if (norm === "mongodb" || norm === "mongo") {
     return <SiMongodb size={size} className="shrink-0 text-[#47a248]" aria-hidden="true" />;
   }
@@ -137,7 +142,7 @@ export default function SkillIcon({
 
   // Platforms
   if (norm.includes("odoo")) {
-    return <Codicon name="layers" size={size} className="shrink-0 text-[#38bdf8]" />;
+    return <SiOdoo size={size} className="shrink-0 text-[#714B67]" aria-hidden="true" />;
   }
   if (norm.includes("theme")) {
     return <Codicon name="paintcan" size={size} className="shrink-0 text-[#38bdf8]" />;
@@ -150,6 +155,9 @@ export default function SkillIcon({
   }
 
   // Testing & QA
+  if (norm === "qa" || norm === "quality assurance" || norm.includes("quality assurance")) {
+    return <Codicon name="verified" size={size} className="shrink-0 text-[#4ade80]" />;
+  }
   if (norm.includes("functional")) {
     return <Codicon name="check" size={size} className="shrink-0 text-[#38bdf8]" />;
   }
@@ -167,6 +175,9 @@ export default function SkillIcon({
   }
 
   // Data & ML
+  if (norm === "rag" || norm.includes("rag")) {
+    return <Codicon name="hubot" size={size} className="shrink-0 text-[#38bdf8]" />;
+  }
   if (norm.includes("pandas")) {
     return <SiPandas size={size} className="shrink-0 text-[#38bdf8]" aria-hidden="true" />;
   }

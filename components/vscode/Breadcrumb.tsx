@@ -278,6 +278,15 @@ function rowsFor(
   return rows;
 }
 
+const UNIFIED_SECTIONS_DATA = [
+  { slug: "about", title: "About", icon: "person", color: "text-[#38bdf8]" },
+  { slug: "experience", title: "Experience", icon: "briefcase", color: "text-[#60a5fa]" },
+  { slug: "education", title: "Education", icon: "mortar-board", color: "text-[#c084fc]" },
+  { slug: "skills", title: "Skills", icon: "code", color: "text-[#4ade80]" },
+  { slug: "hackathons", title: "Hackathons", icon: "flame", color: "text-[#fb923c]" },
+  { slug: "contact", title: "Contact", icon: "mail", color: "text-[#facc15]" },
+];
+
 export default function Breadcrumb({ onOpenFile }: BreadcrumbProps) {
   const tabs = useStore((s) => s.tabs);
   const activeTabId = useStore((s) => s.activeTabId);
@@ -288,6 +297,10 @@ export default function Breadcrumb({ onOpenFile }: BreadcrumbProps) {
   const treeBranch = useStore((s) => s.treeBranch);
   const tmpFs = useStore((s) => s.tmpFs);
   const renames = useStore((s) => s.renames);
+  const activeSection = useStore((s) => s.activeSection);
+  const setActiveSection = useStore((s) => s.setActiveSection);
+  const setScrollTargetSection = useStore((s) => s.setScrollTargetSection);
+  const selectPath = useStore((s) => s.selectPath);
 
   // Open picker: list = level browsed ("" = root), crumb anchors the dropdown,
   // focus = outlined row, expanded = in-place open folders (tree rows).
@@ -332,7 +345,33 @@ export default function Breadcrumb({ onOpenFile }: BreadcrumbProps) {
   // Browser tabs hold URLs (previews) — no crumb surface for those.
   if (!tab || tab.kind === "browser") return null;
 
-  const crumbs = crumbsFor(tab.path, sections, projects, renames);
+  const UNIFIED_TITLES: Record<string, string> = {
+    about: "About",
+    experience: "Experience",
+    education: "Education",
+    skills: "Skills",
+    hackathons: "Hackathons",
+    contact: "Contact",
+  };
+
+  const isUnified = tab.kind === "page" && (tab.path === "about" || tab.path in UNIFIED_TITLES);
+
+  let crumbs = crumbsFor(tab.path, sections, projects, renames);
+  if (tab.kind === "page") {
+    if (isUnified) {
+      const activeTitle = UNIFIED_TITLES[activeSection] ?? "About";
+      crumbs = [
+        { key: "root", label: "Dharmil Gajjar", file: false },
+        { key: activeSection, label: activeTitle, file: true },
+      ];
+    } else {
+      const secTitle = sections.find((s) => s.slug === tab.path)?.title ?? tab.path;
+      crumbs = [
+        { key: "root", label: "Dharmil Gajjar", file: false },
+        { key: tab.path, label: resolveName(tab.path, renames, secTitle), file: true },
+      ];
+    }
+  }
   const rows = picker
     ? rowsFor(
         picker.list,
@@ -352,6 +391,17 @@ export default function Breadcrumb({ onOpenFile }: BreadcrumbProps) {
       setPicker(null);
       return;
     }
+
+    if (isUnified) {
+      setPicker({
+        crumb: crumbKey,
+        list: "unified",
+        focus: activeSection,
+        expanded: {},
+      });
+      return;
+    }
+
     // No children (empty folder / non-tree section) = no-op, like VS Code.
     if (
       !childrenOf(
@@ -388,6 +438,13 @@ export default function Breadcrumb({ onOpenFile }: BreadcrumbProps) {
   };
 
   const pick = (id: string) => {
+    if (picker?.list === "unified") {
+      setActiveSection(id);
+      selectPath(id);
+      setScrollTargetSection(id);
+      setPicker(null);
+      return;
+    }
     const row = rows.find((r) => r.key === id);
     if (!row) return;
     if (row.folder) {
@@ -421,19 +478,27 @@ export default function Breadcrumb({ onOpenFile }: BreadcrumbProps) {
     setPicker(null);
   };
 
-  const items: MenuItem[] = picker
-    ? rows.map((r) => ({
-        id: r.key,
-        label: r.label,
-        icon: r.folder
-          ? picker.expanded[r.key]
-            ? "chevron-down"
-            : "chevron-right"
-          : r.icon,
-        active: r.key === picker.focus,
-        depth: r.depth,
-      }))
-    : [];
+  const items: MenuItem[] =
+    picker?.list === "unified"
+      ? UNIFIED_SECTIONS_DATA.map((sec) => ({
+          id: sec.slug,
+          label: sec.title,
+          icon: sec.icon,
+          active: sec.slug === activeSection,
+        }))
+      : picker
+        ? rows.map((r) => ({
+            id: r.key,
+            label: r.label,
+            icon: r.folder
+              ? picker.expanded[r.key]
+                ? "chevron-down"
+                : "chevron-right"
+              : r.icon,
+            active: r.key === picker.focus,
+            depth: r.depth,
+          }))
+        : [];
 
   return (
     <nav
@@ -454,10 +519,17 @@ export default function Breadcrumb({ onOpenFile }: BreadcrumbProps) {
             } hover:bg-vscode-list-hover hover:text-vscode-fg-active`}
           >
             {c.file ? (
-              <Codicon
-                name={fileIcon(c.label)}
-                className="shrink-0 text-vscode-dim"
-              />
+              isUnified ? (
+                <Codicon
+                  name={UNIFIED_SECTIONS_DATA.find((s) => s.slug === c.key)?.icon ?? "file"}
+                  className={`shrink-0 ${UNIFIED_SECTIONS_DATA.find((s) => s.slug === c.key)?.color ?? "text-vscode-dim"}`}
+                />
+              ) : (
+                <Codicon
+                  name={fileIcon(c.label)}
+                  className="shrink-0 text-vscode-dim"
+                />
+              )
             ) : null}
             <span className="truncate">{c.label}</span>
           </button>

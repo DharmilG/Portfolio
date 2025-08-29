@@ -16,7 +16,6 @@ import {
   resolveContent,
 } from "./localGit";
 import { isMarkdownPath } from "./langs";
-import type { AboutTerminalEntry } from "./about-terminal";
 import type { TerminalShell } from "./terminal/parser";
 
 export type TabKind = "code" | "markdown" | "browser" | "page";
@@ -303,16 +302,6 @@ type State = {
   profile: ProfileContent | null;
   setProfile: (p: ProfileContent) => void;
 
-  // About terminal transcript (session-only). PageSurface mounts only the
-  // active page, so the terminal keeps its transcript here while the visitor
-  // opens Experience, Projects, etc. and comes back. Never persisted.
-  aboutTerminalEntries: AboutTerminalEntry[];
-  aboutTerminalHistory: string[];
-  aboutTerminalSeeded: boolean;
-  appendAboutTerminal: (entry: AboutTerminalEntry) => void;
-  pushAboutTerminalHistory: (command: string) => void;
-  markAboutTerminalSeeded: () => void;
-  clearAboutTerminal: () => void;
 
   // Repo selection (session-only): the project the workbench points at, the
   // branch picked per project, the cached branch list, and the branch each
@@ -353,6 +342,10 @@ type State = {
 
   tabs: EditorTab[];
   activeTabId: string | null;
+  activeSection: string;
+  setActiveSection: (section: string) => void;
+  scrollTargetSection: string | null;
+  setScrollTargetSection: (target: string | null) => void;
   // `activate: false` opens a tab in the background (README auto-open).
   openTab: (t: Omit<EditorTab, "id">, activate?: boolean) => void;
   closeTab: (id: string) => void;
@@ -527,15 +520,7 @@ export const useStore = create<State>()(
               ? `${projects[0].repo_owner}/${projects[0].repo_name}`
               : null),
         })),
-      // Featured groups start expanded so the platform's repos are visible.
-      setProjectGroups: (projectGroups) =>
-        set((s) => {
-          const expanded = { ...s.expanded };
-          for (const group of projectGroups) {
-            if (group.featured) expanded[`Projects/${group.slug}`] = true;
-          }
-          return { projectGroups, expanded };
-        }),
+      setProjectGroups: (projectGroups) => set({ projectGroups }),
       setTree: (repo, branch, tree) =>
         set((s) => ({
           trees: { ...s.trees, [repoTreeKey(repo, branch)]: tree },
@@ -545,23 +530,6 @@ export const useStore = create<State>()(
       profile: null,
       setProfile: (profile) => set({ profile }),
 
-      // About terminal — session-only (absent from partialize below).
-      aboutTerminalEntries: [],
-      aboutTerminalHistory: [],
-      aboutTerminalSeeded: false,
-      appendAboutTerminal: (entry) =>
-        set((s) => ({
-          aboutTerminalEntries: [...s.aboutTerminalEntries, entry].slice(-60),
-        })),
-      pushAboutTerminalHistory: (command) => {
-        const line = command.trim();
-        if (!line) return;
-        set((s) => ({
-          aboutTerminalHistory: [...s.aboutTerminalHistory, line].slice(-50),
-        }));
-      },
-      markAboutTerminalSeeded: () => set({ aboutTerminalSeeded: true }),
-      clearAboutTerminal: () => set({ aboutTerminalEntries: [] }),
 
       // Repo selection — session-only (never persisted).
       activeRepo: null,
@@ -607,10 +575,14 @@ export const useStore = create<State>()(
 
       tabs: [],
       activeTabId: null,
+      activeSection: "about",
+      setActiveSection: (activeSection) => set({ activeSection }),
+      scrollTargetSection: null,
+      setScrollTargetSection: (scrollTargetSection) => set({ scrollTargetSection }),
       // Default-open roots (mirrors Explorer ROOT_NAME) + tmp scratch.
       // Session-only: expanded is intentionally absent from persist
       // partialize below.
-      expanded: { "Dharmil Gajjar": true, projects: true, tmp: true },
+      expanded: { [ROOT_NAME]: true },
       openTab: (t, activate = true) =>
         set((s) => {
           const id = `${t.kind}:${t.path}`;

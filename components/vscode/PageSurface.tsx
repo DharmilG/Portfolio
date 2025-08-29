@@ -1,17 +1,13 @@
 "use client";
 
-// PageSurface — the editor surface for the portfolio pages. A `page` tab
-// (kind: "page", path = the section slug) renders the matching designed
-// page; anything else renders nothing (the FileViewer owns code tabs).
+// PageSurface — editor surface for portfolio pages.
+// Mounts UnifiedResume for the continuous single-page scroll resume (About through Contact),
+// BooksPage for the dedicated Books bookshelf, and ProjectsPage for the visual projects grid.
 import { useStore } from "@/lib/store";
-import AboutPage from "./pages/About";
+import BooksPage from "./pages/Books";
 import CertificatesPage from "./pages/Certificates";
-import ContactPage from "./pages/Contact";
-import EducationPage from "./pages/Education";
-import ExperiencePage from "./pages/Experience";
-import HackathonsPage from "./pages/Hackathons";
-import ResumePage from "./pages/Resume";
-import SkillsPage from "./pages/Skills";
+import ProjectsPage from "./pages/Projects";
+import UnifiedResume from "./pages/UnifiedResume";
 
 export default function PageSurface() {
   const tabs = useStore((s) => s.tabs);
@@ -21,21 +17,19 @@ export default function PageSurface() {
 
   switch (tab.path) {
     case "about":
-      return <AboutPage />;
     case "resume":
-      return <ResumePage />;
+    case "experience":
+    case "education":
+    case "skills":
+    case "hackathons":
+    case "contact":
+      return <UnifiedResume />;
+    case "books":
+      return <BooksPage />;
+    case "projects":
+      return <ProjectsPage />;
     case "certificates":
       return <CertificatesPage />;
-    case "experience":
-      return <ExperiencePage />;
-    case "education":
-      return <EducationPage />;
-    case "skills":
-      return <SkillsPage />;
-    case "hackathons":
-      return <HackathonsPage />;
-    case "contact":
-      return <ContactPage />;
     default:
       return null;
   }
