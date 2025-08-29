@@ -604,7 +604,7 @@ export default function Explorer({
                   return (
                     <div key={sec.id}>
                       {isProjects ? (
-                        <div className="my-[5px] mx-3 border-t border-[#333333]" />
+                        <div className="my-[5px] mx-3 border-t border-vscode-border" />
                       ) : null}
                       <TreeRow
                         path={key}

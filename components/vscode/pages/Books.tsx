@@ -76,7 +76,7 @@ export default function BooksPage() {
                   className="group flex flex-col overflow-hidden rounded-control border border-vscode-page-border bg-vscode-page-card transition-all duration-200 hover:border-vscode-accent/50 hover:bg-vscode-page-card-hover"
                 >
                   {/* Book Cover Image fitting the card rectangle */}
-                  <div className="relative aspect-[3/4] w-full overflow-hidden bg-[#121314]">
+                  <div className="relative aspect-[3/4] w-full overflow-hidden bg-vscode-editor">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={book.coverUrl}
@@ -88,7 +88,7 @@ export default function BooksPage() {
 
                   {/* Centered book title in white with 5px top and bottom padding */}
                   <div className="flex min-h-[46px] items-center justify-center px-3 py-[5px] text-center">
-                    <h3 className="text-page-body font-semibold text-white">
+                    <h3 className="text-page-body font-semibold text-vscode-fg-active">
                       {book.title}
                     </h3>
                   </div>

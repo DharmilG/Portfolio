@@ -80,7 +80,7 @@ export function BrandIcon({
 }): ReactNode {
   switch (name) {
     case "github":
-      return <FaGithub size={size} className={`shrink-0 text-white ${className}`} aria-hidden="true" />;
+      return <FaGithub size={size} className={`shrink-0 text-vscode-fg-active ${className}`} aria-hidden="true" />;
     case "linkedin":
       return <FaLinkedin size={size} className={`shrink-0 text-[#0a66c2] ${className}`} aria-hidden="true" />;
     case "go":

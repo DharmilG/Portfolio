@@ -39,7 +39,7 @@ export default function SkillsPage() {
               <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5">
                 {group.items.map((item) => (
                   <Tooltip key={item} text={item} position="top" delay={true} className="w-full">
-                    <div className="flex w-full items-center gap-2.5 rounded-control border border-vscode-page-border bg-[#141516] px-3.5 py-2.5 transition-colors hover:border-vscode-accent/50 hover:bg-vscode-page-card-hover">
+                    <div className="flex w-full items-center gap-2.5 rounded-control border border-vscode-page-border bg-vscode-page-chip px-3.5 py-2.5 transition-colors hover:border-vscode-accent/50 hover:bg-vscode-page-card-hover">
                       <SkillIcon name={item} size={16} />
                       <span className="truncate text-page-meta font-medium text-vscode-fg-active">
                         {item}

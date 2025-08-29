@@ -386,7 +386,7 @@ export default function UnifiedResume() {
         </section>
 
         {/* Subtle Horizontal Divider */}
-        <div className="h-px w-full bg-[#232323]" />
+        <div className="h-px w-full bg-vscode-page-divider" />
 
         {/* ================================================================= */}
         {/* 2. EXPERIENCE SECTION                                             */}
@@ -491,7 +491,7 @@ export default function UnifiedResume() {
                       {item.tags.map((tag) => (
                         <span
                           key={tag}
-                          className="inline-flex items-center gap-1 rounded-control border border-vscode-page-border bg-[#141516] px-2 py-0.5 text-page-micro font-medium text-vscode-dim"
+                          className="inline-flex items-center gap-1 rounded-control border border-vscode-page-border bg-vscode-page-chip px-2 py-0.5 text-page-micro font-medium text-vscode-dim"
                         >
                           <SkillIcon name={tag} size={12} />
                           <span>{tag}</span>
@@ -506,7 +506,7 @@ export default function UnifiedResume() {
         </section>
 
         {/* Subtle Horizontal Divider */}
-        <div className="h-px w-full bg-[#232323]" />
+        <div className="h-px w-full bg-vscode-page-divider" />
 
         {/* ================================================================= */}
         {/* 3. EDUCATION SECTION                                              */}
@@ -585,7 +585,7 @@ export default function UnifiedResume() {
         </section>
 
         {/* Subtle Horizontal Divider */}
-        <div className="h-px w-full bg-[#232323]" />
+        <div className="h-px w-full bg-vscode-page-divider" />
 
         {/* ================================================================= */}
         {/* 4. SKILLS SECTION                                                 */}
@@ -617,7 +617,7 @@ export default function UnifiedResume() {
                 <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5">
                   {group.items.map((item) => (
                     <Tooltip key={item} text={item} position="top" delay={true} className="w-full">
-                      <div className="flex w-full items-center gap-2.5 rounded-control border border-vscode-page-border bg-[#141516] px-3.5 py-2.5 transition-colors hover:border-vscode-accent/50 hover:bg-vscode-page-card-hover">
+                      <div className="flex w-full items-center gap-2.5 rounded-control border border-vscode-page-border bg-vscode-page-chip px-3.5 py-2.5 transition-colors hover:border-vscode-accent/50 hover:bg-vscode-page-card-hover">
                         <SkillIcon name={item} size={16} />
                         <span className="truncate text-page-meta font-medium text-vscode-fg-active">
                           {item}
@@ -632,7 +632,7 @@ export default function UnifiedResume() {
         </section>
 
         {/* Subtle Horizontal Divider */}
-        <div className="h-px w-full bg-[#232323]" />
+        <div className="h-px w-full bg-vscode-page-divider" />
 
         {/* ================================================================= */}
         {/* 5. HACKATHONS SECTION                                             */}
@@ -718,7 +718,7 @@ export default function UnifiedResume() {
                       {event.tags.map((tag) => (
                         <span
                           key={tag}
-                          className="inline-flex items-center gap-1.5 rounded-control border border-vscode-page-border bg-[#141516] px-2.5 py-1 text-page-micro font-medium text-vscode-fg"
+                          className="inline-flex items-center gap-1.5 rounded-control border border-vscode-page-border bg-vscode-page-chip px-2.5 py-1 text-page-micro font-medium text-vscode-fg"
                         >
                           <SkillIcon name={tag} size={14} />
                           <span>{tag}</span>
@@ -733,7 +733,7 @@ export default function UnifiedResume() {
         </section>
 
         {/* Subtle Horizontal Divider */}
-        <div className="h-px w-full bg-[#232323]" />
+        <div className="h-px w-full bg-vscode-page-divider" />
 
         {/* ================================================================= */}
         {/* 6. CONTACT SECTION                                                */}

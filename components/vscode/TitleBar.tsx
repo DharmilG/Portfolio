@@ -9,6 +9,7 @@ import { useEffect, useRef, useState } from "react";
 import { browserTabLabel, useStore } from "@/lib/store";
 import IconButton from "@/components/vscode/IconButton";
 import Menu, { type MenuItem } from "./Menu";
+import ThemeToggle from "./ThemeToggle";
 
 export type Menu = { menu: string; items: MenuItem[] };
 
@@ -54,6 +55,8 @@ export const MENU_ITEMS: Menu[] = [
       { label: "Toggle Sidebar", id: "toggle-sidebar" },
       { label: "Toggle Panel", id: "toggle-panel" },
       { label: "Toggle Terminal", id: "toggle-terminal" },
+      { separator: true },
+      { label: "Toggle Light / Dark Theme", id: "toggle-theme" },
     ],
   },
   {
@@ -202,6 +205,11 @@ export default function TitleBar({
         <i className="codicon codicon-search" aria-hidden="true" />
         <span className="truncate">Portfolio</span>
       </button>
+      {/* Theme switcher: Sun and Moon debounced toggle with VS Code blue accent */}
+      <div className="flex items-center mr-1">
+        <ThemeToggle />
+      </div>
+
       {/* Decorative layout actions drop below tablet; the sidebar and panel
           toggles stay (they are the only layout controls that do anything). */}
       <div className="hidden items-center md:flex">
