@@ -219,8 +219,8 @@ export default function UnifiedResume() {
             </div>
 
             {availability ? (
-              <div className="inline-flex items-center gap-2 rounded-full border border-emerald-900/60 bg-emerald-950/40 px-3.5 py-1 text-page-micro font-medium text-emerald-400">
-                <span className="h-2 w-2 rounded-full bg-emerald-400" />
+              <div className="inline-flex items-center gap-2 rounded-full border border-emerald-600/30 bg-emerald-500/10 px-3.5 py-1 text-page-micro font-medium text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-400">
+                <span className="h-2 w-2 rounded-full bg-emerald-600 dark:bg-emerald-400" />
                 <span>{availability}</span>
               </div>
             ) : null}
@@ -447,7 +447,7 @@ export default function UnifiedResume() {
                       type="button"
                       onClick={() => setExpFilter(pill)}
                       className={`flex h-7 items-center gap-1.5 rounded-control border px-3 text-page-micro font-medium transition-colors ${active
-                          ? "border-vscode-accent bg-vscode-accent/20 text-white"
+                          ? "border-vscode-accent bg-vscode-accent/10 text-vscode-accent dark:bg-vscode-accent/20 dark:text-white font-semibold shadow-xs"
                           : "border-vscode-page-border bg-vscode-page-chip text-vscode-muted hover:border-vscode-accent/50 hover:text-vscode-fg"
                         }`}
                     >
@@ -856,8 +856,8 @@ export default function UnifiedResume() {
               </div>
 
               {availability ? (
-                <div className="mt-4 flex items-center gap-2 rounded-control border border-emerald-900/40 bg-emerald-950/20 px-3.5 py-2.5 text-page-micro text-emerald-400">
-                  <span className="h-2 w-2 shrink-0 rounded-full bg-emerald-400" />
+                <div className="mt-4 flex items-center gap-2 rounded-control border border-emerald-600/30 bg-emerald-500/10 px-3.5 py-2.5 text-page-micro font-medium text-emerald-800 dark:border-emerald-900/40 dark:bg-emerald-950/20 dark:text-emerald-400">
+                  <span className="h-2 w-2 shrink-0 rounded-full bg-emerald-600 dark:bg-emerald-400" />
                   <span>{availability}</span>
                 </div>
               ) : null}
