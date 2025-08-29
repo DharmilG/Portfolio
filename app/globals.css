@@ -6,6 +6,8 @@
 @source not "../DOC";
 @source not "../state-for-agents";
 
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *, .dark, .dark *));
+
 :root,
 [data-theme="dark"],
 .dark {
@@ -112,6 +114,17 @@
   --vscode-page-glow: rgba(0, 120, 212, 0.16);
   --vscode-page-chip: #141516;
   --vscode-page-divider: #232323;
+
+  /* === Availability status badge === */
+  --vscode-badge-avail-bg: rgba(6, 78, 59, 0.4);
+  --vscode-badge-avail-border: rgba(6, 95, 70, 0.6);
+  --vscode-badge-avail-fg: #34d399;
+  --vscode-badge-avail-dot: #34d399;
+
+  /* === Filter pill active === */
+  --vscode-filter-active-bg: rgba(0, 120, 212, 0.2);
+  --vscode-filter-active-border: #0078d4;
+  --vscode-filter-active-fg: #ffffff;
 }
 
 [data-theme="light"],
@@ -219,6 +232,17 @@
   --vscode-page-glow: rgba(0, 120, 212, 0.16);
   --vscode-page-chip: #f3f3f3;
   --vscode-page-divider: #e5e5e5;
+
+  /* === Availability status badge (Light) === */
+  --vscode-badge-avail-bg: #ecfdf5;
+  --vscode-badge-avail-border: #a7f3d0;
+  --vscode-badge-avail-fg: #10b981;
+  --vscode-badge-avail-dot: #10b981;
+
+  /* === Filter pill active (Light) === */
+  --vscode-filter-active-bg: rgba(0, 120, 212, 0.1);
+  --vscode-filter-active-border: #0078d4;
+  --vscode-filter-active-fg: #0078d4;
 }
 
 @theme {
@@ -325,6 +349,17 @@
   --color-vscode-page-glow: var(--vscode-page-glow);
   --color-vscode-page-chip: var(--vscode-page-chip);
   --color-vscode-page-divider: var(--vscode-page-divider);
+
+  /* === Availability status badge === */
+  --color-vscode-badge-avail-bg: var(--vscode-badge-avail-bg);
+  --color-vscode-badge-avail-border: var(--vscode-badge-avail-border);
+  --color-vscode-badge-avail-fg: var(--vscode-badge-avail-fg);
+  --color-vscode-badge-avail-dot: var(--vscode-badge-avail-dot);
+
+  /* === Filter pill active === */
+  --color-vscode-filter-active-bg: var(--vscode-filter-active-bg);
+  --color-vscode-filter-active-border: var(--vscode-filter-active-border);
+  --color-vscode-filter-active-fg: var(--vscode-filter-active-fg);
 
   /* === Icon & Tech Identity Colors === */
   --color-icon-ts: #3178c6;
