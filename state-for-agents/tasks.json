@@ -1,21 +1,29 @@
 {
-  "in_progress": {
-    "description": "In-place rebuild of state-for-agents: TUW data deleted, portfolio AGENTS/tasks/guide/rules/skills/pending written",
-    "id": "PV-STATE",
-    "started": "2026-10-15",
-    "title": "Agent tracker rebuild"
-  },
+  "in_progress": null,
   "project": "Portfolio VS Code",
   "pushed_count": 0,
   "session": {
     "branch": "main",
-    "next_up": "PV-STORE (lib/store.ts), then PV-LOCALGIT, then shell components",
+    "next_up": "PV-STORE (lib/store.ts), then PV-LOCALGIT, then shell",
     "pending_verifications": [
       "browser smoke of shell once layout+explorer land",
       "npm run dev with 1 real section row"
     ],
     "tip": "066e225",
     "unpushed": [
+      "29f44aa",
+      "5d630e9",
+      "5c8e45a",
+      "f576822",
+      "07fa041",
+      "35d45eb",
+      "d6d5a4c",
+      "77ac9b3",
+      "01e9f0a",
+      "3aeadcb",
+      "34aaddb",
+      "5a02c03",
+      "51b320e",
       "066e225",
       "7396d55",
       "9fdb81b",
@@ -87,7 +95,8 @@
       "7215b97",
       "144e580",
       "5bb34c7"
-    ]
+    ],
+    "last_updated": "2026-10-15"
   },
   "source_of_truth": {
     "code": "E:/Portfolio (branch main, no origin)",
@@ -96,10 +105,10 @@
     "tokens": "app/globals.css @theme"
   },
   "summary": {
-    "backlog": 30,
-    "done": 5,
-    "in_progress": 1,
-    "total": 36
+    "total": 36,
+    "done": 6,
+    "in_progress": 0,
+    "backlog": 30
   },
   "tasks": [
     {
@@ -158,11 +167,13 @@
       "vscode_match": true
     },
     {
-      "description": "In-place rebuild of state-for-agents: TUW data deleted, portfolio AGENTS/tasks/guide/rules/skills/pending written",
       "id": "PV-STATE",
       "started": "2026-10-15",
-      "status": "in_progress",
-      "title": "Agent tracker rebuild"
+      "status": "done",
+      "title": "Agent tracker rebuild",
+      "finished": "2026-10-15",
+      "log": "51b320e..29f44aa (13 tracker files: guide/agents/pending + 3 rules + 5 skills + tasks.json + archive keep, one commit each)",
+      "verified": true
     },
     {
       "description": "Zustand slices: explorer, editorTabs, terminalSessions, localEdits, localCommits, uiRenames, tmpFs, preview, theme + selectors (isDirty, displayContent, viewCommits)",
