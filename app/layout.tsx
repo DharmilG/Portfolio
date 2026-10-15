@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import "@vscode/codicons/dist/codicon.css";
 import "./globals.css";
 
 export const metadata: Metadata = {
