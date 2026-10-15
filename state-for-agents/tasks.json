@@ -4,13 +4,17 @@
   "pushed_count": 0,
   "session": {
     "branch": "main",
-    "next_up": "Shell components: PV-C-LAYOUT first",
+    "next_up": "PV-C-TITLEBAR",
     "pending_verifications": [
       "browser smoke of shell once layout+explorer land",
       "npm run dev with 1 real section row"
     ],
     "tip": "066e225",
     "unpushed": [
+      "9684fd4",
+      "8cbc57d",
+      "02aa342",
+      "6b939de",
       "78beef8",
       "fc512b5",
       "10702bb",
@@ -239,11 +243,16 @@
       "title": "Terminal parser"
     },
     {
-      "description": "Workbench grid + fonts (app/layout.tsx)",
       "file": "app/layout.tsx",
       "id": "PV-C-LAYOUT",
-      "status": "backlog",
-      "title": "Root layout"
+      "status": "done",
+      "title": "Root layout",
+      "owner": "agent",
+      "started": "2026-10-15",
+      "finished": "2026-10-15",
+      "log": "02aa342 (tsc clean, dev boot + viewport fix; route conflict resolved via 6b939de)",
+      "verified": true,
+      "vscode_match": true
     },
     {
       "description": "36px + Command Center pill (components/vscode/TitleBar.tsx, per DOC/05 §3)",
@@ -323,8 +332,8 @@
       "title": "Browser preview"
     },
     {
-      "description": "Home shell mount (app/page.tsx)",
-      "file": "app/page.tsx",
+      "description": "Root mount folds into catch-all page (app/page.tsx deleted 6b939de: / collides with /[[...file]])",
+      "file": null,
       "id": "PV-PAGE-HOME",
       "status": "backlog",
       "title": "Home page"
