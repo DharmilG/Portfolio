@@ -26,6 +26,11 @@ coverage/
 .DS_Store
 Thumbs.db
 
+# Stray lockfiles (npm + package-lock.json is the standard here)
+pnpm-lock.yaml
+yarn.lock
+bun.lock
+
 # Editor
 .vscode/*
 !.vscode/extensions.json
