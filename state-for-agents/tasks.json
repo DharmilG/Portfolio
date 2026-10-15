@@ -4,13 +4,14 @@
   "pushed_count": 0,
   "session": {
     "branch": "main",
-    "next_up": "PV-STORE (lib/store.ts), then PV-LOCALGIT, then shell",
+    "next_up": "PV-STORE (lib/store.ts)",
     "pending_verifications": [
       "browser smoke of shell once layout+explorer land",
       "npm run dev with 1 real section row"
     ],
     "tip": "066e225",
     "unpushed": [
+      "fc512b5",
       "10702bb",
       "7d0eec0",
       "29f44aa",
@@ -108,9 +109,9 @@
   },
   "summary": {
     "total": 37,
-    "done": 7,
+    "done": 8,
     "in_progress": 0,
-    "backlog": 30
+    "backlog": 29
   },
   "tasks": [
     {
@@ -185,11 +186,16 @@
       "title": "Zustand store (all slices + selectors)"
     },
     {
-      "description": "LocalEdit/LocalCommit/RealCommit types + merge helper (lib/terminal/parser.ts, per DOC/09 §8)",
       "file": "lib/localGit.ts",
       "id": "PV-LOCALGIT",
-      "status": "backlog",
-      "title": "Local git types"
+      "status": "done",
+      "title": "Local git types",
+      "owner": "agent",
+      "started": "2026-10-15",
+      "finished": "2026-10-15",
+      "log": "fc512b5 (tsc clean + 11 unit cases)",
+      "verified": true,
+      "vscode_match": true
     },
     {
       "description": "Octokit allowlist gate: visible projects only, else 404 (lib/allowlist.ts, per DOC/09)",
