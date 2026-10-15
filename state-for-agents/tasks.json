@@ -4,13 +4,14 @@
   "pushed_count": 0,
   "session": {
     "branch": "main",
-    "next_up": "PV-STORE (lib/store.ts)",
+    "next_up": "Shell components: PV-C-LAYOUT first",
     "pending_verifications": [
       "browser smoke of shell once layout+explorer land",
       "npm run dev with 1 real section row"
     ],
     "tip": "066e225",
     "unpushed": [
+      "78beef8",
       "fc512b5",
       "10702bb",
       "7d0eec0",
@@ -109,9 +110,9 @@
   },
   "summary": {
     "total": 37,
-    "done": 8,
+    "done": 9,
     "in_progress": 0,
-    "backlog": 29
+    "backlog": 28
   },
   "tasks": [
     {
@@ -179,11 +180,16 @@
       "verified": true
     },
     {
-      "description": "Zustand slices: explorer, editorTabs, terminalSessions, localEdits, localCommits, uiRenames, tmpFs, preview, theme + selectors (isDirty, displayContent, viewCommits)",
       "file": "lib/store.ts",
       "id": "PV-STORE",
-      "status": "backlog",
-      "title": "Zustand store (all slices + selectors)"
+      "status": "done",
+      "title": "Zustand store (all slices + selectors)",
+      "owner": "agent",
+      "started": "2026-10-15",
+      "finished": "2026-10-15",
+      "log": "78beef8 (tsc clean + 17 action/selector/persist cases)",
+      "verified": true,
+      "vscode_match": true
     },
     {
       "file": "lib/localGit.ts",
