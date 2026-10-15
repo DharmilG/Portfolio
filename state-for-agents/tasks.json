@@ -4,13 +4,14 @@
   "pushed_count": 0,
   "session": {
     "branch": "main",
-    "next_up": "PV-C-TITLEBAR",
+    "next_up": "PV-C-ACTIVITYBAR",
     "pending_verifications": [
       "browser smoke of shell once layout+explorer land",
       "npm run dev with 1 real section row"
     ],
     "tip": "066e225",
     "unpushed": [
+      "d5e1b30",
       "9684fd4",
       "8cbc57d",
       "02aa342",
@@ -114,9 +115,9 @@
   },
   "summary": {
     "total": 37,
-    "done": 10,
+    "done": 11,
     "in_progress": 0,
-    "backlog": 27
+    "backlog": 26
   },
   "tasks": [
     {
@@ -255,11 +256,16 @@
       "vscode_match": true
     },
     {
-      "description": "36px + Command Center pill (components/vscode/TitleBar.tsx, per DOC/05 §3)",
       "file": "components/vscode/TitleBar.tsx",
       "id": "PV-C-TITLEBAR",
-      "status": "backlog",
-      "title": "TitleBar"
+      "status": "done",
+      "title": "TitleBar",
+      "owner": "agent",
+      "started": "2026-10-15",
+      "finished": "2026-10-15",
+      "log": "d5e1b30 (tsc clean, token audit clean, visual deferred to shell)",
+      "verified": true,
+      "vscode_match": true
     },
     {
       "description": "48px, badges, avatar + gear (components/vscode/ActivityBar.tsx, per DOC/05 §4)",
