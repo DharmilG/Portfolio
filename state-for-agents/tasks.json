@@ -4,13 +4,14 @@
   "pushed_count": 0,
   "session": {
     "branch": "main",
-    "next_up": "Mount shell in catch-all page for first pixels",
+    "next_up": "PV-C-TABS",
     "pending_verifications": [
       "browser smoke of shell once layout+explorer land",
       "npm run dev with 1 real section row"
     ],
     "tip": "066e225",
     "unpushed": [
+      "0016f1d",
       "ab52310",
       "8104943",
       "07aa8f9",
@@ -132,8 +133,8 @@
   "summary": {
     "total": 37,
     "done": 13,
-    "in_progress": 0,
-    "backlog": 24
+    "in_progress": 1,
+    "backlog": 23
   },
   "tasks": [
     {
@@ -374,8 +375,11 @@
       "description": "Catch-all deep-links /Projects/repo/path (app/(portfolio)/[[...file]]/page.tsx)",
       "file": "app/(portfolio)/[[...file]]/page.tsx",
       "id": "PV-PAGE-PORTFOLIO",
-      "status": "backlog",
-      "title": "Portfolio page"
+      "status": "in_progress",
+      "title": "Portfolio page",
+      "owner": "agent",
+      "started": "2026-10-16",
+      "log": "0016f1d (shell mount only: TitleBar+ActivityBar+Explorer+placeholders; deep-links pending FileViewer)"
     },
     {
       "description": "Visible join cache (app/api/projects/route.ts, per DOC/09 §1)",
