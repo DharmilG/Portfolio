@@ -4,13 +4,14 @@
   "pushed_count": 0,
   "session": {
     "branch": "main",
-    "next_up": "PV-ICONS: TitleBar menu row",
+    "next_up": "PV-ICONS: ActivityBar + Explorer codicon swap",
     "pending_verifications": [
       "browser smoke of shell once layout+explorer land",
       "npm run dev with 1 real section row"
     ],
     "tip": "066e225",
     "unpushed": [
+      "b34c58e",
       "1de5eeb",
       "0016f1d",
       "ab52310",
@@ -465,7 +466,8 @@
       "file": null,
       "status": "in_progress",
       "owner": "agent",
-      "started": "2026-10-16"
+      "started": "2026-10-16",
+      "log": "font 1de5eeb + menubar b34c58e (tsc clean, menu-data 4/4; ActivityBar/Explorer swap next)"
     }
   ],
   "tracker_version": 1
