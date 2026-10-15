@@ -1,0 +1,32 @@
+# Next.js
+node_modules/
+.next/
+out/
+build/
+dist/
+next-env.d.ts
+
+# Env (keep .env.local.example tracked)
+.env
+.env*.local
+!.env.local.example
+
+# Vercel
+.vercel/
+
+# Supabase CLI local state (keep config.toml + migrations/ + seed.sql tracked)
+supabase/.temp/
+supabase/.branches/
+supabase/.supabase/
+
+# Logs / coverage / OS
+*.log
+npm-debug.log*
+coverage/
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/*
+!.vscode/extensions.json
+.idea/
