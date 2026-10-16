@@ -5,48 +5,13 @@
 // See DOC/05 §5, skills vscode-tokens + local-git.
 import { useState } from "react";
 import { isDirty, useStore } from "@/lib/store";
+import { fileIcon } from "@/lib/fileIcons";
+import Codicon from "./Codicon";
 
 type ExplorerProps = {
   onOpenFile?: (path: string) => void;
   onRename?: (path: string, name: string | null) => void;
 };
-
-const FILE_ICONS: Record<string, string> = {
-  md: "markdown",
-  json: "json",
-  ts: "file-code",
-  tsx: "file-code",
-  js: "file-code",
-  jsx: "file-code",
-  css: "file-code",
-  scss: "file-code",
-  html: "file-code",
-  py: "file-code",
-  sh: "file-code",
-  sql: "file-code",
-  yml: "file-code",
-  yaml: "file-code",
-  svg: "file-media",
-  png: "file-media",
-  jpg: "file-media",
-  jpeg: "file-media",
-  gif: "file-media",
-  webp: "file-media",
-  ico: "file-media",
-  zip: "file-zip",
-  tar: "file-zip",
-  gz: "file-zip",
-  pdf: "file-pdf",
-};
-
-function extOf(path: string): string {
-  const i = path.lastIndexOf(".");
-  return i < 0 ? "" : path.slice(i + 1);
-}
-
-function fileIcon(name: string): string {
-  return FILE_ICONS[extOf(name).toLowerCase()] ?? "file";
-}
 
 export function resolveName(
   fullPath: string,
@@ -109,18 +74,10 @@ export default function Explorer({ onOpenFile, onRename }: ExplorerProps) {
               onDoubleClick={() => setRenaming(key)}
             >
               <span className="flex w-4 shrink-0 justify-center text-vscode-dim">
-                <i
-                  className={`codicon ${
-                    open ? "codicon-chevron-down" : "codicon-chevron-right"
-                  }`}
-                />
+                <Codicon name={open ? "chevron-down" : "chevron-right"} />
               </span>
               <span className="text-vscode-dim">
-                <i
-                  className={`codicon ${
-                    open ? "codicon-folder-opened" : "codicon-folder"
-                  }`}
-                />
+                <Codicon name={open ? "folder-opened" : "folder"} />
               </span>
               {renaming === key ? (
                 <input
@@ -164,19 +121,17 @@ export default function Explorer({ onOpenFile, onRename }: ExplorerProps) {
                         onDoubleClick={() => setRenaming(rkey)}
                       >
                         <span className="flex w-4 shrink-0 justify-center text-vscode-dim">
-                          <i
-                            className={`codicon ${
-                              ropen
-                                ? "codicon-chevron-down"
-                                : "codicon-chevron-right"
-                            }`}
+                          <Codicon
+                            name={
+                              ropen ? "chevron-down" : "chevron-right"
+                            }
                           />
                         </span>
                         <span className="text-vscode-dim">
-                          <i
-                            className={`codicon ${
-                              ropen ? "codicon-folder-opened" : "codicon-folder"
-                            }`}
+                          <Codicon
+                            name={
+                              ropen ? "folder-opened" : "folder"
+                            }
                           />
                         </span>
                         {renaming === rkey ? (
@@ -220,7 +175,7 @@ export default function Explorer({ onOpenFile, onRename }: ExplorerProps) {
                                   onClick={() => onOpenFile?.(fkey)}
                                 >
                                   <span className="text-vscode-dim">
-                                    <i className={`codicon codicon-${fileIcon(fname)}`} />
+                                    <Codicon name={fileIcon(fname)} />
                                   </span>
                                   <span className="truncate">{fname}</span>
                                   {dirty ? (
