@@ -37,14 +37,9 @@ export default function Explorer({
   const trees = useStore((s) => s.trees);
   const renames = useStore((s) => s.renames);
   const edits = useStore((s) => s.edits);
-  const [expanded, setExpanded] = useState<Record<string, boolean>>({
-    [ROOT_NAME]: true,
-    Projects: true,
-  });
+  const expanded = useStore((s) => s.expanded);
+  const toggleExpanded = useStore((s) => s.toggleExpanded);
   const [renaming, setRenaming] = useState<string | null>(null);
-
-  const toggle = (key: string) =>
-    setExpanded((e) => ({ ...e, [key]: !e[key] }));
 
   const match = (name: string) =>
     filter.trim() === "" ||
@@ -67,7 +62,7 @@ export default function Explorer({
         <div>
           <div
             className="flex h-7 cursor-pointer items-center gap-1 px-2 hover:bg-vscode-list-hover"
-            onClick={() => toggle(ROOT_NAME)}
+            onClick={() => toggleExpanded(ROOT_NAME)}
           >
             <span className="flex w-4 shrink-0 items-center justify-center text-vscode-dim">
               <Codicon
@@ -92,7 +87,7 @@ export default function Explorer({
                   <div key={sec.id}>
                     <div
                       className="flex h-7 cursor-pointer items-center gap-1 pl-6 pr-2 hover:bg-vscode-list-hover"
-                      onClick={() => toggle(key)}
+                      onClick={() => toggleExpanded(key)}
                       onDoubleClick={() => setRenaming(key)}
                     >
                       <span className="flex w-4 shrink-0 items-center justify-center text-vscode-dim">
@@ -133,7 +128,7 @@ export default function Explorer({
                             <div key={p.id}>
                               <div
                                 className="flex h-7 cursor-pointer items-center gap-1 pl-10 pr-2 hover:bg-vscode-list-hover"
-                                onClick={() => toggle(rkey)}
+                                onClick={() => toggleExpanded(rkey)}
                                 onDoubleClick={() => setRenaming(rkey)}
                               >
                                 <span className="flex w-4 shrink-0 items-center justify-center text-vscode-dim">
