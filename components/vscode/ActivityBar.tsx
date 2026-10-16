@@ -1,7 +1,7 @@
 "use client";
 
 // ActivityBar — 48px icon rail (store-connected for badge only; rest via props).
-// See DOC/05 §4, skills rounded-workbench + vscode-tokens + local-git.
+// Glyphs are VS Code codicons. See DOC/05 §4, skills rounded-workbench + vscode-tokens + local-git.
 import { dirtyCount, useStore } from "@/lib/store";
 
 export type ActivityId = "explorer" | "search" | "scm" | "run" | "extensions";
@@ -15,34 +15,18 @@ type ActivityBarProps = {
   userInitial?: string;
 };
 
-function Icon({ d, circles }: { d?: string; circles?: string }) {
-  return (
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 20 20"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.4"
-      aria-hidden="true"
-    >
-      {d ? <path d={d} /> : null}
-      {circles
-        ? circles.split("|").map((c) => {
-            const [cx, cy, r] = c.split(",").map(Number);
-            return <circle key={c} cx={cx} cy={cy} r={r} />;
-          })
-        : null}
-    </svg>
-  );
+// codicon.css pins its font-size with an unlayered `font` shorthand, which
+// beats Tailwind size utilities — so glyph size goes inline (24px = VS Code rail).
+function Codicon({ name }: { name: string }) {
+  return <i className={`codicon codicon-${name}`} style={{ fontSize: 24 }} />;
 }
 
-const TOP: { id: ActivityId; label: string; d?: string; circles?: string }[] = [
-  { id: "explorer", label: "Explorer", d: "M3 2h6l2 2h6v12H3z" },
-  { id: "search", label: "Search", d: "M9 3a6 6 0 1 0 4.2 10.4L17 17" },
-  { id: "scm", label: "Source Control", circles: "6,5,2|6,15,2|14,8,2" },
-  { id: "run", label: "Run", d: "M6 3l11 7-11 7z" },
-  { id: "extensions", label: "Extensions", d: "M3 3h6v6H3zM11 3h2v6h-2zM3 11h2v6H3zM7 11h6v6H7z" },
+const TOP: { id: ActivityId; label: string; icon: string }[] = [
+  { id: "explorer", label: "Explorer", icon: "files" },
+  { id: "search", label: "Search", icon: "search" },
+  { id: "scm", label: "Source Control", icon: "source-control" },
+  { id: "run", label: "Run", icon: "debug-alt" },
+  { id: "extensions", label: "Extensions", icon: "extensions" },
 ];
 
 const GEAR_MENU = [
@@ -83,7 +67,7 @@ export default function ActivityBar({
             {isActive ? (
               <span className="absolute left-0 h-6 w-0.5 rounded bg-vscode-accent" />
             ) : null}
-            <Icon d={item.d} circles={item.circles} />
+            <Codicon name={item.icon} />
             {item.id === "scm" && badge > 0 ? (
               <span className="absolute bottom-1 right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-vscode-badge-bg px-1 text-[10px] font-semibold text-vscode-badge-fg">
                 {badge}
@@ -112,7 +96,7 @@ export default function ActivityBar({
             title="Settings"
             className="flex h-8 w-8 items-center justify-center rounded hover:bg-vscode-list-hover hover:text-vscode-fg"
           >
-            <Icon d="M10 6.5A3.5 3.5 0 1 0 10 13.5 3.5 3.5 0 1 0 10 6.5M10 1v3M10 16v3M1 10h3M16 10h3M3.6 3.6l2.1 2.1M14.3 14.3l2.1 2.1M16.4 3.6l-2.1 2.1M5.7 14.3l-2.1 2.1" />
+            <Codicon name="gear" />
           </button>
           <div className="invisible absolute bottom-0 left-10 z-10 w-44 rounded-control border border-vscode-border bg-vscode-widget-bg py-1 shadow-vscode group-hover:visible">
             {GEAR_MENU.map((m) => (
