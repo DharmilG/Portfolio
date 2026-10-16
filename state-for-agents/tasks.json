@@ -6,11 +6,16 @@
     "branch": "main",
     "next_up": "PV-C-TABS change 2: editor tab strip (planned, awaiting Proceed)",
     "pending_verifications": [
-      "visual: chrome vs current VS Code (floating sections on titlebar base, title bar controls, ActivityBar pill/badge, Explorer glyphs)",
+      "visual: chrome vs current VS Code (floating sections on titlebar base, title bar controls, ActivityBar pill/badge, Explorer glyphs + static root)",
       "Explorer icon eyepass once section/project rows exist (Studio)"
     ],
-    "tip": "74c7eeb",
+    "tip": "9c1f77c",
     "unpushed": [
+      "9c1f77c",
+      "7db246e",
+      "ae83988",
+      "ae09399",
+      "724abd0",
       "74c7eeb",
       "0672999",
       "a6df354",
@@ -205,8 +210,8 @@
     "tokens": "app/globals.css @theme"
   },
   "summary": {
-    "total": 43,
-    "done": 18,
+    "total": 44,
+    "done": 19,
     "in_progress": 2,
     "backlog": 23
   },
@@ -575,6 +580,18 @@
       "started": "2026-10-16",
       "log": "Part A: grid 2e4bf5b (bg-vscode-titlebar) + token drop 9f8e104 + Section comment bcb4905 + skill c5d990a + DOC/05 1ea3d3e (gutter refs 0). Part B: concurrent session first landed wrong-direction ee5e467 (py-2 -> pb-2, closed by ea322a4); corrected by ea3521e (py-2 restored + mt-[3px] on nav per user spec; tsc clean, boot: mt-[3px] live, pill intact) + rail padding dropped 6f9011a (py-2 removed from nav; mt-[3px] is the top offset; tsc clean, boot verified) + sidebar header 0672999 (Title case Explorer, medium, tracking-normal; DOC/05 synced; tsc clean, boot: allcaps gone)",
       "finished": "2026-10-16",
+      "verified": true
+    },
+    {
+      "description": "Static Dharmil Gajjar workspace root (always present, nests all DB sections) + #bfbfbf emphasis token for sidebar header and root name.",
+      "file": null,
+      "id": "PV-UI-ROOT",
+      "status": "done",
+      "title": "Static root folder + emphasis tone",
+      "owner": "agent",
+      "started": "2026-10-16",
+      "finished": "2026-10-16",
+      "log": "token ae09399 (--color-vscode-emphasis #bfbfbf) + header ae83988 + static root 7db246e (always rendered, expanded by default, no rename; sections/projects/files shift one level: pl-6/pl-10/pl-14) + DOC/05 9c1f77c (tsc clean, boot markup: root + emphasis + empty state live with 0 rows)",
       "verified": true
     },
     {
