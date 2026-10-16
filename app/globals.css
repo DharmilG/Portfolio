@@ -58,9 +58,13 @@
   --color-vscode-activity-active-bg: #ffffff1a;
   --color-vscode-activity-hover-bg: #ffffff0d;
 
+  /* === Workbench Gutter (2026-10 refresh: floating sections) === */
+  --color-vscode-gutter: #0f0f0f;
+
   /* === Radii, Fonts & Elevation === */
   --radius-control: 5px;
   --radius-tab: 6px;
+  --radius-section: 8px;
   --font-vscode-ui: "Segoe WPC", "Segoe UI", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   --font-vscode-code: "Cascadia Code", "JetBrains Mono", Consolas, "Courier New", monospace;
   --shadow-vscode: 0 8px 24px rgb(0 0 0 / 0.45);
