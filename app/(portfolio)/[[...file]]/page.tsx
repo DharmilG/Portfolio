@@ -3,9 +3,10 @@
 // Portfolio shell mount — workbench chrome + regions (editor/panel fill in next).
 // Partial PV-PAGE-PORTFOLIO: mounts built components, fetches sections live.
 import { useEffect, useState } from "react";
-import ActivityBar, { type ActivityId } from "@/components/vscode/ActivityBar";
+import { type ActivityId } from "@/components/vscode/ActivityBar";
 import Explorer from "@/components/vscode/Explorer";
-import SideBar from "@/components/vscode/SideBar";
+import PrimarySideBar from "@/components/vscode/PrimarySideBar";
+import Section from "@/components/vscode/Section";
 import TitleBar from "@/components/vscode/TitleBar";
 import { supabase } from "@/lib/db";
 import { useStore } from "@/lib/store";
@@ -54,10 +55,9 @@ export default function PortfolioPage() {
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <TitleBar onMenuAction={handleAction} />
-      <div className="flex min-h-0 flex-1">
-        <ActivityBar active={view} onSelect={handleSelectView} />
+      <div className="flex min-h-0 flex-1 gap-[5px] bg-vscode-gutter p-[5px]">
         {showSidebar ? (
-          <SideBar>
+          <PrimarySideBar active={view} onSelect={handleSelectView}>
             {view === "explorer" ? (
               <Explorer
                 onOpenFile={(path) => console.info("open (FileViewer next):", path)}
@@ -67,11 +67,13 @@ export default function PortfolioPage() {
                 {view} view lands with its component.
               </p>
             )}
-          </SideBar>
+          </PrimarySideBar>
         ) : null}
-        <div className="flex min-h-0 flex-1 items-center justify-center bg-vscode-tab text-sm text-vscode-dim">
-          Open a file from the Explorer
-        </div>
+        <Section className="flex-1 bg-vscode-bg">
+          <div className="flex min-h-0 flex-1 items-center justify-center text-sm text-vscode-dim">
+            Open a file from the Explorer
+          </div>
+        </Section>
       </div>
     </div>
   );
