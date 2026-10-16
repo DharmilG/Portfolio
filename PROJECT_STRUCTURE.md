@@ -1,6 +1,8 @@
 # Project Structure — Portfolio VS Code
 
 > Stack: Next.js 16 App Router + Tailwind 4 + Supabase (local CLI first) + Upstash Redis + Vercel.
+> Toolchain: pnpm 11.25.0 strictly (`packageManager` pinned; `pnpm-lock.yaml` tracked).
+> Never use npm/yarn/bun in this repo.
 > Docs: `DOC/` (12 files, all detailed). DB source: `DOC/04-data-model.md`. No code yet — structure first.
 
 ## Target tree
