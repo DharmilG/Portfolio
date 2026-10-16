@@ -65,7 +65,7 @@ export default function ActivityBar({
 
   return (
     <nav
-      className="flex w-12 shrink-0 flex-col items-center gap-1 rounded-vscode bg-vscode-side py-2 text-vscode-dim"
+      className="flex w-12 shrink-0 flex-col items-center gap-1 border-r border-vscode-border bg-vscode-side py-2 text-vscode-dim"
       aria-label="Activity Bar"
     >
       {TOP.map((item) => {
@@ -114,7 +114,7 @@ export default function ActivityBar({
           >
             <Icon d="M10 6.5A3.5 3.5 0 1 0 10 13.5 3.5 3.5 0 1 0 10 6.5M10 1v3M10 16v3M1 10h3M16 10h3M3.6 3.6l2.1 2.1M14.3 14.3l2.1 2.1M16.4 3.6l-2.1 2.1M5.7 14.3l-2.1 2.1" />
           </button>
-          <div className="invisible absolute bottom-0 left-10 z-10 w-44 rounded-vscode border border-vscode-border bg-vscode-widget-bg py-1 shadow-vscode group-hover:visible">
+          <div className="invisible absolute bottom-0 left-10 z-10 w-44 rounded-control border border-vscode-border bg-vscode-widget-bg py-1 shadow-vscode group-hover:visible">
             {GEAR_MENU.map((m) => (
               <button
                 key={m.id}
