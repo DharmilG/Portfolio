@@ -9,8 +9,13 @@
       "visual: chrome vs current VS Code (floating sections on titlebar base, title bar controls, ActivityBar pill/badge, Explorer glyphs)",
       "Explorer icon eyepass once section/project rows exist (Studio)"
     ],
-    "tip": "6f9011a",
+    "tip": "74c7eeb",
     "unpushed": [
+      "74c7eeb",
+      "0672999",
+      "a6df354",
+      "d8460bb",
+      "6c1a292",
       "6f9011a",
       "f9a9252",
       "ea3521e",
@@ -568,7 +573,7 @@
       "title": "Gutter base + rail alignment refine",
       "owner": "agent",
       "started": "2026-10-16",
-      "log": "Part A: grid 2e4bf5b (bg-vscode-titlebar) + token drop 9f8e104 + Section comment bcb4905 + skill c5d990a + DOC/05 1ea3d3e (gutter refs 0). Part B: concurrent session first landed wrong-direction ee5e467 (py-2 -> pb-2, closed by ea322a4); corrected by ea3521e (py-2 restored + mt-[3px] on nav per user spec; tsc clean, boot: mt-[3px] live, pill intact) + rail padding dropped 6f9011a (py-2 removed from nav; mt-[3px] is the top offset; tsc clean, boot verified)",
+      "log": "Part A: grid 2e4bf5b (bg-vscode-titlebar) + token drop 9f8e104 + Section comment bcb4905 + skill c5d990a + DOC/05 1ea3d3e (gutter refs 0). Part B: concurrent session first landed wrong-direction ee5e467 (py-2 -> pb-2, closed by ea322a4); corrected by ea3521e (py-2 restored + mt-[3px] on nav per user spec; tsc clean, boot: mt-[3px] live, pill intact) + rail padding dropped 6f9011a (py-2 removed from nav; mt-[3px] is the top offset; tsc clean, boot verified) + sidebar header 0672999 (Title case Explorer, medium, tracking-normal; DOC/05 synced; tsc clean, boot: allcaps gone)",
       "finished": "2026-10-16",
       "verified": true
     },
