@@ -28,11 +28,11 @@
 - Mobile: drawer sidebar, full-width editor, bottom-sheet terminal. A11y: focus rings accent, `Esc` closes palette/menus.
 
 ## VS Code parity checklist
-- [ ] TitleBar 36px pill + layout icons
+- [ ] TitleBar 36px + menubar + Command Center + layout icons
 - [ ] ActivityBar 48px + badge counts + avatar/gear bottom
-- [ ] Explorer 280px rounded + skeleton + `M/●/tmp` states
+- [ ] Explorer 280px + skeleton + `M/●/tmp` states
 - [ ] Tabs 35px + breadcrumb 22px + split groups
 - [ ] Source Control local lane + real list + commit input + confetti
 - [ ] Terminal 280px + `pwsh|bash` + history/complete
 - [ ] StatusBar 24px accent + `main*`, `0/0`, `Ln/Col`, `local:k`
-- [ ] Palette 480px rounded + fuzzy + commands
+- [ ] Palette 480px + fuzzy + commands
