@@ -1,13 +1,14 @@
-# 05 — VS Code UI Spec (exact match, modern rounded) — Detailed
+# 05 — VS Code UI Spec (exact match, flush chrome) — Detailed
 
-> Target: VS Code 1.90+ Dark Modern with 8px rounded workbench, Command Center pill, floating panels.
+> Target: VS Code 1.90+ Dark Modern — flush chrome (no gaps, no structural
+> rounding), 1px hairlines between regions, 5px control radius.
 > Viewer: Shiki (not Monaco). Edits + commits 100% local (see `04 §8`, `06 §10`, `09 §8`).
 
 ## 1. Layout grid
 
 ```
 +----------------------------------------------------+
-| TitleBar 36px (traffic + Command Center pill)       |
+| TitleBar 36px (menu row + Command Center)          |
 +------+-----------+---------------------+-----------+
 | Act  | Sidebar   | Editor groups       | Panel?    |
 | 48px | 280px     | flex-1              | (right)   |
@@ -17,49 +18,65 @@
 |      |           +---------------------+           |
 |      |           | Bottom Panel 280px (Terminal)     |
 +------+-----------+---------------------+-----------+
-| StatusBar 24px (rounded bottom)                     |
+| StatusBar 24px (accent, flush)                     |
 +----------------------------------------------------+
-Outer: body bg #0f0f0f, workbench gap 8px, padding 8px, all panels radius 8px, border 1px #2b2b2b, shadow 0 8px 24px rgb(0 0 0/.45).
+Outer: flush shell — `<div className="flex h-screen">`, no gaps, no padding,
+no backdrop; structural surfaces square, separated by 1px #2b2b2b hairlines;
+shadows only on floating widgets.
 Mobile <768px: Activity 48px stays, Sidebar becomes overlay drawer, Editor full-width, Panel bottom-sheet.
 ```
 
-## 2. Tailwind 4 design tokens (`app/globals.css`)
+## 2. Tailwind 4 design tokens (`app/globals.css` — source of truth)
 
 ```css
 @import "tailwindcss";
 @theme {
   --color-vscode-bg: #1e1e1e;
   --color-vscode-side: #181818;
-  --color-vscode-tab: #1f1f1f;
+  --color-vscode-titlebar: #191a1b;
+  --color-vscode-tab: #181818;
+  --color-vscode-tab-hover: #1f1f1f;
   --color-vscode-tab-active: #1e1e1e;
   --color-vscode-border: #2b2b2b;
   --color-vscode-fg: #cccccc;
+  --color-vscode-fg-active: #ffffff;
   --color-vscode-dim: #858585;
+  --color-vscode-muted: #9d9d9d;
   --color-vscode-accent: #0078d4;
-  --color-vscode-accent-hover: #006bb3;
+  --color-vscode-accent-hover: #026ec1;
   --color-vscode-dot: #e2c08d; /* dirty ● */
   --color-vscode-added: #73c991; /* M badge */
   --color-vscode-error: #f14c4c;
-  --radius-vscode: 8px;
+  --color-vscode-warning: #cca700;
+  --color-vscode-list-hover: #2a2d2e;
+  --color-vscode-list-active: #04395e;
+  --color-vscode-input-bg: #3c3c3c;
+  --color-vscode-command-bg: #242424;
+  --color-vscode-widget-bg: #252526;
+  --color-vscode-widget-border: #454545;
+  --color-vscode-selection: #264f78;
+  --color-vscode-line-highlight: #282828;
+  --color-vscode-badge-bg: #0078d4;
+  --color-vscode-badge-fg: #ffffff;
+  --radius-control: 5px; /* Command Center, menus, widgets — no pills */
   --radius-tab: 6px;
-  --radius-pill: 999px;
   --font-vscode-ui: "Segoe WPC", "Segoe UI", system-ui, sans-serif;
   --font-vscode-code: "Cascadia Code", "JetBrains Mono", Consolas, monospace;
   --shadow-vscode: 0 8px 24px rgb(0 0 0 / 0.45);
 }
 .font-ui { font-family: var(--font-vscode-ui); font-size: 13px; }
 .font-code { font-family: var(--font-vscode-code); font-size: 14px; line-height: 1.6; }
-.workbench { background: #0f0f0f; gap: 8px; padding: 8px; }
-.panel { background: var(--color-vscode-side); border:1px solid var(--color-vscode-border); border-radius: var(--radius-vscode); box-shadow: var(--shadow-vscode); }
+/* Shell is flush (no backdrop). Separators: 1px solid var(--color-vscode-border). */
+/* Floating widgets only: border-radius var(--radius-control) + var(--shadow-vscode). */
 ```
 
 Accent usage: active tab top-border 1px accent, Activity active icon + left 2px accent bar, StatusBar bg accent (white text), focus outlines `1px solid var(--color-vscode-accent)`.
 
-## 3. TitleBar (36px)
+## 3. TitleBar (36px, bg `--color-vscode-titlebar` #191a1b, square)
 
-Left: traffic dots (macOS style, dummy) + `☰ Menu` (opens Command Palette `>Preferences`). Center: Command Center pill `rounded-full bg-[#2b2b2b] w-[420px] h-[24px]` with `⌕ portfolio — Visual Studio Code`, click -> `Ctrl+P`. Right: layout controls (split editor, toggle panel/sidebar icons).
+Left: VS Code logo (`/vscode-logo.svg`, 16px) + menu row (`File Edit Selection View Go Run Terminal Help`, real dropdowns). Center: Command Center — `rounded-control bg-vscode-command-bg border 1px #2b2b2b`, max 600px, `⌕ Portfolio`, click -> `Ctrl+P`, hover text white. Right: back/forward (history), layout controls (split editor, toggle sidebar/panel), decorative window controls `— ▢ ✕`.
 
-## 4. ActivityBar (48px, rounded-left)
+## 4. ActivityBar (48px, flush, 1px right hairline)
 
 Top icons (24px, dim -> white on active, tooltip on hover): Explorer `files`, Search `search` (filters Explorer client-side), Source Control `git-branch` with count badge `len(dirty)+len(localCommits)` blue circle, Run `play` (opens preview), Extensions `extensions` (dummy grid + `2` badge).
 Bottom: avatar 28px rounded-full `profiles.avatar_url` (your logo) -> click opens `profile.json` tab. Gear 20px below -> hover opens menu `Settings (opens settings.json) | Appearance (theme switch dark/light) | Profile (opens profile.json) | Reset local edits`.
@@ -73,7 +90,7 @@ Row: 28px, indent 12px/level, chevron + `vscode-icons` by ext + `resolveName(): 
 
 ## 6. Editor (core: read + local edit + split)
 
-Tab bar 35px rounded-top: icon + name + `●` dirty dot (color `--color-vscode-dot`) or `x` on hover, active tab `bg-tab-active + top accent line`. Right: split-right icon (markdown/browser preview), `...` (Copy path, Reveal in Explorer, Open raw).
+Tab bar 35px (square, flush): icon + name + `●` dirty dot (color `--color-vscode-dot`) or `x` on hover, active tab `bg-tab-active + top accent line`. Right: split-right icon (markdown/browser preview), `...` (Copy path, Reveal in Explorer, Open raw).
 Breadcrumb 22px dim: `Projects > <repo> > src > page.tsx`.
 Viewport:
 - Default read: Shiki Dark Modern + line numbers (gutter 48px, active line highlight on hover), minimap fake gradient bar right (decorative, 80px).
@@ -89,15 +106,15 @@ Panel replaces Explorer when git icon active:
 - `COMMITS` real list from `GET /api/commits` (sha short, msg, author, date), dimmed, read-only.
 - Empty state illustration: `No local changes — edit any file to start the tree 🌱`.
 
-## 8. StatusBar (24px, accent blue, rounded-bottom)
+## 8. StatusBar (24px, accent blue, flush)
 
-Left: ` main*` (star if dirty), `$(error) 0 $(warning) 0`, `$(git-commit) local:k`. Right: `Ln X, Col Y` (updates on textarea caret), `Spaces:2`, `UTF-8`, `TypeScript/Shiki lang`, `$(bell)` (opens dummy notifications: `Cache warmed 2h ago`). Click branch -> focuses Source Control.
+Left: `$(git-branch) main*` (star if dirty), `$(error) 0 $(warning) 0`, `$(git-commit) local:k`. Right: `Ln X, Col Y` (updates on textarea caret), `Spaces:2`, `UTF-8`, `TypeScript/Shiki lang`, `$(bell)` (opens dummy notifications: `Cache warmed 2h ago`). Click branch -> focuses Source Control.
 
 ## 9. Command Palette + keybinds
 
 `Ctrl+P` quick open (fuzzy file list from tree+static), `Ctrl+Shift+P` commands (`Open Preview, Toggle Theme, Discard Edits, Focus Terminal`), `Ctrl+Shift+V` markdown split, ``Ctrl+` `` terminal, `Ctrl+B` sidebar, `Ctrl+S` local save, `Ctrl+E` edit toggle.
 
-Palette UI: centered 480px rounded-8px shadow, input pill + list 40px rows + `↑↓ Enter Esc`.
+Palette UI: centered 480px `rounded-control` + `--shadow-vscode`, input (not pill) + list 40px rows + `↑↓ Enter Esc`.
 
 ## 10. Search / Run / Extensions (dummy but alive)
 
@@ -105,4 +122,4 @@ Palette UI: centered 480px rounded-8px shadow, input pill + list 40px rows + `�
 - Run: opens `preview_url` in BrowserPreview or `Open in new tab` if `preview_embeddable=false`.
 - Extensions: static cards (`Prettier, ESLint`) with `Install (dummy)` -> toast.
 
-All rounded, all tokens from §2, no hard-coded colors outside `@theme`.
+All surfaces flush/square; radii only for controls (`rounded-control`); colors/type/shadow from §2 tokens only.
