@@ -10,6 +10,7 @@
   /* === Core Surfaces & Chrome (VS Code Dark Modern) === */
   --color-vscode-bg: #1e1e1e;
   --color-vscode-side: #181818;
+  --color-vscode-titlebar: #191a1b;
   --color-vscode-tab: #181818;
   --color-vscode-tab-hover: #1f1f1f;
   --color-vscode-tab-active: #1e1e1e;
@@ -54,9 +55,8 @@
   --color-vscode-term-blue: #3b8eea;
 
   /* === Radii, Fonts & Elevation === */
-  --radius-vscode: 8px;
+  --radius-control: 5px;
   --radius-tab: 6px;
-  --radius-pill: 999px;
   --font-vscode-ui: "Segoe WPC", "Segoe UI", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   --font-vscode-code: "Cascadia Code", "JetBrains Mono", Consolas, "Courier New", monospace;
   --shadow-vscode: 0 8px 24px rgb(0 0 0 / 0.45);
