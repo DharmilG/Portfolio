@@ -6,11 +6,26 @@
     "branch": "main",
     "next_up": "PV-ICONS: ActivityBar + Explorer codicon swap",
     "pending_verifications": [
-      "browser smoke of shell once layout+explorer land",
+      "visual: flush chrome (titlebar #191a1b, square regions, command center 5px) vs real VS Code",
       "npm run dev with 1 real section row"
     ],
-    "tip": "1830b8a",
+    "tip": "9c3f447",
     "unpushed": [
+      "9c3f447",
+      "d1e84a7",
+      "e21e7ac",
+      "9269d94",
+      "73159c5",
+      "63d33bf",
+      "e56776d",
+      "0773bb9",
+      "810981e",
+      "d30a4b0",
+      "751cb80",
+      "e7a313f",
+      "3d02e81",
+      "471e8aa",
+      "5e1d09a",
       "1830b8a",
       "51c0a94",
       "5851406",
@@ -143,13 +158,13 @@
   },
   "source_of_truth": {
     "code": "E:/Portfolio (branch main, no origin)",
-    "reference": "VS Code 1.90+ Dark Modern (8px rounded workbench)",
+    "reference": "VS Code 1.90+ Dark Modern (flush chrome, 5px control radius)",
     "skill_index": "state-for-agents/AGENTS.md",
     "tokens": "app/globals.css @theme"
   },
   "summary": {
-    "total": 39,
-    "done": 14,
+    "total": 40,
+    "done": 15,
     "in_progress": 2,
     "backlog": 23
   },
@@ -496,6 +511,18 @@
       "log": "8b2b63d..d5e44b4 (pin, gitignore, drop npm lock, pnpm lock, 2 doc edits; tsc clean on pnpm tree)",
       "verified": true,
       "vscode_match": true
+    },
+    {
+      "id": "PV-WORKBENCH-FLUSH",
+      "title": "Flush chrome (square regions, titlebar token, control radius)",
+      "description": "Flush workbench: no gaps/padding, structural surfaces square with #2b2b2b hairlines, --radius-control 5px added, pill + old 8px radius tokens removed, --color-vscode-titlebar #191a1b; skills + DOC 01/02/05/10/11/README synced",
+      "file": null,
+      "status": "done",
+      "owner": "agent",
+      "started": "2026-10-16",
+      "finished": "2026-10-16",
+      "log": "471e8aa..d1e84a7 + 9c3f447 (14 commits: globals tokens, layout, TitleBar, ActivityBar, SideBar, page, 2 skills, 6 docs; tsc clean, grep audit 0 leftovers, CSS emission + boot markup verified; visual vs screenshot pending)",
+      "verified": true
     }
   ],
   "tracker_version": 1
