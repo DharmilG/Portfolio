@@ -11,41 +11,41 @@ type ExplorerProps = {
   onRename?: (path: string, name: string | null) => void;
 };
 
-function FolderIcon({ open }: { open: boolean }) {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 14 14"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.2"
-      aria-hidden="true"
-    >
-      <path d={open ? "M1 4l1-2h4l1.5 2H13v7H1z" : "M1 4h5l1.5 2H13v5H1z"} />
-    </svg>
-  );
-}
-
-function FileIcon() {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 14 14"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.2"
-      aria-hidden="true"
-    >
-      <path d="M3 1h5l3 3v9H3zM8 1v3h3" />
-    </svg>
-  );
-}
+const FILE_ICONS: Record<string, string> = {
+  md: "markdown",
+  json: "json",
+  ts: "file-code",
+  tsx: "file-code",
+  js: "file-code",
+  jsx: "file-code",
+  css: "file-code",
+  scss: "file-code",
+  html: "file-code",
+  py: "file-code",
+  sh: "file-code",
+  sql: "file-code",
+  yml: "file-code",
+  yaml: "file-code",
+  svg: "file-media",
+  png: "file-media",
+  jpg: "file-media",
+  jpeg: "file-media",
+  gif: "file-media",
+  webp: "file-media",
+  ico: "file-media",
+  zip: "file-zip",
+  tar: "file-zip",
+  gz: "file-zip",
+  pdf: "file-pdf",
+};
 
 function extOf(path: string): string {
   const i = path.lastIndexOf(".");
   return i < 0 ? "" : path.slice(i + 1);
+}
+
+function fileIcon(name: string): string {
+  return FILE_ICONS[extOf(name).toLowerCase()] ?? "file";
 }
 
 export function resolveName(
@@ -108,11 +108,19 @@ export default function Explorer({ onOpenFile, onRename }: ExplorerProps) {
               onClick={() => toggle(key)}
               onDoubleClick={() => setRenaming(key)}
             >
-              <span className="w-3 text-[10px] text-vscode-dim">
-                {open ? "▾" : "▸"}
+              <span className="flex w-4 shrink-0 justify-center text-vscode-dim">
+                <i
+                  className={`codicon ${
+                    open ? "codicon-chevron-down" : "codicon-chevron-right"
+                  }`}
+                />
               </span>
               <span className="text-vscode-dim">
-                <FolderIcon open={open} />
+                <i
+                  className={`codicon ${
+                    open ? "codicon-folder-opened" : "codicon-folder"
+                  }`}
+                />
               </span>
               {renaming === key ? (
                 <input
@@ -155,11 +163,21 @@ export default function Explorer({ onOpenFile, onRename }: ExplorerProps) {
                         onClick={() => toggle(rkey)}
                         onDoubleClick={() => setRenaming(rkey)}
                       >
-                        <span className="w-3 text-[10px] text-vscode-dim">
-                          {ropen ? "▾" : "▸"}
+                        <span className="flex w-4 shrink-0 justify-center text-vscode-dim">
+                          <i
+                            className={`codicon ${
+                              ropen
+                                ? "codicon-chevron-down"
+                                : "codicon-chevron-right"
+                            }`}
+                          />
                         </span>
                         <span className="text-vscode-dim">
-                          <FolderIcon open={ropen} />
+                          <i
+                            className={`codicon ${
+                              ropen ? "codicon-folder-opened" : "codicon-folder"
+                            }`}
+                          />
                         </span>
                         {renaming === rkey ? (
                           <input
@@ -202,17 +220,14 @@ export default function Explorer({ onOpenFile, onRename }: ExplorerProps) {
                                   onClick={() => onOpenFile?.(fkey)}
                                 >
                                   <span className="text-vscode-dim">
-                                    <FileIcon />
+                                    <i className={`codicon codicon-${fileIcon(fname)}`} />
                                   </span>
                                   <span className="truncate">{fname}</span>
-                                  <span className="ml-auto flex items-center gap-1 text-[10px] text-vscode-dim">
-                                    {extOf(fname) ? <span>{extOf(fname)}</span> : null}
-                                    {dirty ? (
-                                      <span className="font-semibold text-vscode-added">
-                                        M
-                                      </span>
-                                    ) : null}
-                                  </span>
+                                  {dirty ? (
+                                    <span className="ml-auto text-[10px] font-semibold text-vscode-added">
+                                      M
+                                    </span>
+                                  ) : null}
                                 </div>
                               );
                             })
