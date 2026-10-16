@@ -4,13 +4,15 @@
   "pushed_count": 0,
   "session": {
     "branch": "main",
-    "next_up": "PV-UI-REFINE Part B: rail icon nudge (planned, awaiting Proceed)",
+    "next_up": "PV-C-TABS change 2: editor tab strip (planned, awaiting Proceed)",
     "pending_verifications": [
-      "visual: chrome vs current VS Code (floating sections on titlebar base, title bar controls, ActivityBar pill/badge, Explorer glyphs)",
+      "visual: chrome vs current VS Code (floating sections on titlebar base, rail/pill alignment, title bar controls, ActivityBar badge, Explorer glyphs)",
       "Explorer icon eyepass once section/project rows exist (Studio)"
     ],
-    "tip": "1ea3d3e",
+    "tip": "ee5e467",
     "unpushed": [
+      "ee5e467",
+      "c33c56c",
       "1ea3d3e",
       "c5d990a",
       "bcb4905",
@@ -195,8 +197,8 @@
   },
   "summary": {
     "total": 43,
-    "done": 17,
-    "in_progress": 3,
+    "done": 18,
+    "in_progress": 2,
     "backlog": 23
   },
   "tasks": [
@@ -555,14 +557,16 @@
       "verified": true
     },
     {
-      "description": "Part A done: gutter reuses titlebar base (token deleted). Part B planned: rail icons nudge up (py-2 -> pb-2) to align active pill with sidebar card top.",
+      "description": "Gutter reuses titlebar base (token deleted); rail icons nudged up (pb-2) so the active pill aligns with the sidebar card top.",
       "file": null,
       "id": "PV-UI-REFINE",
-      "status": "in_progress",
+      "status": "done",
       "title": "Gutter base + rail alignment refine",
       "owner": "agent",
       "started": "2026-10-16",
-      "log": "Part A: grid 2e4bf5b (bg-vscode-titlebar) + token drop 9f8e104 + Section comment bcb4905 + skill c5d990a + DOC/05 1ea3d3e (tsc clean, gutter refs 0, boot: grid on titlebar base; Part B planned, awaiting Proceed)"
+      "log": "Part A: grid 2e4bf5b (bg-vscode-titlebar) + token drop 9f8e104 + Section comment bcb4905 + skill c5d990a + DOC/05 1ea3d3e (gutter refs 0) + Part B: rail nudge ee5e467 (py-2 -> pb-2; tsc clean, boot: rail nudged, old padding gone)",
+      "finished": "2026-10-16",
+      "verified": true
     },
     {
       "id": "PV-PNPM",
