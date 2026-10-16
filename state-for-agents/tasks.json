@@ -6,11 +6,15 @@
     "branch": "main",
     "next_up": "PV-ICONS: ActivityBar + Explorer codicon swap",
     "pending_verifications": [
-      "visual: flush chrome (titlebar #191a1b, square regions, command center 5px) vs real VS Code",
+      "visual: flush chrome + title bar controls (order, glyphs, tooltips) vs real VS Code",
       "npm run dev with 1 real section row"
     ],
-    "tip": "9c3f447",
+    "tip": "bdc5c41",
     "unpushed": [
+      "bdc5c41",
+      "cbaf6e4",
+      "0064fa9",
+      "c59738d",
       "9c3f447",
       "d1e84a7",
       "e21e7ac",
@@ -492,12 +496,12 @@
     {
       "id": "PV-ICONS",
       "title": "Codicons wiring + chrome icon swap",
-      "description": "Font + menu row + official logo; pending: ActivityBar/Explorer swap, ext badges",
+      "description": "Font + menu row + official logo + title bar control group; pending: ActivityBar/Explorer swap, ext badges",
       "file": null,
       "status": "in_progress",
       "owner": "agent",
       "started": "2026-10-16",
-      "log": "font 1de5eeb + menubar b34c58e + logo 1830b8a (tsc clean, asset byte-checked vs source, hex audit 0; ActivityBar/Explorer swap next)"
+      "log": "font 1de5eeb + menubar b34c58e + logo 1830b8a + title bar controls 0064fa9 (customize/secondary/globe + tooltips) + sidebar toggle cbaf6e4 (Ctrl+B, activity icon) + docs bdc5c41 (tsc clean, markup 5/5 codicons + 5 tooltips; ActivityBar/Explorer swap next)"
     },
     {
       "id": "PV-PNPM",
