@@ -5,11 +5,7 @@
 // See DOC/05 §3, skills vscode-tokens + dumb-depth.
 import { useEffect, useRef, useState } from "react";
 import IconButton from "@/components/vscode/IconButton";
-
-export type MenuItem =
-  | { separator: true }
-  | { label: string; action: string; hint?: string }
-  | { label: string; disabled: true; hint: string };
+import Menu, { type MenuItem } from "./Menu";
 
 export type Menu = { menu: string; items: MenuItem[] };
 
@@ -17,11 +13,11 @@ export const MENU_ITEMS: Menu[] = [
   {
     menu: "File",
     items: [
-      { label: "New Text File", action: "new-tmp-file" },
-      { label: "Open File…", action: "quick-open" },
-      { label: "Save (local)", action: "save-local" },
+      { label: "New Text File", id: "new-tmp-file" },
+      { label: "Open File…", id: "quick-open" },
+      { label: "Save (local)", id: "save-local" },
       { separator: true },
-      { label: "Close Tab", action: "close-tab" },
+      { label: "Close Tab", id: "close-tab" },
     ],
   },
   {
@@ -44,37 +40,37 @@ export const MENU_ITEMS: Menu[] = [
   {
     menu: "View",
     items: [
-      { label: "Explorer", action: "view-explorer" },
-      { label: "Search", action: "view-search" },
-      { label: "Source Control", action: "view-scm" },
-      { label: "Run", action: "view-run" },
-      { label: "Extensions", action: "view-extensions" },
+      { label: "Explorer", id: "view-explorer" },
+      { label: "Search", id: "view-search" },
+      { label: "Source Control", id: "view-scm" },
+      { label: "Run", id: "view-run" },
+      { label: "Extensions", id: "view-extensions" },
       { separator: true },
-      { label: "Command Palette…", action: "palette" },
+      { label: "Command Palette…", id: "palette" },
       { separator: true },
-      { label: "Toggle Sidebar", action: "toggle-sidebar" },
-      { label: "Toggle Panel", action: "toggle-panel" },
-      { label: "Toggle Terminal", action: "toggle-terminal" },
+      { label: "Toggle Sidebar", id: "toggle-sidebar" },
+      { label: "Toggle Panel", id: "toggle-panel" },
+      { label: "Toggle Terminal", id: "toggle-terminal" },
     ],
   },
   {
     menu: "Go",
     items: [
-      { label: "Go to File…", action: "quick-open" },
+      { label: "Go to File…", id: "quick-open" },
       { label: "Go to Symbol…", disabled: true, hint: "Available when the editor lands" },
     ],
   },
   {
     menu: "Run",
     items: [
-      { label: "Open Preview", action: "open-preview" },
+      { label: "Open Preview", id: "open-preview" },
       { label: "Start Debugging", disabled: true, hint: "Preview is the demo runner here" },
     ],
   },
   {
     menu: "Terminal",
     items: [
-      { label: "New Terminal", action: "new-terminal" },
+      { label: "New Terminal", id: "new-terminal" },
       { label: "Clear", disabled: true, hint: "Available when the terminal lands" },
     ],
   },
@@ -156,24 +152,13 @@ export default function TitleBar({
               {m.menu}
             </button>
             {openMenu === m.menu ? (
-              <div className="absolute left-0 top-full z-20 min-w-56 rounded-control border border-vscode-border bg-vscode-widget-bg py-1 shadow-vscode">
-                {m.items.map((item, i) =>
-                  "separator" in item ? (
-                    <div key={i} className="my-1 border-t border-vscode-border" />
-                  ) : (
-                    <button
-                      key={i}
-                      type="button"
-                      disabled={"disabled" in item}
-                      title={"hint" in item && item.hint ? item.hint : undefined}
-                      onClick={() => "action" in item && fire(item.action)}
-                      className="block w-full px-4 py-1 text-left text-vscode-fg hover:bg-vscode-list-active disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
-                    >
-                      {item.label}
-                    </button>
-                  ),
-                )}
-              </div>
+              <Menu
+                items={m.items}
+                onAction={fire}
+                density="menu"
+                label={m.menu}
+                className="absolute left-0 top-full z-20 min-w-56"
+              />
             ) : null}
           </div>
         ))}
