@@ -71,6 +71,10 @@ type State = {
   closeTab: (id: string) => void;
   setActiveTab: (id: string | null) => void;
 
+  expanded: Record<string, boolean>;
+  toggleExpanded: (key: string) => void;
+  collapseAll: () => void;
+
   edits: Record<string, string>;
   commits: LocalCommit[];
   renames: Record<string, string>;
@@ -112,6 +116,9 @@ export const useStore = create<State>()(
 
       tabs: [],
       activeTabId: null,
+      // Default-open roots (mirrors Explorer ROOT_NAME). Session-only:
+      // expanded is intentionally absent from persist partialize below.
+      expanded: { "Dharmil Gajjar": true, Projects: true },
       openTab: (t) =>
         set((s) => {
           const id = `${t.kind}:${t.path}`;
@@ -131,6 +138,11 @@ export const useStore = create<State>()(
           return { tabs, activeTabId };
         }),
       setActiveTab: (activeTabId) => set({ activeTabId }),
+      toggleExpanded: (key) =>
+        set((s) => ({
+          expanded: { ...s.expanded, [key]: !s.expanded[key] },
+        })),
+      collapseAll: () => set({ expanded: {} }),
 
       edits: {},
       commits: [],
