@@ -1,28 +1,26 @@
 # 05 — VS Code UI Spec (exact match, flush chrome) — Detailed
 
-> Target: VS Code 1.90+ Dark Modern — flush chrome (no gaps, no structural
-> rounding), 1px hairlines between regions, 5px control radius.
+> Target: VS Code 1.90+ Dark Modern, 2026-10 refresh — floating rounded
+> sections (5px gutters, 8px section radius), TitleBar + StatusBar flush,
+> 5px control radius.
 > Viewer: Shiki (not Monaco). Edits + commits 100% local (see `04 §8`, `06 §10`, `09 §8`).
 
-## 1. Layout grid
+## 1. Layout grid (2026-10 refresh: floating rounded sections)
 
 ```
 +----------------------------------------------------+
-| TitleBar 36px (menu row + Command Center)          |
-+------+-----------+---------------------+-----------+
-| Act  | Sidebar   | Editor groups       | Panel?    |
-| 48px | 280px     | flex-1              | (right)   |
-|      |           | Tabs 35px           |           |
-|      |           | Breadcrumb 22px     |           |
-|      |           | Viewport            |           |
-|      |           +---------------------+           |
-|      |           | Bottom Panel 280px (Terminal)     |
-+------+-----------+---------------------+-----------+
-| StatusBar 24px (accent, flush)                     |
+| TitleBar 36px (flush, full-width, square)          |
+| 5px gutter on near-black backdrop                  |
+| [rail+sidebar: ONE rounded card] [editor: card]    |
+|  rail 48px + pane 280px, internal hairline only    |
+|  Tabs 35px / Breadcrumb 22px / Viewport inside     |
+|  the editor card; Panel (Terminal 280px) lands      |
+|  later as a third card under the editor            |
+| 5px gutter                                         |
+| StatusBar 24px (flush, full-width, square)         |
 +----------------------------------------------------+
-Outer: flush shell — `<div className="flex h-screen">`, no gaps, no padding,
-no backdrop; structural surfaces square, separated by 1px #2b2b2b hairlines;
-shadows only on floating widgets.
+Cards: `Section` primitive — `rounded-section` (8px), 1px #2b2b2b border,
+`overflow-hidden`; grid gap 5px + padding 5px on `bg-vscode-gutter`.
 Mobile <768px: Activity 48px stays, Sidebar becomes overlay drawer, Editor full-width, Panel bottom-sheet.
 ```
 
@@ -60,8 +58,10 @@ Mobile <768px: Activity 48px stays, Sidebar becomes overlay drawer, Editor full-
   --color-vscode-badge-fg: #ffffff;
   --color-vscode-activity-active-bg: #ffffff1a; /* active pill (2025 refresh) */
   --color-vscode-activity-hover-bg: #ffffff0d;
+  --color-vscode-gutter: #0f0f0f; /* workbench backdrop between sections */
   --radius-control: 5px; /* Command Center, menus, widgets — no pills */
   --radius-tab: 6px;
+  --radius-section: 8px; /* workbench section cards */
   --font-vscode-ui: "Segoe WPC", "Segoe UI", system-ui, sans-serif;
   --font-vscode-code: "Cascadia Code", "JetBrains Mono", Consolas, monospace;
   --shadow-vscode: 0 8px 24px rgb(0 0 0 / 0.45);
