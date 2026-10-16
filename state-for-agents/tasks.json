@@ -9,8 +9,10 @@
       "visual: chrome vs current VS Code (floating sections on titlebar base, title bar controls, ActivityBar pill/badge, Explorer glyphs + static root)",
       "Explorer icon eyepass once section/project rows exist (Studio)"
     ],
-    "tip": "d8509d3",
+    "tip": "11d2764",
     "unpushed": [
+      "11d2764",
+      "ca0db4d",
       "d8509d3",
       "a9346cb",
       "1553998",
@@ -608,7 +610,7 @@
       "owner": "agent",
       "started": "2026-10-16",
       "finished": "2026-10-16",
-      "log": "tree d230a84 (filter UI deleted, filter?: string prop; 3 folder-icon spans deleted; items-center on 3 chevron spans; tsc clean, boot: filter gone, codicon-folder 0 site-wide, root chevron-only) + DOC/05 1553998 folder-row spec + chevron optical nudge d8509d3 (translate-y-px on 3 chevron Codicons via className passthrough; tsc clean, boot: nudge live)",
+      "log": "tree d230a84 (filter UI deleted, filter?: string prop; 3 folder-icon spans deleted; items-center on 3 chevron spans; tsc clean, boot: filter gone, codicon-folder 0 site-wide, root chevron-only) + DOC/05 1553998 folder-row spec + chevron optical nudge d8509d3 (translate-y-px on 3 chevron Codicons via className passthrough; tsc clean, boot: nudge live) + header action 11d2764 (28px square flex-centered button, rounded-control, row pl-4 pr-2, raw more icon -> Codicon; tsc clean, boot: square button + inset live)",
       "verified": true
     },
     {
