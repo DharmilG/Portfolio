@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#1e1e1e",
+  themeColor: "#191a1b",
 };
 
 export default function RootLayout({
@@ -18,9 +18,8 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="dark">
-      {/* #0f0f0f is the workbench backdrop (one-off); promote to a token on 2nd use */}
-      <body className="bg-[#0f0f0f] font-vscode-ui text-vscode-fg antialiased">
-        <div className="flex h-screen gap-2 p-2">{children}</div>
+      <body className="bg-vscode-bg font-vscode-ui text-vscode-fg antialiased">
+        <div className="flex h-screen">{children}</div>
       </body>
     </html>
   );
