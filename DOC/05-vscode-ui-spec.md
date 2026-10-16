@@ -78,7 +78,7 @@ Left: VS Code logo (`/vscode-logo.svg`, 16px) + menu row (`File Edit Selection V
 
 ## 4. ActivityBar (48px, flush, 1px right hairline)
 
-Top icons (24px, dim -> white on active, tooltip on hover): Explorer `files`, Search `search` (filters Explorer client-side), Source Control `git-branch` with count badge `len(dirty)+len(localCommits)` blue circle, Run `play` (opens preview), Extensions `extensions` (dummy grid + `2` badge).
+Top icons (24px, dim -> white on active, tooltip on hover): Explorer `files`, Search `search` (filters Explorer client-side), Source Control `source-control` with count badge `len(dirty)+len(localCommits)` blue circle, Run `debug-alt` (opens preview), Extensions `extensions` (dummy grid + `2` badge).
 Bottom: avatar 28px rounded-full `profiles.avatar_url` (your logo) -> click opens `profile.json` tab. Gear 20px below -> hover opens menu `Settings (opens settings.json) | Appearance (theme switch dark/light) | Profile (opens profile.json) | Reset local edits`.
 
 ## 5. Sidebar Explorer (280px)
