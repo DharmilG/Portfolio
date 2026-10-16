@@ -11,6 +11,7 @@
     ],
     "tip": "066e225",
     "unpushed": [
+      "d5e44b4",
       "b34c58e",
       "1de5eeb",
       "0016f1d",
@@ -133,8 +134,8 @@
     "tokens": "app/globals.css @theme"
   },
   "summary": {
-    "total": 38,
-    "done": 13,
+    "total": 39,
+    "done": 14,
     "in_progress": 2,
     "backlog": 23
   },
@@ -468,6 +469,19 @@
       "owner": "agent",
       "started": "2026-10-16",
       "log": "font 1de5eeb + menubar b34c58e (tsc clean, menu-data 4/4; ActivityBar/Explorer swap next)"
+    },
+    {
+      "id": "PV-PNPM",
+      "title": "Strict pnpm toolchain",
+      "description": "packageManager pin, lockfile migration, doc updates",
+      "file": null,
+      "status": "done",
+      "owner": "agent",
+      "started": "2026-10-16",
+      "finished": "2026-10-16",
+      "log": "8b2b63d..d5e44b4 (pin, gitignore, drop npm lock, pnpm lock, 2 doc edits; tsc clean on pnpm tree)",
+      "verified": true,
+      "vscode_match": true
     }
   ],
   "tracker_version": 1
