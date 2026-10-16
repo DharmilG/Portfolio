@@ -9,8 +9,15 @@
       "visual: chrome vs current VS Code (floating sections on titlebar base, title bar controls, ActivityBar pill/badge, Explorer glyphs + static root)",
       "Explorer icon eyepass once section/project rows exist (Studio)"
     ],
-    "tip": "01d85ae",
+    "tip": "048dae0",
     "unpushed": [
+      "048dae0",
+      "eea71d9",
+      "70c15fe",
+      "5df084d",
+      "f22c4ef",
+      "1679120",
+      "1eb40f7",
       "01d85ae",
       "70bcc36",
       "999ee84",
@@ -227,8 +234,8 @@
     "tokens": "app/globals.css @theme"
   },
   "summary": {
-    "total": 46,
-    "done": 21,
+    "total": 47,
+    "done": 22,
     "in_progress": 2,
     "backlog": 23
   },
@@ -633,6 +640,18 @@
       "started": "2026-10-16",
       "finished": "2026-10-16",
       "log": "Tooltip e423a6c (text/position/align/children; pointer-events-none added) + IconButton 4fe49ff (group moves to wrapper, badge anchor kept) + TitleBar 999ee84 (ControlButton deleted, 7 IconButtons; chevrons gain native title) + SideBar 70bcc36 (Views and More Actions, bottom-end) + DOC/05 01d85ae (tsc clean, role=tooltip defined once, boot: 6 tooltip boxes, both texts live)",
+      "verified": true
+    },
+    {
+      "description": "Shared Menu box + items (menu/compact densities, trigger logic stays with callers) + shared RenameInput; title-bar menus, gear menu, and both Explorer rename fields consolidated pixel-identically.",
+      "file": null,
+      "id": "PV-UI-MENU",
+      "status": "done",
+      "title": "Shared Menu + RenameInput",
+      "owner": "agent",
+      "started": "2026-10-16",
+      "finished": "2026-10-16",
+      "log": "Menu 1679120 (box+items+separators+disabled, densities reproduce both styles; id optional for disabled placeholders) + RenameInput f22c4ef + TitleBar 5df084d (locals deleted, action->id x16) + gear 70c15fe (hover wrapper untouched) + Explorer eea71d9 (both inputs collapsed via commitRename) + DOC/05 048dae0 (tsc clean, diff -81/+45 pure dedup, boot: gear box + compact density live)",
       "verified": true
     },
     {
