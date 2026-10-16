@@ -11,20 +11,33 @@ import TitleBar from "@/components/vscode/TitleBar";
 import { supabase } from "@/lib/db";
 import { useStore } from "@/lib/store";
 
+function loadSections() {
+  supabase
+    .from("sections")
+    .select("id,slug,title,icon,orders")
+    .then(({ data }) => {
+      if (data) useStore.getState().setSections(data);
+    });
+}
+
+function nextFreeKey(
+  tmpFs: Record<string, string>,
+  first: string,
+  numbered: (n: number) => string,
+): string {
+  if (!tmpFs[first]) return first;
+  let n = 2;
+  while (tmpFs[numbered(n)]) n += 1;
+  return numbered(n);
+}
+
 export default function PortfolioPage() {
   const [view, setView] = useState<ActivityId>("explorer");
   const [showSidebar, setShowSidebar] = useState(true);
-  const setSections = useStore((s) => s.setSections);
-
   useEffect(() => {
     useStore.persist.rehydrate();
-    supabase
-      .from("sections")
-      .select("id,slug,title,icon,orders")
-      .then(({ data }) => {
-        if (data) setSections(data);
-      });
-  }, [setSections]);
+    loadSections();
+  }, []);
 
   // Ctrl+B — toggle primary sidebar (VS Code default).
   useEffect(() => {
@@ -43,6 +56,40 @@ export default function PortfolioPage() {
     else console.info("menu action (wires with its feature):", action);
   };
 
+  const handleViewAction = (id: string) => {
+    const st = useStore.getState();
+    if (id === "refresh") {
+      loadSections();
+      return;
+    }
+    if (id === "collapse") {
+      st.collapseAll();
+      return;
+    }
+    if (id === "new-file") {
+      const path = nextFreeKey(
+        st.tmpFs,
+        "tmp/untitled-1",
+        (n) => `tmp/untitled-${n}`,
+      );
+      st.writeTmp(path, "");
+      st.openTab({ kind: "code", path, sha: null });
+      console.info("new tmp file (tabs UI next):", path);
+      return;
+    }
+    if (id === "new-folder") {
+      const key = nextFreeKey(
+        st.tmpFs,
+        "tmp/New Folder/.gitkeep",
+        (n) => `tmp/New Folder ${n}/.gitkeep`,
+      );
+      st.writeTmp(key, "");
+      console.info("new tmp folder (tmp view next):", key);
+      return;
+    }
+    console.info("view action (wires with its feature):", id);
+  };
+
   // VS Code semantics: active activity icon toggles the sidebar; others switch + show.
   const handleSelectView = (next: ActivityId) => {
     if (next === view) setShowSidebar((s) => !s);
@@ -57,7 +104,11 @@ export default function PortfolioPage() {
       <TitleBar onMenuAction={handleAction} />
       <div className="flex min-h-0 flex-1 gap-[5px] bg-vscode-titlebar p-[5px]">
         {showSidebar ? (
-          <PrimarySideBar active={view} onSelect={handleSelectView}>
+          <PrimarySideBar
+            active={view}
+            onSelect={handleSelectView}
+            onAction={handleViewAction}
+          >
             {view === "explorer" ? (
               <Explorer
                 onOpenFile={(path) => console.info("open (FileViewer next):", path)}
