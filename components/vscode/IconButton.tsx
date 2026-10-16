@@ -4,8 +4,10 @@
 // Sizes: sm = title-bar control (p-1, 16px glyph, styled tooltip),
 // md = rail footer gear (32px box, 24px glyph), lg = activity item
 // (40px box, active pill bg, badge slot via children). "off" = native title.
+// The styled box comes from shared Tooltip (single definition chrome-wide).
 import type { ReactNode } from "react";
 import Codicon from "./Codicon";
+import Tooltip from "./Tooltip";
 
 type IconButtonProps = {
   icon: string;
@@ -42,26 +44,27 @@ export default function IconButton({
         : "hover:text-vscode-fg hover:bg-vscode-activity-hover-bg"
       : "hover:bg-vscode-list-hover hover:text-vscode-fg";
 
-  return (
+  const button = (
     <button
       type="button"
       onClick={onClick}
       aria-label={label}
       title={tooltip === "off" ? label : undefined}
-      className={`group relative flex items-center justify-center ${s.box} ${state} ${className}`}
+      className={`relative flex items-center justify-center ${s.box} ${state} ${className}`}
     >
       <Codicon name={icon} size={s.glyph} />
       {children}
-      {tooltip !== "off" ? (
-        <span
-          role="tooltip"
-          className={`invisible absolute top-full z-30 mt-1 whitespace-nowrap rounded-control border border-vscode-widget-border bg-vscode-widget-bg px-2 py-1 text-xs text-vscode-fg shadow-vscode group-hover:visible ${
-            tooltip === "right" ? "right-0" : "left-1/2 -translate-x-1/2"
-          }`}
-        >
-          {label}
-        </span>
-      ) : null}
     </button>
+  );
+
+  if (tooltip === "off") return button;
+  return (
+    <Tooltip
+      text={label}
+      position="bottom"
+      align={tooltip === "right" ? "end" : "center"}
+    >
+      {button}
+    </Tooltip>
   );
 }
