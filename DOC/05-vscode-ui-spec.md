@@ -20,7 +20,7 @@
 | StatusBar 24px (flush, full-width, square)         |
 +----------------------------------------------------+
 Cards: `Section` primitive — `rounded-section` (8px), 1px #2b2b2b border,
-`overflow-hidden`; grid gap 5px + padding 5px on `bg-vscode-gutter`.
+`overflow-hidden`; grid gap 5px + padding 5px on `bg-vscode-titlebar` (the workbench base).
 Mobile <768px: Activity 48px stays, Sidebar becomes overlay drawer, Editor full-width, Panel bottom-sheet.
 ```
 
@@ -58,7 +58,6 @@ Mobile <768px: Activity 48px stays, Sidebar becomes overlay drawer, Editor full-
   --color-vscode-badge-fg: #ffffff;
   --color-vscode-activity-active-bg: #ffffff1a; /* active pill (2025 refresh) */
   --color-vscode-activity-hover-bg: #ffffff0d;
-  --color-vscode-gutter: #0f0f0f; /* workbench backdrop between sections */
   --radius-control: 5px; /* Command Center, menus, widgets — no pills */
   --radius-tab: 6px;
   --radius-section: 8px; /* workbench section cards */
