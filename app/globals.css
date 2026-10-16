@@ -21,6 +21,7 @@
   --color-vscode-fg-active: #ffffff;
   --color-vscode-dim: #858585;
   --color-vscode-muted: #9d9d9d;
+  --color-vscode-emphasis: #bfbfbf; /* sidebar header + static root folder */
 
   /* === Brand Accent & Interactive States === */
   --color-vscode-accent: #0078d4;
