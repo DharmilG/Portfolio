@@ -9,12 +9,26 @@
       "browser smoke of shell once layout+explorer land",
       "npm run dev with 1 real section row"
     ],
-    "tip": "066e225",
+    "tip": "1830b8a",
     "unpushed": [
+      "1830b8a",
+      "51c0a94",
+      "5851406",
       "d5e44b4",
+      "8f3e49e",
+      "cfa8e43",
+      "2b4e900",
+      "70d7dde",
+      "8b2b63d",
+      "d0a67a9",
       "b34c58e",
+      "e4cab8e",
       "1de5eeb",
+      "9dd9e91",
+      "7a509ff",
+      "7f4b86c",
       "0016f1d",
+      "7b09f3b",
       "ab52310",
       "8104943",
       "07aa8f9",
@@ -125,7 +139,7 @@
       "144e580",
       "5bb34c7"
     ],
-    "last_updated": "2026-10-15"
+    "last_updated": "2026-10-16"
   },
   "source_of_truth": {
     "code": "E:/Portfolio (branch main, no origin)",
@@ -463,12 +477,12 @@
     {
       "id": "PV-ICONS",
       "title": "Codicons wiring + chrome icon swap",
-      "description": "Font installed+loaded; pending: TitleBar menu row, ActivityBar/Explorer swap, ext badges",
+      "description": "Font + menu row + official logo; pending: ActivityBar/Explorer swap, ext badges",
       "file": null,
       "status": "in_progress",
       "owner": "agent",
       "started": "2026-10-16",
-      "log": "font 1de5eeb + menubar b34c58e (tsc clean, menu-data 4/4; ActivityBar/Explorer swap next)"
+      "log": "font 1de5eeb + menubar b34c58e + logo 1830b8a (tsc clean, asset byte-checked vs source, hex audit 0; ActivityBar/Explorer swap next)"
     },
     {
       "id": "PV-PNPM",
