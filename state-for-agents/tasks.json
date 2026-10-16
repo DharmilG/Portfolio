@@ -9,8 +9,11 @@
       "visual: chrome vs current VS Code (floating sections on titlebar base, title bar controls, ActivityBar pill/badge, Explorer glyphs + static root)",
       "Explorer icon eyepass once section/project rows exist (Studio)"
     ],
-    "tip": "9c1f77c",
+    "tip": "1553998",
     "unpushed": [
+      "1553998",
+      "d230a84",
+      "d2330fb",
       "9c1f77c",
       "7db246e",
       "ae83988",
@@ -210,8 +213,8 @@
     "tokens": "app/globals.css @theme"
   },
   "summary": {
-    "total": 44,
-    "done": 19,
+    "total": 45,
+    "done": 20,
     "in_progress": 2,
     "backlog": 23
   },
@@ -592,6 +595,18 @@
       "started": "2026-10-16",
       "finished": "2026-10-16",
       "log": "token ae09399 (--color-vscode-emphasis #bfbfbf) + header ae83988 + static root 7db246e (always rendered, expanded by default, no rename; sections/projects/files shift one level: pl-6/pl-10/pl-14) + DOC/05 9c1f77c (tsc clean, boot markup: root + emphasis + empty state live with 0 rows)",
+      "verified": true
+    },
+    {
+      "description": "Explorer tree matches current VS Code: filter input removed (filter kept as optional prop for future Search view), folder icons removed (chevron + name only), chevrons vertically centered.",
+      "file": null,
+      "id": "PV-UI-TREE",
+      "status": "done",
+      "title": "Explorer tree VS Code match",
+      "owner": "agent",
+      "started": "2026-10-16",
+      "finished": "2026-10-16",
+      "log": "tree d230a84 (filter UI deleted, filter?: string prop; 3 folder-icon spans deleted; items-center on 3 chevron spans; tsc clean, boot: filter gone, codicon-folder 0 site-wide, root chevron-only) + DOC/05 1553998 folder-row spec",
       "verified": true
     },
     {
