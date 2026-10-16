@@ -9,8 +9,15 @@
       "visual: chrome vs current VS Code (floating sections on titlebar base, title bar controls, ActivityBar pill/badge, Explorer glyphs + static root)",
       "Explorer icon eyepass once section/project rows exist (Studio)"
     ],
-    "tip": "048dae0",
+    "tip": "cb2b4d2",
     "unpushed": [
+      "cb2b4d2",
+      "5058bf0",
+      "849abc8",
+      "e49e297",
+      "51ca198",
+      "e34715c",
+      "f050cbd",
       "048dae0",
       "eea71d9",
       "70c15fe",
@@ -234,8 +241,8 @@
     "tokens": "app/globals.css @theme"
   },
   "summary": {
-    "total": 47,
-    "done": 22,
+    "total": 48,
+    "done": 23,
     "in_progress": 2,
     "backlog": 23
   },
@@ -652,6 +659,18 @@
       "started": "2026-10-16",
       "finished": "2026-10-16",
       "log": "Menu 1679120 (box+items+separators+disabled, densities reproduce both styles; id optional for disabled placeholders) + RenameInput f22c4ef + TitleBar 5df084d (locals deleted, action->id x16) + gear 70c15fe (hover wrapper untouched) + Explorer eea71d9 (both inputs collapsed via commitRename) + DOC/05 048dae0 (tsc clean, diff -81/+45 pure dedup, boot: gear box + compact density live)",
+      "verified": true
+    },
+    {
+      "description": "Explorer title toolbar (new-file/new-folder/refresh/collapse + overflow, VS Code tooltips); expansion lifted to a session-only store slice; page wires refresh (real), collapse (real), tmp new file/folder (store writes, UI follows with tabs).",
+      "file": null,
+      "id": "PV-UI-VIEWACTIONS",
+      "status": "done",
+      "title": "Explorer title toolbar",
+      "owner": "agent",
+      "started": "2026-10-16",
+      "finished": "2026-10-16",
+      "log": "toolbar e34715c (EXPLORER_ACTIONS, 28px boxes, bottom-center tips) + forward 51ca198 + store e49e297 (expanded/toggleExpanded/collapseAll, unpersisted) + Explorer 849abc8 (useState dropped) + page 5058bf0 (loadSections/nextFreeKey/handleViewAction) + DOC/05 cb2b4d2 (tsc clean, 4/4 font classes, boot: all buttons + tips + root open)",
       "verified": true
     },
     {
