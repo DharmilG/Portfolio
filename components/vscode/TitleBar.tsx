@@ -131,7 +131,7 @@ export default function TitleBar({
   return (
     <header
       ref={barRef}
-      className="flex h-9 shrink-0 items-center gap-1 rounded-vscode bg-vscode-side px-2 text-[13px] text-vscode-dim"
+      className="flex h-9 shrink-0 items-center gap-1 bg-vscode-titlebar px-2 text-[13px] text-vscode-dim"
     >
       <img
         src="/vscode-logo.svg"
@@ -157,7 +157,7 @@ export default function TitleBar({
               {m.menu}
             </button>
             {openMenu === m.menu ? (
-              <div className="absolute left-0 top-full z-20 min-w-56 rounded-vscode border border-vscode-border bg-vscode-widget-bg py-1 shadow-vscode">
+              <div className="absolute left-0 top-full z-20 min-w-56 rounded-control border border-vscode-border bg-vscode-widget-bg py-1 shadow-vscode">
                 {m.items.map((item, i) =>
                   "separator" in item ? (
                     <div key={i} className="my-1 border-t border-vscode-border" />
@@ -203,7 +203,7 @@ export default function TitleBar({
           setOpenMenu(null);
           onQuickOpen?.();
         }}
-        className="mx-auto flex h-6 w-[420px] max-w-full items-center justify-center gap-2 rounded-pill bg-vscode-command-bg text-xs hover:text-vscode-fg"
+        className="mx-auto flex h-6 w-[600px] max-w-full items-center justify-center gap-2 rounded-control border border-vscode-border bg-vscode-command-bg text-xs hover:text-vscode-fg"
       >
         <i className="codicon codicon-search" aria-hidden="true" />
         <span className="truncate">Portfolio</span>
