@@ -9,8 +9,10 @@
       "visual: chrome vs current VS Code (floating sections on titlebar base, title bar controls, ActivityBar pill/badge, Explorer glyphs + static root)",
       "Explorer icon eyepass once section/project rows exist (Studio)"
     ],
-    "tip": "e487b25",
+    "tip": "7be678b",
     "unpushed": [
+      "7be678b",
+      "526b908",
       "e487b25",
       "2a473c7",
       "11d2764",
@@ -612,7 +614,7 @@
       "owner": "agent",
       "started": "2026-10-16",
       "finished": "2026-10-16",
-      "log": "tree d230a84 (filter UI deleted, filter?: string prop; 3 folder-icon spans deleted; items-center on 3 chevron spans; tsc clean, boot: filter gone, codicon-folder 0 site-wide, root chevron-only) + DOC/05 1553998 folder-row spec + chevron optical nudge d8509d3 (translate-y-px on 3 chevron Codicons via className passthrough; tsc clean, boot: nudge live) + header action 11d2764 (28px square flex-centered button, rounded-control, row pl-4 pr-2, raw more icon -> Codicon; tsc clean, boot: square button + inset live) + header inset e487b25 (row pr-[3px]: action box 3px off card edge, mirrors rail mt-[3px]; tsc clean, boot live)",
+      "log": "tree d230a84 (filter UI deleted, filter?: string prop; 3 folder-icon spans deleted; items-center on 3 chevron spans; tsc clean, boot: filter gone, codicon-folder 0 site-wide, root chevron-only) + DOC/05 1553998 folder-row spec + chevron optical nudge d8509d3 (translate-y-px on 3 chevron Codicons via className passthrough; tsc clean, boot: nudge live) + header action 11d2764 (28px square flex-centered button, rounded-control, row pl-4 pr-2, raw more icon -> Codicon; tsc clean, boot: square button + inset live) + header inset e487b25 (row pr-[3px]: action box 3px off card edge, mirrors rail mt-[3px]; tsc clean, boot live) + header inset tune 7be678b (pr-[4px]; tsc clean, boot live)",
       "verified": true
     },
     {
