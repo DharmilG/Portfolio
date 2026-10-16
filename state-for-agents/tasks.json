@@ -9,8 +9,14 @@
       "visual: chrome vs current VS Code (floating sections on titlebar base, title bar controls, ActivityBar pill/badge, Explorer glyphs + static root)",
       "Explorer icon eyepass once section/project rows exist (Studio)"
     ],
-    "tip": "7be678b",
+    "tip": "01d85ae",
     "unpushed": [
+      "01d85ae",
+      "70bcc36",
+      "999ee84",
+      "4fe49ff",
+      "e423a6c",
+      "d67ef18",
       "7be678b",
       "526b908",
       "e487b25",
@@ -221,8 +227,8 @@
     "tokens": "app/globals.css @theme"
   },
   "summary": {
-    "total": 45,
-    "done": 20,
+    "total": 46,
+    "done": 21,
     "in_progress": 2,
     "backlog": 23
   },
@@ -615,6 +621,18 @@
       "started": "2026-10-16",
       "finished": "2026-10-16",
       "log": "tree d230a84 (filter UI deleted, filter?: string prop; 3 folder-icon spans deleted; items-center on 3 chevron spans; tsc clean, boot: filter gone, codicon-folder 0 site-wide, root chevron-only) + DOC/05 1553998 folder-row spec + chevron optical nudge d8509d3 (translate-y-px on 3 chevron Codicons via className passthrough; tsc clean, boot: nudge live) + header action 11d2764 (28px square flex-centered button, rounded-control, row pl-4 pr-2, raw more icon -> Codicon; tsc clean, boot: square button + inset live) + header inset e487b25 (row pr-[3px]: action box 3px off card edge, mirrors rail mt-[3px]; tsc clean, boot live) + header inset tune 7be678b (pr-[4px]; tsc clean, boot live)",
+      "verified": true
+    },
+    {
+      "description": "Shared Tooltip primitive (single hover-box definition); IconButton + TitleBar consolidated onto it pixel-identically; Explorer options shows Views and More Actions on hover.",
+      "file": null,
+      "id": "PV-UI-TOOLTIP",
+      "status": "done",
+      "title": "Shared Tooltip primitive",
+      "owner": "agent",
+      "started": "2026-10-16",
+      "finished": "2026-10-16",
+      "log": "Tooltip e423a6c (text/position/align/children; pointer-events-none added) + IconButton 4fe49ff (group moves to wrapper, badge anchor kept) + TitleBar 999ee84 (ControlButton deleted, 7 IconButtons; chevrons gain native title) + SideBar 70bcc36 (Views and More Actions, bottom-end) + DOC/05 01d85ae (tsc clean, role=tooltip defined once, boot: 6 tooltip boxes, both texts live)",
       "verified": true
     },
     {
