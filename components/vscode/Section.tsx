@@ -1,6 +1,6 @@
 // Section — rounded workbench card (2026-10 refresh: floating sections).
 // One Section per major region; the grid supplies gutters (gap + padding on
-// bg-vscode-gutter). overflow-hidden clips inner square corners to the round.
+// bg-vscode-titlebar). overflow-hidden clips inner square corners to the round.
 // Reused by: PrimarySideBar, editor region; later TerminalPanel.
 import type { ReactNode } from "react";
 
