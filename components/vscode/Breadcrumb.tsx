@@ -3,10 +3,12 @@
 // Breadcrumb — 22px path strip in the editor card, under the tab strip.
 // Crumbs follow the Explorer hierarchy (Projects/<owner>/<repo> collapses to
 // the repo row's label; tmp scratch mirrors its tree) with the same rename
-// keys. Clicking a folder crumb opens a quick-pick-style Menu of that
-// folder's children — drill-in like VS Code, picking a file opens it. The
-// file crumb's symbols picker waits for a symbol provider (lands with/after
-// FileViewer). See DOC/05 §6.
+// keys. Clicking any crumb opens a quick-pick of that level's siblings (VS
+// Code: "dropdown with that level's siblings") with the active path's item
+// highlighted; folders drill in-place, picking a file opens it and the
+// Explorer auto-reveals/selects it (lib/store autoReveal). The file crumb's
+// symbols picker waits for a symbol provider (lands with/after FileViewer).
+// See DOC/05 §6.
 import { Fragment, useEffect, useRef, useState } from "react";
 import { fileIcon } from "@/lib/fileIcons";
 import {
@@ -109,15 +111,32 @@ function crumbsFor(
   return crumbs;
 }
 
-// One level of picker children for a crumb key — dirs first, alphabetical.
+// One level of picker items for a browsing key — "" is the root level
+// (pinned tmp + sections, the same order the tree renders), dirs first.
 // null = nothing to pick (empty folder / no client tree) → click is a no-op.
 function childrenOf(
   path: string,
+  sections: Section[],
   projects: Project[],
   trees: Record<string, TreeEntry[]>,
   tmpFs: Record<string, string>,
   renames: Record<string, string>,
 ): PickerItem[] | null {
+  if (path === "") {
+    const items: PickerItem[] = [];
+    if (Object.keys(tmpFs).some((k) => k.startsWith("tmp/"))) {
+      items.push({ key: "tmp", label: "tmp", folder: true });
+    }
+    for (const sec of sections.filter((s) => s.slug !== "tmp")) {
+      items.push({
+        key: sec.slug,
+        label: resolveName(sec.slug, renames, sec.title),
+        folder: true,
+      });
+    }
+    return items.length > 0 ? items : null;
+  }
+
   if (path === "projects") {
     if (projects.length === 0) return null;
     return projects.map((p) => {
@@ -214,7 +233,9 @@ export default function Breadcrumb({ onOpenFile }: BreadcrumbProps) {
   const tmpFs = useStore((s) => s.tmpFs);
   const renames = useStore((s) => s.renames);
 
-  const [picker, setPicker] = useState<{ crumb: string; path: string } | null>(
+  // list = the level currently browsed by the open picker ("" = root); the
+  // crumb key anchors which crumb owns the dropdown.
+  const [picker, setPicker] = useState<{ crumb: string; list: string } | null>(
     null,
   );
   const stripRef = useRef<HTMLElement>(null);
@@ -246,25 +267,32 @@ export default function Breadcrumb({ onOpenFile }: BreadcrumbProps) {
   if (!tab || tab.kind === "browser") return null;
 
   const crumbs = crumbsFor(tab.path, sections, projects, renames);
+  // Sibling chain "" (root) → crumb keys; the entry after the browsed level
+  // is the active path's row — highlighted like a quick-pick current item.
+  const chain = ["", ...crumbs.map((c) => c.key)];
+  const hi = chain.indexOf(picker?.list ?? "");
+  const activeKey = hi >= 0 ? chain[hi + 1] : undefined;
   const children = picker
-    ? childrenOf(picker.path, projects, trees, tmpFs, renames)
+    ? childrenOf(picker.list, sections, projects, trees, tmpFs, renames)
     : null;
 
-  const togglePicker = (crumbKey: string) => {
+  const togglePicker = (crumbKey: string, list: string) => {
     if (picker?.crumb === crumbKey) {
       setPicker(null);
       return;
     }
     // No children (empty folder / non-tree section) = no-op, like VS Code.
-    if (!childrenOf(crumbKey, projects, trees, tmpFs, renames)) return;
-    setPicker({ crumb: crumbKey, path: crumbKey });
+    if (!childrenOf(list, sections, projects, trees, tmpFs, renames)) return;
+    setPicker({ crumb: crumbKey, list });
   };
 
   const pick = (id: string) => {
     const child = children?.find((c) => c.key === id);
     if (!child) return;
     if (child.folder) {
-      setPicker((p) => (p ? { ...p, path: id } : p));
+      // Childless folders stay put (never show an empty picker).
+      if (!childrenOf(id, sections, projects, trees, tmpFs, renames)) return;
+      setPicker((p) => (p ? { ...p, list: id } : p));
       return;
     }
     onOpenFile?.(child.key);
@@ -275,6 +303,7 @@ export default function Breadcrumb({ onOpenFile }: BreadcrumbProps) {
     id: c.key,
     label: c.label,
     icon: c.icon,
+    active: c.key === activeKey,
   }));
 
   return (
@@ -288,9 +317,9 @@ export default function Breadcrumb({ onOpenFile }: BreadcrumbProps) {
         const button = (
           <button
             type="button"
-            aria-haspopup={c.file ? undefined : "menu"}
+            aria-haspopup="menu"
             aria-expanded={open || undefined}
-            onClick={c.file ? undefined : () => togglePicker(c.key)}
+            onClick={() => togglePicker(c.key, i === 0 ? "" : crumbs[i - 1].key)}
             className={`flex h-[18px] max-w-full min-w-0 items-center gap-1 rounded-control px-1 ${
               c.file ? "text-vscode-fg" : "text-vscode-muted"
             } hover:bg-vscode-list-hover hover:text-vscode-fg-active`}
