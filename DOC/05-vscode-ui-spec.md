@@ -87,13 +87,13 @@ Bottom: avatar 28px rounded-full `profiles.avatar_url` (your logo) -> click open
 
 Header `Explorer` + `...` overflow button (shared `Tooltip`: `Views and More Actions...`).
 Static workspace root `Dharmil Gajjar` (always present, name in `--color-vscode-emphasis`, no rename affordance) — its row carries the view actions right-aligned (`new-file`/`new-folder`/`refresh`/`collapse-all` as 28px `ViewActionButton`s with VS Code tooltips; emit ids, page owns behavior) — with DB sections nested one level deeper.
-Sections as folders from `04`: `About/ Experience/ Projects/<repo>/ Skills/ Contact/ tmp/` (tmp dimmed italic + `ephemeral` tag).
+Sections as folders from `04`: `About/ Experience/ Projects/<repo>/ Skills/ Contact/ tmp/` (tmp dimmed italic). `tmp/` renders live `tmpFs` entries (New File/New Folder; folders first at `pl-10`, files `pl-14`); a synthetic dimmed `tmp` folder appears when no Studio row exists; tmp open by default.
 Folder rows: chevron + name only (no folder icon, chevron vertically centered). Row: 28px, indent 12px/level, chevron + `vscode-icons` by ext + `resolveName(): uiRenames ?? title_override ?? repo_name` + `M` green badge if dirty + `●` if tmp unsaved. Right-click: `Rename (session only) -> uiRenames`, `Open Preview (if preview_url)`, `Discard local changes`.
 `Projects/<repo>/` expand -> `GET /api/repo/tree`, skeleton shimmer rows while loading, README auto-open.
 
 ## 6. Editor (core: read + local edit + split)
 
-Tab bar 35px (square, flush): icon + name + `●` dirty dot (color `--color-vscode-dot`) or `x` on hover, active tab `bg-tab-active + top accent line`. Right: split-right icon (markdown/browser preview), `...` (Copy path, Reveal in Explorer, Open raw).
+Tab bar 35px (`bg-vscode-tab` band): icon + name + `●` dirty dot (color `--color-vscode-dot`) swapping to `x` on hover, `x` persistent on the active tab. Active tab `bg-tab-active` with `--radius-tab` top corners + 6px outward bottom fillets (no accent line). Right: split-right icon (markdown/browser preview), `...` (Copy path, Reveal in Explorer, Open raw).
 Breadcrumb 22px dim: `Projects > <repo> > src > page.tsx`.
 Viewport:
 - Default read: Shiki Dark Modern + line numbers (gutter 48px, active line highlight on hover), minimap fake gradient bar right (decorative, 80px).
