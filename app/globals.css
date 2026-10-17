@@ -39,6 +39,7 @@
   /* === Lists, Inputs, Command Center & Widgets === */
   --color-vscode-list-hover: #2a2d2e;
   --color-vscode-list-active: #04395e;
+  --color-vscode-list-inactive: #37373d; /* tree selection while unfocused */
   --color-vscode-input-bg: #3c3c3c;
   --color-vscode-command-bg: #242424;
   --color-vscode-widget-bg: #252526;
