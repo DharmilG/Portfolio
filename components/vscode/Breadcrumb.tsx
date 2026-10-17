@@ -3,12 +3,13 @@
 // Breadcrumb — 22px path strip in the editor card, under the tab strip.
 // Crumbs follow the Explorer hierarchy (Projects/<owner>/<repo> collapses to
 // the repo row's label; tmp scratch mirrors its tree) with the same rename
-// keys. Clicking any crumb opens a quick-pick of that level's siblings (VS
-// Code: "dropdown with that level's siblings") with the active path's item
-// highlighted; folders drill in-place, picking a file opens it and the
-// Explorer auto-reveals/selects it (lib/store autoReveal). The file crumb's
-// symbols picker waits for a symbol provider (lands with/after FileViewer).
-// See DOC/05 §6.
+// keys. Clicking any crumb opens a quick-pick tree of that level's siblings
+// (VS Code: "dropdown with that level's siblings"): the clicked node
+// auto-expands in place, folder rows toggle like the Explorer (▸/▾ chevrons,
+// file glyphs — an icon on every row), the focused row carries the accent
+// outline. Picking a file opens it + the Explorer auto-reveals/selects it
+// (lib/store autoReveal). The file crumb's symbols picker waits for a symbol
+// provider (lands with/after FileViewer). See DOC/05 §6.
 import { Fragment, useEffect, useRef, useState } from "react";
 import { fileIcon } from "@/lib/fileIcons";
 import {
@@ -224,6 +225,40 @@ function childrenOf(
   return null;
 }
 
+type PickerRow = PickerItem & { depth: number };
+
+// Flatten the browsed level into tree rows — expanded folders inline their
+// children right below (Explorer-style); depth drives the row indent.
+function rowsFor(
+  level: string,
+  expanded: Record<string, boolean>,
+  sections: Section[],
+  projects: Project[],
+  trees: Record<string, TreeEntry[]>,
+  tmpFs: Record<string, string>,
+  renames: Record<string, string>,
+): PickerRow[] {
+  const rows: PickerRow[] = [];
+  const walk = (items: PickerItem[], depth: number) => {
+    for (const item of items) {
+      rows.push({ ...item, depth });
+      if (item.folder && expanded[item.key]) {
+        const children = childrenOf(
+          item.key,
+          sections,
+          projects,
+          trees,
+          tmpFs,
+          renames,
+        );
+        if (children) walk(children, depth + 1);
+      }
+    }
+  };
+  walk(childrenOf(level, sections, projects, trees, tmpFs, renames) ?? [], 0);
+  return rows;
+}
+
 export default function Breadcrumb({ onOpenFile }: BreadcrumbProps) {
   const tabs = useStore((s) => s.tabs);
   const activeTabId = useStore((s) => s.activeTabId);
@@ -233,11 +268,14 @@ export default function Breadcrumb({ onOpenFile }: BreadcrumbProps) {
   const tmpFs = useStore((s) => s.tmpFs);
   const renames = useStore((s) => s.renames);
 
-  // list = the level currently browsed by the open picker ("" = root); the
-  // crumb key anchors which crumb owns the dropdown.
-  const [picker, setPicker] = useState<{ crumb: string; list: string } | null>(
-    null,
-  );
+  // Open picker: list = level browsed ("" = root), crumb anchors the dropdown,
+  // focus = outlined row, expanded = in-place open folders (tree rows).
+  const [picker, setPicker] = useState<{
+    crumb: string;
+    list: string;
+    focus: string;
+    expanded: Record<string, boolean>;
+  } | null>(null);
   const stripRef = useRef<HTMLElement>(null);
 
   // Tab switch swaps the path — any open picker's crumbs are gone.
@@ -262,19 +300,29 @@ export default function Breadcrumb({ onOpenFile }: BreadcrumbProps) {
     };
   }, [picker]);
 
+  // Bring the focused row into view when a picker opens (deep repo files).
+  useEffect(() => {
+    stripRef.current
+      ?.querySelector("[data-active]")
+      ?.scrollIntoView({ block: "nearest" });
+  }, [picker?.crumb]);
+
   const tab = tabs.find((t) => t.id === activeTabId);
   // Browser tabs hold URLs (previews) — no crumb surface for those.
   if (!tab || tab.kind === "browser") return null;
 
   const crumbs = crumbsFor(tab.path, sections, projects, renames);
-  // Sibling chain "" (root) → crumb keys; the entry after the browsed level
-  // is the active path's row — highlighted like a quick-pick current item.
-  const chain = ["", ...crumbs.map((c) => c.key)];
-  const hi = chain.indexOf(picker?.list ?? "");
-  const activeKey = hi >= 0 ? chain[hi + 1] : undefined;
-  const children = picker
-    ? childrenOf(picker.list, sections, projects, trees, tmpFs, renames)
-    : null;
+  const rows = picker
+    ? rowsFor(
+        picker.list,
+        picker.expanded,
+        sections,
+        projects,
+        trees,
+        tmpFs,
+        renames,
+      )
+    : [];
 
   const togglePicker = (crumbKey: string, list: string) => {
     if (picker?.crumb === crumbKey) {
@@ -283,28 +331,55 @@ export default function Breadcrumb({ onOpenFile }: BreadcrumbProps) {
     }
     // No children (empty folder / non-tree section) = no-op, like VS Code.
     if (!childrenOf(list, sections, projects, trees, tmpFs, renames)) return;
-    setPicker({ crumb: crumbKey, list });
+    // The clicked node becomes the focused row and auto-expands (folder).
+    const expandable =
+      childrenOf(crumbKey, sections, projects, trees, tmpFs, renames) !== null;
+    setPicker({
+      crumb: crumbKey,
+      list,
+      focus: crumbKey,
+      expanded: expandable ? { [crumbKey]: true } : {},
+    });
   };
 
   const pick = (id: string) => {
-    const child = children?.find((c) => c.key === id);
-    if (!child) return;
-    if (child.folder) {
-      // Childless folders stay put (never show an empty picker).
-      if (!childrenOf(id, sections, projects, trees, tmpFs, renames)) return;
-      setPicker((p) => (p ? { ...p, list: id } : p));
+    const row = rows.find((r) => r.key === id);
+    if (!row) return;
+    if (row.folder) {
+      // In-place expand/collapse like the Explorer; childless folders just
+      // take focus.
+      const expandable =
+        childrenOf(id, sections, projects, trees, tmpFs, renames) !== null;
+      setPicker((p) =>
+        p
+          ? {
+              ...p,
+              focus: id,
+              expanded: expandable
+                ? { ...p.expanded, [id]: !p.expanded[id] }
+                : p.expanded,
+            }
+          : p,
+      );
       return;
     }
-    onOpenFile?.(child.key);
+    onOpenFile?.(row.key);
     setPicker(null);
   };
 
-  const items: MenuItem[] = (children ?? []).map((c) => ({
-    id: c.key,
-    label: c.label,
-    icon: c.icon,
-    active: c.key === activeKey,
-  }));
+  const items: MenuItem[] = picker
+    ? rows.map((r) => ({
+        id: r.key,
+        label: r.label,
+        icon: r.folder
+          ? picker.expanded[r.key]
+            ? "chevron-down"
+            : "chevron-right"
+          : r.icon,
+        active: r.key === picker.focus,
+        depth: r.depth,
+      }))
+    : [];
 
   return (
     <nav
@@ -358,11 +433,11 @@ export default function Breadcrumb({ onOpenFile }: BreadcrumbProps) {
                   {button}
                 </Tooltip>
               )}
-              {open && children ? (
+              {open ? (
                 <Menu
                   items={items}
                   onAction={pick}
-                  density="menu"
+                  density="tree"
                   label="Breadcrumb picker"
                   className="absolute left-0 top-full z-20 max-h-[60vh] min-w-44 overflow-y-auto"
                 />
