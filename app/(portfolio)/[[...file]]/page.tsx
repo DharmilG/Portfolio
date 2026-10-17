@@ -104,14 +104,11 @@ export default function PortfolioPage() {
       <TitleBar onMenuAction={handleAction} />
       <div className="flex min-h-0 flex-1 gap-[5px] bg-vscode-titlebar p-[5px]">
         {showSidebar ? (
-          <PrimarySideBar
-            active={view}
-            onSelect={handleSelectView}
-            onAction={handleViewAction}
-          >
+          <PrimarySideBar active={view} onSelect={handleSelectView}>
             {view === "explorer" ? (
               <Explorer
                 onOpenFile={(path) => console.info("open (FileViewer next):", path)}
+                onAction={handleViewAction}
               />
             ) : (
               <p className="px-4 py-2 text-xs text-vscode-dim">
