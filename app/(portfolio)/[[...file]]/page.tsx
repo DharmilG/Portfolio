@@ -7,6 +7,7 @@ import { type ActivityId } from "@/components/vscode/ActivityBar";
 import Explorer from "@/components/vscode/Explorer";
 import PrimarySideBar from "@/components/vscode/PrimarySideBar";
 import Section from "@/components/vscode/Section";
+import Tabs from "@/components/vscode/Tabs";
 import TitleBar from "@/components/vscode/TitleBar";
 import { supabase } from "@/lib/db";
 import { useStore } from "@/lib/store";
@@ -31,7 +32,12 @@ function nextFreeKey(
   return numbered(n);
 }
 
+function openCodeTab(path: string) {
+  useStore.getState().openTab({ kind: "code", path, sha: null });
+}
+
 export default function PortfolioPage() {
+  const hasTabs = useStore((s) => s.tabs.length > 0);
   const [view, setView] = useState<ActivityId>("explorer");
   const [showSidebar, setShowSidebar] = useState(true);
   useEffect(() => {
@@ -73,8 +79,7 @@ export default function PortfolioPage() {
         (n) => `tmp/untitled-${n}`,
       );
       st.writeTmp(path, "");
-      st.openTab({ kind: "code", path, sha: null });
-      console.info("new tmp file (tabs UI next):", path);
+      openCodeTab(path);
       return;
     }
     if (id === "new-folder") {
@@ -106,10 +111,7 @@ export default function PortfolioPage() {
         {showSidebar ? (
           <PrimarySideBar active={view} onSelect={handleSelectView}>
             {view === "explorer" ? (
-              <Explorer
-                onOpenFile={(path) => console.info("open (FileViewer next):", path)}
-                onAction={handleViewAction}
-              />
+              <Explorer onOpenFile={openCodeTab} onAction={handleViewAction} />
             ) : (
               <p className="px-4 py-2 text-xs text-vscode-dim">
                 {view} view lands with its component.
@@ -118,9 +120,12 @@ export default function PortfolioPage() {
           </PrimarySideBar>
         ) : null}
         <Section className="flex-1 bg-vscode-bg">
-          <div className="flex min-h-0 flex-1 items-center justify-center text-sm text-vscode-dim">
-            Open a file from the Explorer
-          </div>
+          <Tabs />
+          {!hasTabs ? (
+            <div className="flex min-h-0 flex-1 items-center justify-center text-sm text-vscode-dim">
+              Open a file from the Explorer
+            </div>
+          ) : null}
         </Section>
       </div>
     </div>
