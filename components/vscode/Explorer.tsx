@@ -1,7 +1,8 @@
 "use client";
 
 // Explorer — folder tree from store (sections + allowlisted projects).
-// Static workspace root ("Dharmil Gajjar") always on top; DB sections nest inside.
+// Static workspace root ("Dharmil Gajjar") always on top with the view
+// actions on its row; DB sections nest inside.
 // Dirty/rename overlays are local-only (rule 03-local-only).
 // See DOC/05 §5, skills vscode-tokens + local-git.
 import { useState } from "react";
@@ -9,15 +10,31 @@ import { isDirty, useStore } from "@/lib/store";
 import { fileIcon } from "@/lib/fileIcons";
 import Codicon from "./Codicon";
 import RenameInput from "./RenameInput";
+import ViewActionButton from "./ViewActionButton";
 
 type ExplorerProps = {
   onOpenFile?: (path: string) => void;
   onRename?: (path: string, name: string | null) => void;
+  onAction?: (id: string) => void;
   filter?: string;
 };
 
 // Static workspace root — always present, never renamed, never dirty.
 const ROOT_NAME = "Dharmil Gajjar";
+
+type ViewAction = {
+  id: string;
+  icon: string;
+  label: string;
+};
+
+// Root-row view actions (VS Code tooltips; behavior owned by the page).
+const EXPLORER_ACTIONS: ViewAction[] = [
+  { id: "new-file", icon: "new-file", label: "New File..." },
+  { id: "new-folder", icon: "new-folder", label: "New Folder..." },
+  { id: "refresh", icon: "refresh", label: "Refresh Explorer" },
+  { id: "collapse", icon: "collapse-all", label: "Collapse Folders in View" },
+];
 
 export function resolveName(
   fullPath: string,
@@ -30,6 +47,7 @@ export function resolveName(
 export default function Explorer({
   onOpenFile,
   onRename,
+  onAction,
   filter = "",
 }: ExplorerProps) {
   const sections = useStore((s) => s.sections);
@@ -61,7 +79,7 @@ export default function Explorer({
       {showRoot ? (
         <div>
           <div
-            className="flex h-7 cursor-pointer items-center gap-1 px-2 hover:bg-vscode-list-hover"
+            className="flex h-7 cursor-pointer items-center gap-1 pl-2 pr-[4px] hover:bg-vscode-list-hover"
             onClick={() => toggleExpanded(ROOT_NAME)}
           >
             <span className="flex w-4 shrink-0 items-center justify-center text-vscode-dim">
@@ -70,7 +88,19 @@ export default function Explorer({
                 className="translate-y-px"
               />
             </span>
-            <span className="truncate text-vscode-emphasis">{ROOT_NAME}</span>
+            <span className="min-w-0 flex-1 truncate text-vscode-emphasis">
+              {ROOT_NAME}
+            </span>
+            <div className="ml-auto flex shrink-0 items-center">
+              {EXPLORER_ACTIONS.map((a) => (
+                <ViewActionButton
+                  key={a.id}
+                  icon={a.icon}
+                  label={a.label}
+                  onClick={() => onAction?.(a.id)}
+                />
+              ))}
+            </div>
           </div>
           {rootOpen ? (
             sections.length === 0 ? (
