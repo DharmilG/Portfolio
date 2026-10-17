@@ -1,5 +1,10 @@
 import type { Metadata, Viewport } from "next";
 import "@vscode/codicons/dist/codicon.css";
+import "@fontsource/cascadia-code/400.css";
+import "@fontsource/cascadia-code/400-italic.css";
+import "@fontsource/cascadia-code/700.css";
+import "@fontsource/cascadia-code/700-italic.css";
+import "@fontsource/fira-code/400.css";
 import "./globals.css";
 
 export const metadata: Metadata = {
