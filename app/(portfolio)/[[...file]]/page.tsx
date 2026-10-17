@@ -79,6 +79,7 @@ export default function PortfolioPage() {
         (n) => `tmp/untitled-${n}`,
       );
       st.writeTmp(path, "");
+      if (!st.expanded["tmp"]) st.toggleExpanded("tmp");
       openCodeTab(path);
       return;
     }
@@ -89,7 +90,7 @@ export default function PortfolioPage() {
         (n) => `tmp/New Folder ${n}/.gitkeep`,
       );
       st.writeTmp(key, "");
-      console.info("new tmp folder (tmp view next):", key);
+      if (!st.expanded["tmp"]) st.toggleExpanded("tmp");
       return;
     }
     console.info("view action (wires with its feature):", id);
@@ -119,7 +120,7 @@ export default function PortfolioPage() {
             )}
           </PrimarySideBar>
         ) : null}
-        <Section className="flex-1 bg-vscode-bg">
+        <Section className="flex-1 bg-vscode-editor">
           <Tabs />
           {!hasTabs ? (
             <div className="flex min-h-0 flex-1 items-center justify-center text-sm text-vscode-dim">
