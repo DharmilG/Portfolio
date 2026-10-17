@@ -93,7 +93,8 @@ Folder rows: chevron + name only (no folder icon, chevron vertically centered). 
 
 ## 6. Editor (core: read + local edit + split)
 
-Tab bar 35px (`bg-vscode-tab` band): icon + name + `●` dirty dot (color `--color-vscode-dot`) swapping to `x` on hover, `x` persistent on the active tab. Active tab `bg-tab-active` with `--radius-tab` top corners + 6px outward bottom fillets (no accent line). Right: split-right icon (markdown/browser preview), `...` (Copy path, Reveal in Explorer, Open raw).
+Tab bar 33px rail (`bg-vscode-tab`; 32px tiles flush on the base, 1px headroom): `--radius-tab` top corners; active tab `bg-tab-active` (= editor bg -> seamless merge) with concave `--radius-tab` bottom fillets per VS Code 1.142 "connected tabs": corner squares (`size-[var(--radius-tab)]`, `rounded-br/bl-full`) whose 1px hairline border traces the arc into the rail rule, cove filled by `box-shadow` (offset = spread = radius/2, colour = tile bg), `clip-path: inset(0)` cuts the spill; cap-edge hairline hugs top + sides, stops at fillet height (no accent line).
+Rail bottom rule = absolute `bg-vscode-border` hairline beneath the tiles (interrupted by the active tab + fillets). Tile: icon + name + `●` 8px dirty dot (`--color-vscode-dot`) swapping to a 12px `x` on hover, `x` persistent on active; 16px close hit area (`rounded-control` hover chip). Right: split-right icon (markdown/browser preview), `...` (Copy path, Reveal in Explorer, Open raw).
 Breadcrumb 22px dim: `Projects > <repo> > src > page.tsx`.
 Viewport:
 - Default read: Shiki Dark Modern + line numbers (gutter 48px, active line highlight on hover), minimap fake gradient bar right (decorative, 80px).
