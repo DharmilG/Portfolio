@@ -30,6 +30,7 @@
 
   /* === Git, Status & Diagnostics === */
   --color-vscode-dot: #e2c08d;
+  --color-vscode-modified: #e5ba7d; /* M badge, edited names, dirty dots */
   --color-vscode-added: #73c991;
   --color-vscode-error: #f14c4c;
   --color-vscode-warning: #cca700;
@@ -67,5 +68,20 @@
   --radius-section: 8px;
   --font-vscode-ui: "Segoe WPC", "Segoe UI", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   --font-vscode-code: "Cascadia Code", "JetBrains Mono", Consolas, "Courier New", monospace;
+  --font-vscode-term: "Fira Code", "Cascadia Code", Consolas, "Courier New", monospace;
   --shadow-vscode: 0 8px 24px rgb(0 0 0 / 0.45);
+}
+
+/* Code editor + terminal font utilities (single source: the tokens above).
+   font-code = Cascadia Code for the editor/file preview; font-term = Fira Code. */
+@utility font-code {
+  font-family: var(--font-vscode-code);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+@utility font-term {
+  font-family: var(--font-vscode-term);
+  font-size: 13px;
+  line-height: 1.5;
 }
