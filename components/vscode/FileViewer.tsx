@@ -4,11 +4,14 @@
 // Read: Shiki-highlighted lines (fine-grained core bundle + JS regex engine —
 // no wasm/bundler config; theme dark-plus) with a sticky 48px number gutter,
 // per-line hover highlight (--color-vscode-line-highlight, number brightens)
-// and a decorative minimap column. Edit: dblclick / Ctrl+E swaps an auto-grown
-// textarea in (same font metrics, wrap=off), gutter stays aligned; Ctrl+S saves
-// locally (saveEdit -> dirty M in tab + Explorer), Esc returns to view.
-// Zero server calls (09 §8). Content: edits[path] ?? tmpFs[path] ?? blob cache
-// — the cache arrives with /api/repo/blob (dim placeholder until then).
+// and a decorative minimap column. Edit: click in the code (caret lands on the
+// clicked character) or Ctrl+E swaps an auto-grown textarea in (same font
+// metrics, wrap=off), gutter stays aligned; keystrokes land in the store as an
+// unsaved buffer (drafts[path] — the tab dot shows live). Ctrl+S promotes the
+// buffer into the saved-edits layer (M badge); Esc returns to view with the
+// buffer intact. Zero server calls (09 §8). Content: drafts[path] ??
+// edits[path] ?? tmpFs[path] ?? blob cache — the cache arrives with
+// /api/repo/blob (dim placeholder until then).
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { createHighlighterCore, getTokenStyleObject } from "shiki/core";
 import { createJavaScriptRegexEngine } from "shiki/engine/javascript";
@@ -74,16 +77,63 @@ function getHighlighter(): Promise<Highlighter> {
   return highlighterPromise;
 }
 
+// Source offset of every line start — click-to-caret math (DOC/05 §6).
+function lineStarts(content: string): number[] {
+  const starts = [0];
+  for (let i = 0; i < content.length; i++) {
+    if (content[i] === "\n") starts.push(i + 1);
+  }
+  return starts;
+}
+
+// Viewport point -> source offset. Null when the point misses the rendered
+// code rows (callers then put the caret at end-of-file).
+function offsetFromPoint(x: number, y: number, content: string): number | null {
+  type CaretDoc = Document & {
+    caretPositionFromPoint?: (
+      x: number,
+      y: number,
+    ) => { offsetNode: Node; offset: number } | null;
+    caretRangeFromPoint?: (x: number, y: number) => Range | null;
+  };
+  const doc = document as CaretDoc;
+  const pos = doc.caretPositionFromPoint?.(x, y);
+  const range = pos ? null : (doc.caretRangeFromPoint?.(x, y) ?? null);
+  const node: Node | null = pos?.offsetNode ?? range?.startContainer ?? null;
+  if (!node) return null;
+  const nodeOffset = pos?.offset ?? range?.startOffset ?? 0;
+  const el =
+    node.nodeType === Node.TEXT_NODE
+      ? node.parentElement
+      : (node as HTMLElement | null);
+  const row = el?.closest("[data-line]") as HTMLElement | null;
+  if (!row) return null;
+  const start: number | undefined = lineStarts(content)[Number(row.dataset.line)];
+  if (start === undefined) return null;
+  if (el?.closest("[data-gutter]")) return start;
+  const host = row.querySelector("[data-line-text]");
+  if (!host) return start;
+  const walker = document.createTreeWalker(host, NodeFilter.SHOW_TEXT);
+  let acc = 0;
+  for (let cur = walker.nextNode(); cur; cur = walker.nextNode()) {
+    if (cur === node) return start + acc + nodeOffset;
+    acc += cur.textContent?.length ?? 0;
+  }
+  return start;
+}
+
 export default function FileViewer() {
   const tabs = useStore((s) => s.tabs);
   const activeTabId = useStore((s) => s.activeTabId);
   const edits = useStore((s) => s.edits);
   const tmpFs = useStore((s) => s.tmpFs);
-  const saveEdit = useStore((s) => s.saveEdit);
+  const drafts = useStore((s) => s.drafts);
+  const setDraft = useStore((s) => s.setDraft);
+  const saveDraft = useStore((s) => s.saveDraft);
 
   const [highlighter, setHighlighter] = useState<Highlighter | null>(null);
   const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState("");
+  const caretRef = useRef<number | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -100,18 +150,21 @@ export default function FileViewer() {
   const tab = tabs.find((t) => t.id === activeTabId);
   const path = tab?.kind === "code" ? tab.path : null;
 
-  // Switching tabs leaves edit mode (re-entering is one dblclick away).
+  // Switching tabs leaves edit mode (buffers persist; one click re-enters).
   useEffect(() => {
     setEditing(false);
   }, [path]);
 
-  // Local overlay wins, then tmp scratch, then the repo blob cache — the cache
-  // is always undefined until /api/repo/blob lands (placeholder shows instead).
+  // Unsaved buffer first (view keeps showing what you typed after Esc), then
+  // the saved-edits layer, then tmp scratch, then the repo blob cache — the
+  // cache is always undefined until /api/repo/blob lands (placeholder shows).
   const cached: string | undefined = undefined;
   const content =
     path === null
       ? undefined
-      : (edits[path] ?? (path.startsWith("tmp/") ? tmpFs[path] : cached));
+      : (drafts[path] ??
+        edits[path] ??
+        (path.startsWith("tmp/") ? tmpFs[path] : cached));
 
   const tokens = useMemo(() => {
     if (!highlighter || path === null || content === undefined) return null;
@@ -124,14 +177,16 @@ export default function FileViewer() {
   const plainLines =
     tokens === null && content !== undefined ? content.split("\n") : null;
 
-  const enterEdit = () => {
+  // Enter edit mode; caret is the clicked source offset (null = end-of-file).
+  const enterEdit = (offset: number | null = null) => {
     if (content === undefined) return;
-    setDraft(content);
+    caretRef.current = offset;
     setEditing(true);
   };
 
-  // Ctrl+E toggles edit, Esc leaves it, Ctrl+S saves the draft locally.
-  // Keystrokes aimed at other fields (rename, menus) are left alone.
+  // Ctrl+E toggles edit, Esc leaves it (buffer stays), Ctrl+S promotes the
+  // buffer into the saved-edits layer. Keystrokes aimed at other fields
+  // (rename, menus) are left alone.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (path === null) return;
@@ -145,30 +200,32 @@ export default function FileViewer() {
       if (mod && key === "e") {
         e.preventDefault();
         if (editing) setEditing(false);
-        else if (content !== undefined) {
-          setDraft(content);
-          setEditing(true);
-        }
+        else enterEdit(null);
         return;
       }
       if (mod && key === "s") {
         e.preventDefault();
-        if (editing) saveEdit(path, draft);
+        if (drafts[path] !== undefined) saveDraft(path);
         return;
       }
       if (e.key === "Escape" && editing) setEditing(false);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [path, editing, draft, content, saveEdit]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [path, editing, content, drafts, saveDraft]);
 
-  // Focus the field, caret at end, when edit mode opens.
+  // Focus the field when edit mode opens; caret at the captured click offset
+  // when one exists, else at end-of-file.
   useEffect(() => {
     if (!editing) return;
     const el = textareaRef.current;
     if (!el) return;
     el.focus();
-    el.setSelectionRange(el.value.length, el.value.length);
+    const caret = caretRef.current;
+    caretRef.current = null;
+    const pos = Math.min(caret ?? el.value.length, el.value.length);
+    el.setSelectionRange(pos, pos);
   }, [editing]);
 
   // Auto-grow the textarea; the floor keeps short files filling the viewport.
@@ -178,16 +235,25 @@ export default function FileViewer() {
     el.style.height = "auto";
     const floor = scrollRef.current?.clientHeight ?? 0;
     el.style.height = `${Math.max(el.scrollHeight, floor)}px`;
-  }, [editing, draft]);
+  }, [editing, content]);
 
   if (path === null) return null;
 
   const lineRow = (key: number, body: ReactNode) => (
-    <div key={key} className="group flex hover:bg-vscode-line-highlight">
-      <span className="sticky left-0 z-10 w-12 shrink-0 select-none bg-vscode-editor pr-3 text-right text-vscode-dim group-hover:bg-vscode-line-highlight group-hover:text-vscode-fg">
+    <div
+      key={key}
+      data-line={key}
+      className="group flex hover:bg-vscode-line-highlight"
+    >
+      <span
+        data-gutter
+        className="sticky left-0 z-10 w-12 shrink-0 select-none bg-vscode-editor pr-3 text-right text-vscode-dim group-hover:bg-vscode-line-highlight group-hover:text-vscode-fg"
+      >
         {key + 1}
       </span>
-      <span className="whitespace-pre">{body}</span>
+      <span data-line-text className="whitespace-pre">
+        {body}
+      </span>
     </div>
   );
 
@@ -213,7 +279,7 @@ export default function FileViewer() {
           ) : editing ? (
             <div className="flex min-h-full w-full">
               <div className="sticky left-0 z-10 w-12 shrink-0 select-none bg-vscode-editor pr-3 pt-2 text-right text-vscode-dim">
-                {draft.split("\n").map((_, i) => (
+                {content.split("\n").map((_, i) => (
                   <div key={i}>{i + 1}</div>
                 ))}
               </div>
@@ -223,8 +289,8 @@ export default function FileViewer() {
                 spellCheck={false}
                 autoCapitalize="off"
                 autoCorrect="off"
-                value={draft}
-                onChange={(e) => setDraft(e.target.value)}
+                value={content}
+                onChange={(e) => setDraft(path, e.target.value)}
                 className="flex-1 resize-none overflow-x-auto overflow-y-hidden bg-transparent pt-2 pb-2 font-code text-vscode-fg caret-vscode-accent selection:bg-vscode-selection focus:outline-none"
               />
             </div>
@@ -232,7 +298,12 @@ export default function FileViewer() {
             <div
               className="w-max min-w-full py-2 pr-4"
               style={{ color: tokens?.fg }}
-              onDoubleClick={enterEdit}
+              onClick={(e) => {
+                // Drag-selection (copy) never enters edit; a plain click does.
+                const sel = window.getSelection();
+                if (sel && !sel.isCollapsed) return;
+                enterEdit(offsetFromPoint(e.clientX, e.clientY, content));
+              }}
             >
               {tokens
                 ? tokens.tokens.map((line, i) =>
