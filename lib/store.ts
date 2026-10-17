@@ -1,6 +1,7 @@
 // lib/store.ts — single zustand store for the workbench.
 // Orchestration lives here; computation delegates to lib/localGit.ts (dumb-depth).
-// Only edits/commits/renames/tmpFs/mode/sidebarWidth persist (localStorage vscode-local-v1).
+// Only edits/commits/renames/tmpFs/mode/sidebarWidth persist (localStorage
+// vscode-local-v1); drafts/expanded/selection are session-only (VS Code buffers).
 // See DOC/03 (state), rule 03-local-only, skill local-git.
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
@@ -87,7 +88,11 @@ type State = {
   commits: LocalCommit[];
   renames: Record<string, string>;
   tmpFs: Record<string, string>;
+  drafts: Record<string, string>; // unsaved editor buffers (session-only)
   saveEdit: (path: string, content: string) => void;
+  setDraft: (path: string, content: string) => void;
+  saveDraft: (path: string) => void;
+  discardDraft: (path: string) => void;
   commitLocal: (msg: string) => LocalCommit | null;
   discardEdit: (path?: string) => void;
   rename: (path: string, name: string | null) => void;
@@ -223,6 +228,24 @@ export const useStore = create<State>()(
         set((s) => ({
           edits: { ...s.edits, [path]: content },
         })),
+      drafts: {},
+      setDraft: (path, content) =>
+        set((s) => ({ drafts: { ...s.drafts, [path]: content } })),
+      // Ctrl+S: promote the buffer into the saved-edits layer; buffer clears.
+      saveDraft: (path) =>
+        set((s) => {
+          const content = s.drafts[path];
+          const drafts = { ...s.drafts };
+          delete drafts[path];
+          if (content === undefined) return { drafts };
+          return { edits: { ...s.edits, [path]: content }, drafts };
+        }),
+      discardDraft: (path) =>
+        set((s) => {
+          const drafts = { ...s.drafts };
+          delete drafts[path];
+          return { drafts };
+        }),
       commitLocal: (msg) => {
         const files = Object.keys(useStore.getState().edits);
         if (files.length === 0) return null;
@@ -321,6 +344,14 @@ export const isDirty = (
   edits: Record<string, string>,
   path: string,
 ): boolean => isEdited(path, edits);
+
+// Changes = unsaved buffer (drafts) or locally-saved edits — drives the tab
+// dot and the Explorer decorations (DOC/05 §5/§6).
+export const hasChanges = (
+  path: string,
+  edits: Record<string, string>,
+  drafts: Record<string, string>,
+): boolean => edits[path] !== undefined || drafts[path] !== undefined;
 
 export const displayContent = (
   path: string,
