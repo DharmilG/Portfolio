@@ -9,11 +9,12 @@
 @theme {
   /* === Core Surfaces & Chrome (VS Code Dark Modern) === */
   --color-vscode-bg: #1e1e1e;
+  --color-vscode-editor: #121314; /* opened-file surface (active tab merges into it) */
   --color-vscode-side: #181818;
   --color-vscode-titlebar: #191a1b;
   --color-vscode-tab: #181818;
   --color-vscode-tab-hover: #1f1f1f;
-  --color-vscode-tab-active: #1e1e1e;
+  --color-vscode-tab-active: #121314; /* = --color-vscode-editor so the active tab merges */
   --color-vscode-border: #2b2b2b;
 
   /* === Typography & Hierarchy === */
