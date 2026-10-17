@@ -190,6 +190,8 @@ export default function FileViewer() {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (path === null) return;
+      // A dialog (close-confirmation) owns the keyboard while it is up.
+      if (document.querySelector('[role="dialog"]')) return;
       const target = e.target as HTMLElement | null;
       const foreign =
         target instanceof HTMLInputElement ||
