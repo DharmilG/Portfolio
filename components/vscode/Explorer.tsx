@@ -3,13 +3,17 @@
 // Explorer — folder tree from store (sections + allowlisted projects).
 // Static workspace root ("Dharmil Gajjar") always on top with the view
 // actions on its row; DB sections + pinned tmp scratch nest inside.
+// Rows are shared TreeRows: selection follows autoReveal (openTab/setActiveTab
+// in lib/store), ancestors expand + the view scrolls to revealed rows via
+// revealNonce; selection renders blue only while the tree has focus.
 // Dirty/rename overlays are local-only (rule 03-local-only).
 // See DOC/05 §5, skills vscode-tokens + local-git.
-import { useState } from "react";
-import { isDirty, useStore } from "@/lib/store";
+import { useEffect, useRef, useState } from "react";
 import { fileIcon } from "@/lib/fileIcons";
+import { isDirty, ROOT_NAME, useStore } from "@/lib/store";
 import Codicon from "./Codicon";
 import RenameInput from "./RenameInput";
+import TreeRow from "./TreeRow";
 import ViewActionButton from "./ViewActionButton";
 
 type ExplorerProps = {
@@ -18,9 +22,6 @@ type ExplorerProps = {
   onAction?: (id: string) => void;
   filter?: string;
 };
-
-// Static workspace root — always present, never renamed, never dirty.
-const ROOT_NAME = "Dharmil Gajjar";
 
 type ViewAction = {
   id: string;
@@ -58,7 +59,24 @@ export default function Explorer({
   const tmpFs = useStore((s) => s.tmpFs);
   const expanded = useStore((s) => s.expanded);
   const toggleExpanded = useStore((s) => s.toggleExpanded);
+  const selectedPath = useStore((s) => s.selectedPath);
+  const revealNonce = useStore((s) => s.revealNonce);
+  const selectPath = useStore((s) => s.selectPath);
   const [renaming, setRenaming] = useState<string | null>(null);
+  const [focused, setFocused] = useState(false);
+  const treeRef = useRef<HTMLDivElement>(null);
+
+  // autoReveal scroll: openTab/setActiveTab bump revealNonce; bring the
+  // selected row into view (rows carry data-path).
+  useEffect(() => {
+    const tree = treeRef.current;
+    if (!tree || !selectedPath) return;
+    let row: HTMLElement | undefined;
+    tree.querySelectorAll<HTMLElement>("[data-path]").forEach((n) => {
+      if (n.dataset.path === selectedPath) row = n;
+    });
+    row?.scrollIntoView({ block: "nearest" });
+  }, [revealNonce, selectedPath]);
 
   const match = (name: string) =>
     filter.trim() === "" ||
@@ -91,9 +109,12 @@ export default function Explorer({
     const fname = resolveName(k, renames, k.split("/").pop() ?? k);
     const dirty = isDirty(edits, k);
     return (
-      <div
+      <TreeRow
         key={k}
-        className={`flex h-7 cursor-pointer items-center gap-1 ${indent} pr-2 hover:bg-vscode-list-hover`}
+        path={k}
+        indent={indent}
+        selected={selectedPath === k}
+        focused={focused}
         onClick={() => onOpenFile?.(k)}
       >
         <span className="text-vscode-dim">
@@ -105,17 +126,31 @@ export default function Explorer({
             M
           </span>
         ) : null}
-      </div>
+      </TreeRow>
     );
   };
 
   return (
-    <div className="py-1 text-[13px]">
+    <div
+      ref={treeRef}
+      tabIndex={-1}
+      onFocus={() => setFocused(true)}
+      onBlur={() => setFocused(false)}
+      onMouseDownCapture={() => treeRef.current?.focus({ preventScroll: true })}
+      className="py-1 text-[13px] focus:outline-none"
+    >
       {showRoot ? (
         <div>
-          <div
-            className="flex h-7 cursor-pointer items-center gap-1 pl-2 pr-[4px] hover:bg-vscode-list-hover"
-            onClick={() => toggleExpanded(ROOT_NAME)}
+          <TreeRow
+            path={ROOT_NAME}
+            indent="pl-2"
+            right="pr-[4px]"
+            selected={selectedPath === ROOT_NAME}
+            focused={focused}
+            onClick={() => {
+              selectPath(ROOT_NAME);
+              toggleExpanded(ROOT_NAME);
+            }}
           >
             <span className="flex w-4 shrink-0 items-center justify-center text-vscode-dim">
               <Codicon
@@ -136,12 +171,18 @@ export default function Explorer({
                 />
               ))}
             </div>
-          </div>
+          </TreeRow>
           {rootOpen && tmpKeys.length > 0 ? (
             <div>
-              <div
-                className="flex h-7 cursor-pointer items-center gap-1 pl-6 pr-2 hover:bg-vscode-list-hover"
-                onClick={() => toggleExpanded("tmp")}
+              <TreeRow
+                path="tmp"
+                indent="pl-6"
+                selected={selectedPath === "tmp"}
+                focused={focused}
+                onClick={() => {
+                  selectPath("tmp");
+                  toggleExpanded("tmp");
+                }}
               >
                 <span className="flex w-4 shrink-0 items-center justify-center text-vscode-dim">
                   <Codicon
@@ -150,7 +191,7 @@ export default function Explorer({
                   />
                 </span>
                 <span className="truncate italic opacity-60">tmp</span>
-              </div>
+              </TreeRow>
               {tmpOpen ? (
                 <div>
                   {tmpDirs.map((dir) => {
@@ -158,9 +199,15 @@ export default function Explorer({
                     const dopen = expanded[dkey] ?? false;
                     return (
                       <div key={dkey}>
-                        <div
-                          className="flex h-7 cursor-pointer items-center gap-1 pl-10 pr-2 hover:bg-vscode-list-hover"
-                          onClick={() => toggleExpanded(dkey)}
+                        <TreeRow
+                          path={dkey}
+                          indent="pl-10"
+                          selected={selectedPath === dkey}
+                          focused={focused}
+                          onClick={() => {
+                            selectPath(dkey);
+                            toggleExpanded(dkey);
+                          }}
                         >
                           <span className="flex w-4 shrink-0 items-center justify-center text-vscode-dim">
                             <Codicon
@@ -169,7 +216,7 @@ export default function Explorer({
                             />
                           </span>
                           <span className="truncate">{dir}</span>
-                        </div>
+                        </TreeRow>
                         {dopen
                           ? tmpKeys
                               .filter((k) => k.startsWith(`${dkey}/`))
@@ -196,9 +243,15 @@ export default function Explorer({
                 if (!match(title)) return null;
                 return (
                   <div key={sec.id}>
-                    <div
-                      className="flex h-7 cursor-pointer items-center gap-1 pl-6 pr-2 hover:bg-vscode-list-hover"
-                      onClick={() => toggleExpanded(key)}
+                    <TreeRow
+                      path={key}
+                      indent="pl-6"
+                      selected={selectedPath === key}
+                      focused={focused}
+                      onClick={() => {
+                        selectPath(key);
+                        toggleExpanded(key);
+                      }}
                       onDoubleClick={() => setRenaming(key)}
                     >
                       <span className="flex w-4 shrink-0 items-center justify-center text-vscode-dim">
@@ -217,7 +270,7 @@ export default function Explorer({
                       ) : (
                         <span className="truncate">{title}</span>
                       )}
-                    </div>
+                    </TreeRow>
                     {open && sec.slug === "projects" ? (
                       <div>
                         {projects.map((p) => {
@@ -233,9 +286,15 @@ export default function Explorer({
                           const ropen = expanded[rkey] ?? false;
                           return (
                             <div key={p.id}>
-                              <div
-                                className="flex h-7 cursor-pointer items-center gap-1 pl-10 pr-2 hover:bg-vscode-list-hover"
-                                onClick={() => toggleExpanded(rkey)}
+                              <TreeRow
+                                path={rkey}
+                                indent="pl-10"
+                                selected={selectedPath === rkey}
+                                focused={focused}
+                                onClick={() => {
+                                  selectPath(rkey);
+                                  toggleExpanded(rkey);
+                                }}
                                 onDoubleClick={() => setRenaming(rkey)}
                               >
                                 <span className="flex w-4 shrink-0 items-center justify-center text-vscode-dim">
@@ -256,7 +315,7 @@ export default function Explorer({
                                 ) : (
                                   <span className="truncate">{name}</span>
                                 )}
-                              </div>
+                              </TreeRow>
                               {ropen ? (
                                 !tree ? (
                                   <p className="animate-pulse py-1 pl-14 pr-2 text-xs text-vscode-dim">
@@ -275,9 +334,12 @@ export default function Explorer({
                                       if (!match(fname)) return null;
                                       const dirty = isDirty(edits, fkey);
                                       return (
-                                        <div
+                                        <TreeRow
                                           key={e.sha}
-                                          className="flex h-7 cursor-pointer items-center gap-1 pl-14 pr-2 hover:bg-vscode-list-hover"
+                                          path={fkey}
+                                          indent="pl-14"
+                                          selected={selectedPath === fkey}
+                                          focused={focused}
                                           onClick={() => onOpenFile?.(fkey)}
                                         >
                                           <span className="text-vscode-dim">
@@ -293,7 +355,7 @@ export default function Explorer({
                                               M
                                             </span>
                                           ) : null}
-                                        </div>
+                                        </TreeRow>
                                       );
                                     })
                                 )
