@@ -1,11 +1,12 @@
 "use client";
 
-// Portfolio shell mount — workbench chrome + regions (editor/panel fill in next).
+// Portfolio shell mount — workbench chrome + regions (panel fills in next).
 // Partial PV-PAGE-PORTFOLIO: mounts built components, fetches sections live.
 import { useEffect, useState } from "react";
 import { type ActivityId } from "@/components/vscode/ActivityBar";
 import Breadcrumb from "@/components/vscode/Breadcrumb";
 import Explorer from "@/components/vscode/Explorer";
+import FileViewer from "@/components/vscode/FileViewer";
 import PrimarySideBar from "@/components/vscode/PrimarySideBar";
 import Section from "@/components/vscode/Section";
 import Tabs from "@/components/vscode/Tabs";
@@ -124,11 +125,13 @@ export default function PortfolioPage() {
         <Section className="flex-1 bg-vscode-editor">
           <Tabs />
           <Breadcrumb onOpenFile={openCodeTab} />
-          {!hasTabs ? (
+          {hasTabs ? (
+            <FileViewer />
+          ) : (
             <div className="flex min-h-0 flex-1 items-center justify-center text-sm text-vscode-dim">
               Open a file from the Explorer
             </div>
-          ) : null}
+          )}
         </Section>
       </div>
     </div>
