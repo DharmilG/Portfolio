@@ -77,6 +77,9 @@ type State = {
   closeTab: (id: string) => void;
   setActiveTab: (id: string | null) => void;
 
+  caret: { line: number; col: number }; // editor Ln/Col, 0-based — session-only
+  setCaret: (line: number, col: number) => void;
+
   expanded: Record<string, boolean>;
   toggleExpanded: (key: string) => void;
   collapseAll: () => void;
@@ -209,6 +212,8 @@ export const useStore = create<State>()(
             ...(tab && tab.kind !== "browser" ? revealed(s, tab.path) : {}),
           };
         }),
+      caret: { line: 0, col: 0 }, // absent from partialize: session-only
+      setCaret: (line, col) => set({ caret: { line, col } }),
       toggleExpanded: (key) =>
         set((s) => ({
           expanded: { ...s.expanded, [key]: !s.expanded[key] },
