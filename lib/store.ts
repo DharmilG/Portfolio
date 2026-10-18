@@ -67,7 +67,9 @@ type State = {
   setExplorerLoading: (b: boolean) => void;
 
   sidebarWidth: number; // layout pref (sash, DOC/05 §3/§5) — persisted
+  sidebarPreview: number | null; // live sash drag width — session-only
   setSidebarWidth: (w: number) => void;
+  setSidebarPreview: (w: number | null) => void;
 
   tabs: EditorTab[];
   activeTabId: string | null;
@@ -167,7 +169,9 @@ export const useStore = create<State>()(
       setExplorerLoading: (explorerLoading) => set({ explorerLoading }),
 
       sidebarWidth: 280,
+      sidebarPreview: null, // not in partialize: the drag preview never persists
       setSidebarWidth: (sidebarWidth) => set({ sidebarWidth }),
+      setSidebarPreview: (sidebarPreview) => set({ sidebarPreview }),
 
       tabs: [],
       activeTabId: null,
