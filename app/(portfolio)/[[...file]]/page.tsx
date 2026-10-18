@@ -42,11 +42,12 @@ function openCodeTab(path: string) {
 export default function PortfolioPage() {
   const hasTabs = useStore((s) => s.tabs.length > 0);
   const sidebarWidth = useStore((s) => s.sidebarWidth);
+  const sidebarPreview = useStore((s) => s.sidebarPreview);
   const setSidebarWidth = useStore((s) => s.setSidebarWidth);
+  const setSidebarPreview = useStore((s) => s.setSidebarPreview);
   const revealPath = useStore((s) => s.revealPath);
   const [view, setView] = useState<ActivityId>("explorer");
   const [showSidebar, setShowSidebar] = useState(true);
-  const [dragWidth, setDragWidth] = useState<number | null>(null);
   const [rowWidth, setRowWidth] = useState(0);
   const rowRef = useRef<HTMLDivElement>(null);
 
@@ -158,12 +159,12 @@ export default function PortfolioPage() {
             <Sash
               className="-right-[5px]"
               label="Resize primary sidebar"
-              value={dragWidth ?? sidebarWidth}
+              value={sidebarPreview ?? sidebarWidth}
               min={170}
               max={maxPane}
-              onPreview={setDragWidth}
+              onPreview={setSidebarPreview}
               onCommit={(w) => {
-                setDragWidth(null);
+                setSidebarPreview(null);
                 setSidebarWidth(w);
               }}
             />
