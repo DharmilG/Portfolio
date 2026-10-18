@@ -2,9 +2,10 @@
 
 // Sash — drag grip between workbench regions (DOC/05 §3/§5). The 5px gutter
 // between two floating cards carries an always-visible ⋮ grip (three 3px dots,
-// new VS Code UI); drag left/right to resize the neighbour region and the dots
-// turn accent. Live width goes to onPreview (cheap re-render), the released
-// width to onCommit (caller persists). Panel + secondary bar reuse this.
+// new VS Code UI); drag left/right to resize the neighbour region — the dots
+// brighten on hover and keep that emphasis through the drag (no accent state).
+// Live width goes to onPreview (cheap re-render), the released width to
+// onCommit (caller persists). Panel + secondary bar reuse this.
 import { useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 
 type SashProps = {
@@ -74,7 +75,7 @@ export default function Sash({
             key={i}
             className={`h-[3px] w-[3px] rounded-full transition-colors ${
               dragging
-                ? "bg-vscode-accent"
+                ? "bg-vscode-emphasis"
                 : "bg-vscode-dim group-hover:bg-vscode-emphasis"
             }`}
           />
