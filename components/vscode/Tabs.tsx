@@ -1,17 +1,18 @@
 "use client";
 
 // Tabs — editor tab strip (editor chrome). Maps store tabs -> Tab tiles;
-// hidden when no tabs. Labels follow uiRenames (resolveName); the status dot
+// hidden when no tabs. Labels follow uiRenames (resolveName) — browser tabs
+// fall back to the host + globe glyph instead (DOC/10 §4); the status dot
 // follows unsaved buffers + local edits (hasChanges — green for new tmp files,
 // amber modified) with the M badge once edits are saved. Closing a tab with an
 // unsaved buffer asks first (Modal: Save / Don't Save / Cancel). Right: pinned
 // actions rail (stays put while the tab run scrolls) — `...` menu: Copy path /
-// Reveal in Explorer / Open raw (repo file ->
+// Copy URL (browser) / Reveal in Explorer / Open raw (repo file ->
 // raw.githubusercontent.com/<owner>/<repo>/HEAD/<path>); Markdown sources add
 // Open/Close Preview to the Side (DOC/10 §5). See DOC/05 §6.
 import { useEffect, useRef, useState } from "react";
 import { isMarkdownPath } from "@/lib/langs";
-import { hasChanges, useStore } from "@/lib/store";
+import { browserTabLabel, hasChanges, useStore } from "@/lib/store";
 import { resolveName } from "./Explorer";
 import Menu, { type MenuItem } from "./Menu";
 import Modal from "./Modal";
@@ -102,7 +103,11 @@ export default function Tabs({ onReveal }: TabsProps) {
   const rawUrl =
     active && active.kind !== "browser" ? rawUrlFor(active.path) : null;
   const items: MenuItem[] = [
-    { id: "copy-path", label: "Copy path" },
+    {
+      id: "copy-path",
+      label: active?.kind === "browser" ? "Copy URL" : "Copy path",
+      disabled: !active || (active.kind === "browser" && !active.path),
+    },
     {
       id: "reveal",
       label: "Reveal in Explorer",
@@ -130,17 +135,29 @@ export default function Tabs({ onReveal }: TabsProps) {
         aria-label="Open editors"
         className="flex min-w-0 flex-1 items-center overflow-x-auto"
       >
-        {tabs.map((t) => (
-          <Tab
-            key={t.id}
-            name={resolveName(t.path, renames, t.path.split("/").pop() ?? t.path)}
-            active={t.id === activeTabId}
-            dirty={hasChanges(t.path, edits, drafts)}
-            status={statusFor(t.path)}
-            onSelect={() => setActiveTab(t.id)}
-            onClose={() => requestClose(t.id)}
-          />
-        ))}
+        {tabs.map((t) => {
+          const browser = t.kind === "browser";
+          return (
+            <Tab
+              key={t.id}
+              name={
+                browser
+                  ? browserTabLabel(t.path)
+                  : resolveName(
+                      t.path,
+                      renames,
+                      t.path.split("/").pop() ?? t.path,
+                    )
+              }
+              icon={browser ? "globe" : undefined}
+              active={t.id === activeTabId}
+              dirty={!browser && hasChanges(t.path, edits, drafts)}
+              status={browser ? null : statusFor(t.path)}
+              onSelect={() => setActiveTab(t.id)}
+              onClose={() => requestClose(t.id)}
+            />
+          );
+        })}
       </div>
       <div className="flex shrink-0 items-center px-1">
         {mdActive ? (
