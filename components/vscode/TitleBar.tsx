@@ -142,7 +142,10 @@ export default function TitleBar({
         draggable={false}
         className="ml-1 mr-2 shrink-0"
       />
-      <nav className="flex items-center" aria-label="Application menu">
+      <nav
+        className="hidden items-center sm:flex"
+        aria-label="Application menu"
+      >
         {MENU_ITEMS.map((m) => (
           <div key={m.menu} className="relative">
             <button
@@ -189,16 +192,20 @@ export default function TitleBar({
           setOpenMenu(null);
           onQuickOpen?.();
         }}
-        className="mx-auto flex h-6 w-[600px] max-w-full items-center justify-center gap-2 rounded-control border border-vscode-border bg-vscode-command-bg text-xs hover:text-vscode-fg"
+        className="mx-auto hidden h-6 w-[600px] min-w-0 max-w-full items-center justify-center gap-2 rounded-control border border-vscode-border bg-vscode-command-bg text-xs hover:text-vscode-fg sm:flex"
       >
         <i className="codicon codicon-search" aria-hidden="true" />
         <span className="truncate">Portfolio</span>
       </button>
-      <IconButton
-        icon="layout"
-        label="Customize Layout"
-        onClick={() => fire("customize-layout")}
-      />
+      {/* Decorative layout actions drop below tablet; the sidebar and panel
+          toggles stay (they are the only layout controls that do anything). */}
+      <div className="hidden items-center md:flex">
+        <IconButton
+          icon="layout"
+          label="Customize Layout"
+          onClick={() => fire("customize-layout")}
+        />
+      </div>
       <IconButton
         icon="layout-sidebar-left"
         label="Toggle Primary Side Bar (Ctrl+B)"
@@ -209,11 +216,13 @@ export default function TitleBar({
         label="Toggle Panel (Ctrl+J)"
         onClick={() => fire("toggle-panel")}
       />
-      <IconButton
-        icon="layout-sidebar-right"
-        label="Toggle Secondary Side Bar (Ctrl+Alt+B)"
-        onClick={() => fire("toggle-secondary-sidebar")}
-      />
+      <div className="hidden items-center md:flex">
+        <IconButton
+          icon="layout-sidebar-right"
+          label="Toggle Secondary Side Bar (Ctrl+Alt+B)"
+          onClick={() => fire("toggle-secondary-sidebar")}
+        />
+      </div>
       {browserTabs.length === 0 ? (
         <IconButton
           icon="globe"
@@ -256,7 +265,7 @@ export default function TitleBar({
         </div>
       )}
       <div
-        className="flex items-center text-vscode-dim"
+        className="hidden items-center text-vscode-dim lg:flex"
         title="Window controls are decorative in a browser"
         aria-hidden="true"
       >
