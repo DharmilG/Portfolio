@@ -17,7 +17,7 @@
 |  the editor card; Panel (Terminal 280px) lands      |
 |  later as a third card under the editor            |
 | 5px gutter                                         |
-| StatusBar 24px (flush, full-width, square)         |
+| StatusBar 22px (flush, full-width, square)         |
 +----------------------------------------------------+
 Cards: `Section` primitive — `rounded-section` (8px), 1px #2b2b2b border,
 `overflow-hidden`; grid gap 5px + padding 5px on `bg-vscode-titlebar` (the workbench base).
@@ -38,6 +38,8 @@ Mobile <768px: Activity 48px stays, Sidebar becomes overlay drawer, Editor full-
   --color-vscode-tab-hover: #1f1f1f;
   --color-vscode-tab-active: #121314; /* = --color-vscode-editor (merge) */
   --color-vscode-border: #2b2b2b;
+  --color-vscode-statusbar: #181818; /* statusBar.background (Dark Modern) */
+  --color-vscode-statusbar-hover: #f1f1f133; /* statusBarItem.hoverBackground */
   --color-vscode-fg: #cccccc;
   --color-vscode-fg-active: #ffffff;
   --color-vscode-dim: #858585;
@@ -80,7 +82,7 @@ Mobile <768px: Activity 48px stays, Sidebar becomes overlay drawer, Editor full-
 /* Floating widgets only: border-radius var(--radius-control) + var(--shadow-vscode). */
 ```
 
-Accent usage: active tab top-border 1px accent, Activity active icon = white + rounded pill bg `--color-vscode-activity-active-bg` (no left bar), StatusBar bg accent (white text), focus outlines `1px solid var(--color-vscode-accent)`.
+Accent usage: active tab top-border 1px accent, Activity active icon = white + rounded pill bg `--color-vscode-activity-active-bg` (no left bar), focus outlines `1px solid var(--color-vscode-accent)`; the StatusBar is plain Dark Modern (`#181818` bg, `#CCCCCC` text, `#F1F1F133` item hover — accent stays reserved for debug/remote item kinds, like VS Code).
 
 ## 3. TitleBar (36px, bg `--color-vscode-titlebar` #191a1b, square)
 
@@ -126,9 +128,9 @@ Panel replaces Explorer when git icon active:
 - `COMMITS` real list from `GET /api/commits` (sha short, msg, author, date), dimmed, read-only.
 - Empty state illustration: `No local changes — edit any file to start the tree 🌱`.
 
-## 8. StatusBar (24px, accent blue, flush)
+## 8. StatusBar (22px, bg `--color-vscode-statusbar` #181818, flush)
 
-Left: `$(git-branch) main*` (star when uncommitted saved edits exist — the store `edits` layer; drafts don't star until `Ctrl+S`), `$(error) 0 $(warning) 0` (static for now), `$(git-commit) local:k` (k = local commits awaiting push). Right: `Ln X, Col Y` (1-based, live from the store `caret` that FileViewer pushes on caret moves), `Spaces: 2`, `UTF-8`, the active file's language (`langLabelFor` in `lib/langs.ts`), `$(bell)` (popover card — header + `Cache warmed 2h ago`; `Esc`/click-away closes; the toast stack lands with `PV-UI-TOAST`). Editor items (Ln/Col, Spaces, UTF-8, language) hide when no code tab is open; branch/problems/local/bell always show; hover darkens an item. Click branch -> focuses Source Control (`scm` view).
+Left: branch — `$(git-branch)` flips to `$(git-branch-changes)` and the label gains `*` when working-tree changes exist (the store `edits` layer; drafts don't count until `Ctrl+S`; `+` staged / `!` conflicts arrive with SCM), then the sync item — `$(sync)` + `${behind}↓ ${ahead}↑` (`0↓ k↑` in our fake-repo terms; k = local commits awaiting push; icon-only at k=0, exactly like core git), then `$(error) 0 $(warning) 0` (one problems entry, static for now). Right: `Ln X, Col Y` (1-based, live from the store `caret` that FileViewer pushes on caret moves), `Spaces: 2`, `UTF-8`, `LF`, the active file's language (file icon + `langLabelFor` in `lib/langs.ts`), `$(bell)` (popover card — header + `Cache warmed 2h ago`; `Esc`/click-away closes; the toast stack lands with `PV-UI-TOAST`). All values are VS Code source-true (Dark Modern): 22px, #181818 bg, #CCCCCC text, 1px top hairline #2B2B2B, item hover #F1F1F133 + white text, label metrics margin 3px / padding 5px (8px at the first/last item), `tabular-nums`. Editor items (Ln/Col, Spaces, UTF-8, LF, language) hide when no code tab is open; branch/sync/problems/bell always show; every item hover-highlights. Click branch -> focuses Source Control (`scm` view).
 
 ## 9. Command Palette + keybinds
 
