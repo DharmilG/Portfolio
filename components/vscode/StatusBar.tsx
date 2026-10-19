@@ -29,19 +29,21 @@ function Item({
   open = false,
   onClick,
   label,
+  className = "",
   children,
 }: {
   edge?: boolean;
   open?: boolean;
   onClick?: () => void;
   label?: string;
+  className?: string;
   children: ReactNode;
 }) {
   const cls = `flex h-full cursor-pointer items-center gap-1 ${
     edge ? "px-2" : "mx-[3px] px-[5px]"
   } hover:bg-vscode-statusbar-hover hover:text-vscode-fg-active ${
     open ? "bg-vscode-statusbar-hover text-vscode-fg-active" : ""
-  }`;
+  } ${className}`;
   if (onClick) {
     return (
       <button type="button" onClick={onClick} aria-label={label} className={cls}>
@@ -92,7 +94,7 @@ export default function StatusBar({ onBranchClick }: StatusBarProps) {
           <Codicon name={dirty ? "git-branch-changes" : "git-branch"} />
           <span>main{dirty ? "*" : ""}</span>
         </Item>
-        <Item>
+        <Item className="max-sm:hidden">
           <Codicon name="sync" />
           {localCommits > 0 ? <span>0↓ {localCommits}↑</span> : null}
         </Item>
@@ -104,13 +106,13 @@ export default function StatusBar({ onBranchClick }: StatusBarProps) {
       <div className="flex h-full items-center">
         {codeTab ? (
           <>
-            <Item>
+            <Item className="max-sm:hidden">
               Ln {caret.line + 1}, Col {caret.col + 1}
             </Item>
-            <Item>Spaces: 2</Item>
-            <Item>UTF-8</Item>
-            <Item>LF</Item>
-            <Item>
+            <Item className="max-md:hidden">Spaces: 2</Item>
+            <Item className="max-md:hidden">UTF-8</Item>
+            <Item className="max-md:hidden">LF</Item>
+            <Item className="max-sm:hidden">
               <Codicon name={fileIcon(codeTab.path)} />
               {langLabelFor(codeTab.path)}
             </Item>
