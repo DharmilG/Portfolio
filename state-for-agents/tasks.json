@@ -4,10 +4,11 @@
   "pushed_count": 0,
   "session": {
     "branch": "main",
-    "next_up": "PV-C-TERMINAL click-test; then PV-C-MDPREVIEW -> PV-C-BROWSERPREVIEW -> page polish -> backend last",
+    "next_up": "PV-C-TERMINAL click-test (curl pass landed: parser + /api/proxy live); then PV-C-MDPREVIEW -> PV-C-BROWSERPREVIEW -> page polish -> backend last",
     "pending_verifications": [
       "terminal panel (PV-C-TERMINAL): closed by default -> Ctrl+J / Ctrl+` opens a 280px bottom card with a 5px gutter (editor shrinks, titlebar/tabs/statusbar pixel-unchanged); drag the gutter live (min 120px, 200px editor floor), release persists for the session; Maximize -> 60vh capped by the floor, Restore returns to the last height; close -> editor restores and reopen keeps xterm scrollback; chrome: 35px title (11px uppercase TERMINAL, 1px #0078D4 underline, square 28px maximize/close), 22px tab strip (1px separators, 1px #0078D4 active left border, 22px +/clear/trash), #181818 surface, 8px radius, toolbar hover #5a5d5e50",
-      "terminal behavior: sessions pwsh + bash, + adds bash, trash kills the active session, killing the last closes the panel (reopen seeds bash), tab switch preserves scrollback; bash prompt user@portfolio:~$ / pwsh PS ~>, blue cwd, amber main* only with saved edits, Fira Code 13px, Dark Modern ANSI; type help, ls (Projects + tmp), cat, echo > tmp/a, open; Up/Down history, Tab completion, Ctrl+L/K clear, Ctrl+C cancel or copy selection, Ctrl+Enter commit, Ctrl+Shift+C/V, multi-line paste; Ctrl+J/Ctrl+`/Ctrl+B while xterm is focused do not insert LF/^B and still toggle; git status/diff/commit -m/log/branch/checkout -- . (local only, SCM + statusbar sync), push/pull/fetch stay jokes; curl -> GET + curl (HTTP 405) proxy unavailable (stub route); theme light leaves the UI dark with a dim note; history survives new sessions via vscode-term-hist, panel height/session state resets on reload; View menu, layout-panel icon, palette, Terminal > New Terminal/Clear all work",
+      "terminal behavior: sessions pwsh + bash, + adds bash, trash kills the active session, killing the last closes the panel (reopen seeds bash), tab switch preserves scrollback; bash prompt user@portfolio:~$ / pwsh PS ~>, blue cwd, amber main* only with saved edits, Fira Code 13px, Dark Modern ANSI; type help, ls (Projects + tmp), cat, echo > tmp/a, open; Up/Down history, Tab completion, Ctrl+L/K clear, Ctrl+C cancel or copy selection, Ctrl+Enter commit, Ctrl+Shift+C/V, multi-line paste; Ctrl+J/Ctrl+`/Ctrl+B while xterm is focused do not insert LF/^B and still toggle; git status/diff/commit -m/log/branch/checkout -- . (local only, SCM + statusbar sync), push/pull/fetch stay jokes; curl -> GET + up to 20 KB body / specific proxy error (live route); theme light leaves the UI dark with a dim note; history survives new sessions via vscode-term-hist, panel height/session state resets on reload; View menu, layout-panel icon, palette, Terminal > New Terminal/Clear all work",
+      "curl pass (new): curl -l google.com and curl google.com -> GET https://google.com/ + up to 20 KB of HTML + dim '... truncated at 20 KB'; curl -l example.com -> full small body; curl -l localhost -> GET https://localhost/ + 'curl: (HTTP 403) Private or local addresses are blocked'; curl -l -> usage error; curl -o out.txt example.com -> option rejected; curl ftp://example.com -> Protocol not supported; curl -sL example.com works; no layout shift; Google can take 1-3s",
       "scm pane (PV-C-SOURCECONTROL): git icon -> sidebar title Source Control; commit editor 26px at one line (#313131 bg, 1px #3C3C3C, radius 4, UI font 13px/20px, placeholder Message (Ctrl+Enter to commit on \"main\")) grows to 10 lines then scrolls; focus ring 1px #0078D4 offset -1; Commit 26px #0078D4 -> #026EC1 hover, disabled opacity .4 with 0 changes; empty-message click -> Please provide a commit message strip + focus, nothing committed; Ctrl+Enter and the button both commit (edits clear, local commit prepended, editor clears, 600ms confetti, status announcement); Changes rows 28px sorted by name (app/globals.css before README.md), icon + name + dim dir + M, hover reveals discard; discard -> modal Are you sure you want to discard changes in '<name>'? (Discard File / Cancel), confirming removes just that file; row click opens the file tab; Local (not pushed) lane shows accent line + dots, top dot pulses, hidden when empty; Commits group shows No repository linked today, View more appears once /api/commits ships; empty state No local changes - edit any file to start the tree; per-view titles Explorer / Search / Source Control / Run and Debug / Extensions; no horizontal scrollbar in the pane; Explorer / palette / statusbar pixel-unchanged",
       "visual: chrome vs current VS Code (floating sections on titlebar base, title bar controls, ActivityBar pill/badge, Explorer glyphs + static root; sidebar shows no horizontal scrollbar)",
       "visual: tab shape vs VS Code screenshot (35px flush band, active tab #121314 merges into the opened-file surface, no accent line, sharp bottom corners)",
@@ -25,8 +26,13 @@
       "palette (PV-C-PALETTE): Ctrl+P -> quick open floats min(62vw,600px) centered under the title bar (12px radius, #222222 bg + 1px #313131, shadow); input 26px (#313131, 6px radius, static #3C3C3C border, no focus ring); file list = open tabs first (tab order) then tmp files A-Z; typing filters fuzzy (matches bold #2AAAFF; basename beats deep path), whitespace = multi-term AND; ↑↓ wrap, hover row #2A2D2E, focus row #04395E + white, selection scrolls into view; Ctrl+Shift+P / F1 -> commands (18; disabled ones dimmed with hints); keybinding chips (Ctrl+P / Ctrl+Shift+P / Ctrl+B / Ctrl+S) in keybindingLabel style, chips clear + border goes currentColor-30% on focused/hover row; typing '>' at the start switches to commands, backspace past it returns to files, query suffix survives mode switches; Enter opens the file/existing tab or runs the command & closes; Go to File… / Show All Commands keep the palette open; Edits: Discard All Local Edits -> confirm Modal (Cancel / Discard All), Esc cancels back to the palette; same shortcut while open keeps the palette + selects the query; Esc / click-away closes; menu parity: File > New Text File / Open File… / Save (local), View > Explorer..Extensions / Command Palette… / Toggle Sidebar, Go > Go to File… all run the same commands; Command Center click opens files mode; no pixel shift to the shell behind it",
       "explorer root row (PV-C-EXPLORERHEADER): at rest the row shows chevron + 'Dharmil Gajjar' only (name full at 170/222/280px); hover ANYWHERE in the Explorer sidebar pane (header, tree body, empty space below the rows) -> new-file / new-folder / refresh / collapse-all appear right-aligned beside the name (instant, no animation); move the pointer into the editor -> they hide again; at <=~238px the name ellipsizes only while they are shown (280px keeps it full); click each: New File -> tmp tab, New Folder -> tmp/New Folder N (expands tmp), Refresh -> re-fetches sections, Collapse -> collapses every folder; Explorer header keeps its always-visible ... ; Ctrl+B hide + reopen -> hidden at rest; palette + tabs + statusbar pixel-unchanged"
     ],
-    "tip": "e08398d",
+    "tip": "eefaa18",
     "unpushed": [
+      "eefaa18",
+      "08f9857",
+      "e6b23ee",
+      "e3aacc3",
+      "9ec3df3",
       "e08398d",
       "08057e1",
       "961eca2",
@@ -393,8 +399,8 @@
   "summary": {
     "total": 54,
     "done": 25,
-    "in_progress": 10,
-    "backlog": 19
+    "in_progress": 11,
+    "backlog": 18
   },
   "tasks": [
     {
@@ -636,7 +642,7 @@
       "title": "Terminal panel",
       "owner": "agent",
       "started": "2026-10-19",
-      "log": "47fbe78+7204257 deps + 3361dcf parser (pure parse/renderPrompt/complete; 48 behaviors) + d57bcdc store (shell field, panelOpen/height/preview/maximized, clear nonce, seed/spawn/kill/history/cwd) + 86b6548 horizontal Sash + d35318d panel/xterm tokens + c2f61c0 TerminalPanel (source-true chrome 35/22, per-session xterm, line editor, completion/history, effects, curl) + 1eb3575 xterm natural height + 07529a0 workbench chord guard + 7293f42 page mount (5px gutter, horizontal sash, Ctrl+J/Ctrl+`, 200px editor floor) + cce3f70 commands + d8b7518 Terminal > Clear + 3a5dbd9 Projects/tmp seeds + square title actions + ee95732 60vh maximize + 347d1e2 pwsh prompt + 961eca2 Ctrl+C copy selection + e08398d welcome trim + dfcf393 + 81e39ff + 08057e1 docs. Verify: tsc 0 real errors (7 known validator stubs), boot 200; CDP: panel closed default, Ctrl+` open 280/editor 554, gutter 5px, Ctrl+J closes from inside xterm (no LF), drag 280->360 live, clamp 634/editor 200, maximize 544 (=60vh at 907 viewport), sessions +/kill/reopen, pwsh+bash prompts, help/ls/cat/open/echo effects, Up history + Enter, Ctrl+C, Ctrl+L, Tab completion, curl 405 graceful, Ctrl+B sidebar toggle with no ^B; history localStorage vscode-term-hist. Pending click-test."
+      "log": "47fbe78+7204257 deps + 3361dcf parser (pure parse/renderPrompt/complete; 48 behaviors) + d57bcdc store (shell field, panelOpen/height/preview/maximized, clear nonce, seed/spawn/kill/history/cwd) + 86b6548 horizontal Sash + d35318d panel/xterm tokens + c2f61c0 TerminalPanel (source-true chrome 35/22, per-session xterm, line editor, completion/history, effects, curl) + 1eb3575 xterm natural height + 07529a0 workbench chord guard + 7293f42 page mount (5px gutter, horizontal sash, Ctrl+J/Ctrl+`, 200px editor floor) + cce3f70 commands + d8b7518 Terminal > Clear + 3a5dbd9 Projects/tmp seeds + square title actions + ee95732 60vh maximize + 347d1e2 pwsh prompt + 961eca2 Ctrl+C copy selection + e08398d welcome trim + dfcf393 + 81e39ff + 08057e1 docs. Verify: tsc 0 real errors (7 known validator stubs), boot 200; CDP: panel closed default, Ctrl+` open 280/editor 554, gutter 5px, Ctrl+J closes from inside xterm (no LF), drag 280->360 live, clamp 634/editor 200, maximize 544 (=60vh at 907 viewport), sessions +/kill/reopen, pwsh+bash prompts, help/ls/cat/open/echo effects, Up history + Enter, Ctrl+C, Ctrl+L, Tab completion, curl 405 graceful, Ctrl+B sidebar toggle with no ^B; history localStorage vscode-term-hist. Curl pass: 9ec3df3 parser + e3aacc3 route + e6b23ee error marker + 08f9857 client + eefaa18 DOC (route probes + CDP verified). Pending click-test."
     },
     {
       "description": "Ctrl+Shift+V split + live local preview (components/vscode/MarkdownPreview.tsx, per DOC/10 §5)",
@@ -698,11 +704,14 @@
       "title": "API commits"
     },
     {
-      "description": "Terminal curl backend 20KB/8s/30-per-min (app/api/proxy/route.ts, per DOC/09 §5)",
+      "description": "Terminal curl backend: GET-only guarded text fetch, 20KB/8s (app/api/proxy/route.ts, per DOC/09 5); Upstash 30/min/IP rate limit still pending",
       "file": "app/api/proxy/route.ts",
       "id": "PV-API-PROXY",
-      "status": "backlog",
-      "title": "API proxy"
+      "status": "in_progress",
+      "owner": "agent",
+      "started": "2026-10-19",
+      "title": "API proxy",
+      "log": "e3aacc3 route (GET-only; http(s) only, no credentials; literal + DNS checks for loopback/private/link-local/CGNAT/doc/multicast/metadata, IPv6 ULA/link-local/Teredo/6to4/NAT64 handling; manual redirects max 3 revalidated per hop; 8s deadline; 20KB cap; text types only) + e6b23ee x-proxy-error marker; parser 9ec3df3 (bare hosts -> https, -l/-s/-S/-L no-ops, unsupported options/URLs rejected) + client 08f9857 (proxy error detail + truncated note). Verify: tsc 0 real errors (6 known validator stubs), boot 200; route probes: example.com 200/577B, google.com 200/20000B + x-proxy-truncated, localhost + 127.0.0.1 + [::1] + [::ffff:127.0.0.1] + localhost DNS + redirect-to-loopback + metadata + 100.64 + docs prefix 403, file:// 400, credentials 400, binary 415, 204/304 passthrough, 404 passthrough, 5-hop redirect 502, 8s delay 504 at 8016ms, DNS fail 502, NIP.IO 403, parser e2e; CDP: curl -l localhost renders the 403 reason, curl -l google.com renders the 20 KB truncation note. Deferred: Upstash 30/min/IP (backend)."
     },
     {
       "description": "Nightly warm + HEAD DEL (app/api/cron/sync/route.ts, per DOC/09 §6)",
