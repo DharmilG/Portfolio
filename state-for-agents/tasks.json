@@ -1,10 +1,10 @@
 {
-  "in_progress": "PV-C-TERMINAL",
+  "in_progress": "PV-C-BROWSERPREVIEW",
   "project": "Portfolio VS Code",
   "pushed_count": 0,
   "session": {
     "branch": "main",
-    "next_up": "PV-C-TERMINAL click-test (curl pass landed: parser + /api/proxy live); then PV-C-MDPREVIEW -> PV-C-BROWSERPREVIEW -> page polish -> backend last",
+    "next_up": "PV-C-BROWSERPREVIEW (iframe split + url bar + reload + Open in new tab + fallback, DOC/10 §4; plan awaiting go-ahead); then page polish -> backend last",
     "pending_verifications": [
       "terminal panel (PV-C-TERMINAL): closed by default -> Ctrl+J / Ctrl+` opens a 280px bottom card with a 5px gutter (editor shrinks, titlebar/tabs/statusbar pixel-unchanged); drag the gutter live (min 120px, 200px editor floor), release persists for the session; Maximize -> 60vh capped by the floor, Restore returns to the last height; close -> editor restores and reopen keeps xterm scrollback; chrome: 35px title (11px uppercase TERMINAL, 1px #0078D4 underline, square 28px maximize/close), 22px tab strip (1px separators, 1px #0078D4 active left border, 22px +/clear/trash), #181818 surface, 8px radius, toolbar hover #5a5d5e50",
       "terminal behavior: sessions pwsh + bash, + adds bash, trash kills the active session, killing the last closes the panel (reopen seeds bash), tab switch preserves scrollback; bash prompt user@portfolio:~$ / pwsh PS ~>, blue cwd, amber main* only with saved edits, Fira Code 13px, Dark Modern ANSI; type help, ls (Projects + tmp), cat, echo > tmp/a, open; Up/Down history, Tab completion, Ctrl+L/K clear, Ctrl+C cancel or copy selection, Ctrl+Enter commit, Ctrl+Shift+C/V, multi-line paste; Ctrl+J/Ctrl+`/Ctrl+B while xterm is focused do not insert LF/^B and still toggle; git status/diff/commit -m/log/branch/checkout -- . (local only, SCM + statusbar sync), push/pull/fetch stay jokes; curl -> GET + up to 20 KB body / specific proxy error (live route); theme light leaves the UI dark with a dim note; history survives new sessions via vscode-term-hist, panel height/session state resets on reload; View menu, layout-panel icon, palette, Terminal > New Terminal/Clear all work",
@@ -26,8 +26,24 @@
       "palette (PV-C-PALETTE): Ctrl+P -> quick open floats min(62vw,600px) centered under the title bar (12px radius, #222222 bg + 1px #313131, shadow); input 26px (#313131, 6px radius, static #3C3C3C border, no focus ring); file list = open tabs first (tab order) then tmp files A-Z; typing filters fuzzy (matches bold #2AAAFF; basename beats deep path), whitespace = multi-term AND; ↑↓ wrap, hover row #2A2D2E, focus row #04395E + white, selection scrolls into view; Ctrl+Shift+P / F1 -> commands (18; disabled ones dimmed with hints); keybinding chips (Ctrl+P / Ctrl+Shift+P / Ctrl+B / Ctrl+S) in keybindingLabel style, chips clear + border goes currentColor-30% on focused/hover row; typing '>' at the start switches to commands, backspace past it returns to files, query suffix survives mode switches; Enter opens the file/existing tab or runs the command & closes; Go to File… / Show All Commands keep the palette open; Edits: Discard All Local Edits -> confirm Modal (Cancel / Discard All), Esc cancels back to the palette; same shortcut while open keeps the palette + selects the query; Esc / click-away closes; menu parity: File > New Text File / Open File… / Save (local), View > Explorer..Extensions / Command Palette… / Toggle Sidebar, Go > Go to File… all run the same commands; Command Center click opens files mode; no pixel shift to the shell behind it",
       "explorer root row (PV-C-EXPLORERHEADER): at rest the row shows chevron + 'Dharmil Gajjar' only (name full at 170/222/280px); hover ANYWHERE in the Explorer sidebar pane (header, tree body, empty space below the rows) -> new-file / new-folder / refresh / collapse-all appear right-aligned beside the name (instant, no animation); move the pointer into the editor -> they hide again; at <=~238px the name ellipsizes only while they are shown (280px keeps it full); click each: New File -> tmp tab, New Folder -> tmp/New Folder N (expands tmp), Refresh -> re-fetches sections, Collapse -> collapses every folder; Explorer header keeps its always-visible ... ; Ctrl+B hide + reopen -> hidden at rest; palette + tabs + statusbar pixel-unchanged"
     ],
-    "tip": "eefaa18",
+    "tip": "dc1ac18",
     "unpushed": [
+      "dc1ac18",
+      "7f7b1ca",
+      "a2290dc",
+      "dcb63d3",
+      "7c31529",
+      "97edc2b",
+      "bb74163",
+      "93b1787",
+      "9340f12",
+      "f3157a7",
+      "5465c69",
+      "516af55",
+      "1fd54aa",
+      "7f739e5",
+      "f113910",
+      "f475d15",
       "eefaa18",
       "08f9857",
       "e6b23ee",
@@ -398,9 +414,9 @@
   },
   "summary": {
     "total": 54,
-    "done": 25,
+    "done": 27,
     "in_progress": 11,
-    "backlog": 18
+    "backlog": 16
   },
   "tasks": [
     {
@@ -638,25 +654,35 @@
       "description": "xterm panel + git-local commands (components/vscode/TerminalPanel.tsx, per DOC/10 §1-3)",
       "file": "components/vscode/TerminalPanel.tsx",
       "id": "PV-C-TERMINAL",
-      "status": "in_progress",
+      "status": "done",
       "title": "Terminal panel",
       "owner": "agent",
       "started": "2026-10-19",
-      "log": "47fbe78+7204257 deps + 3361dcf parser (pure parse/renderPrompt/complete; 48 behaviors) + d57bcdc store (shell field, panelOpen/height/preview/maximized, clear nonce, seed/spawn/kill/history/cwd) + 86b6548 horizontal Sash + d35318d panel/xterm tokens + c2f61c0 TerminalPanel (source-true chrome 35/22, per-session xterm, line editor, completion/history, effects, curl) + 1eb3575 xterm natural height + 07529a0 workbench chord guard + 7293f42 page mount (5px gutter, horizontal sash, Ctrl+J/Ctrl+`, 200px editor floor) + cce3f70 commands + d8b7518 Terminal > Clear + 3a5dbd9 Projects/tmp seeds + square title actions + ee95732 60vh maximize + 347d1e2 pwsh prompt + 961eca2 Ctrl+C copy selection + e08398d welcome trim + dfcf393 + 81e39ff + 08057e1 docs. Verify: tsc 0 real errors (7 known validator stubs), boot 200; CDP: panel closed default, Ctrl+` open 280/editor 554, gutter 5px, Ctrl+J closes from inside xterm (no LF), drag 280->360 live, clamp 634/editor 200, maximize 544 (=60vh at 907 viewport), sessions +/kill/reopen, pwsh+bash prompts, help/ls/cat/open/echo effects, Up history + Enter, Ctrl+C, Ctrl+L, Tab completion, curl 405 graceful, Ctrl+B sidebar toggle with no ^B; history localStorage vscode-term-hist. Curl pass: 9ec3df3 parser + e3aacc3 route + e6b23ee error marker + 08f9857 client + eefaa18 DOC (route probes + CDP verified). Pending click-test."
+      "finished": "2026-10-19",
+      "verified": true,
+      "log": "47fbe78+7204257 deps + 3361dcf parser (pure parse/renderPrompt/complete; 48 behaviors) + d57bcdc store (shell field, panelOpen/height/preview/maximized, clear nonce, seed/spawn/kill/history/cwd) + 86b6548 horizontal Sash + d35318d panel/xterm tokens + c2f61c0 TerminalPanel (source-true chrome 35/22, per-session xterm, line editor, completion/history, effects, curl) + 1eb3575 xterm natural height + 07529a0 workbench chord guard + 7293f42 page mount (5px gutter, horizontal sash, Ctrl+J/Ctrl+`, 200px editor floor) + cce3f70 commands + d8b7518 Terminal > Clear + 3a5dbd9 Projects/tmp seeds + square title actions + ee95732 60vh maximize + 347d1e2 pwsh prompt + 961eca2 Ctrl+C copy selection + e08398d welcome trim + dfcf393 + 81e39ff + 08057e1 docs. Verify: tsc 0 real errors (7 known validator stubs), boot 200; CDP: panel closed default, Ctrl+` open 280/editor 554, gutter 5px, Ctrl+J closes from inside xterm (no LF), drag 280->360 live, clamp 634/editor 200, maximize 544 (=60vh at 907 viewport), sessions +/kill/reopen, pwsh+bash prompts, help/ls/cat/open/echo effects, Up history + Enter, Ctrl+C, Ctrl+L, Tab completion, curl 405 graceful, Ctrl+B sidebar toggle with no ^B; history localStorage vscode-term-hist. Curl pass: 9ec3df3 parser + e3aacc3 route + e6b23ee error marker + 08f9857 client + eefaa18 DOC (route probes + CDP verified). Click-test accepted (2026-10-19); closed with the markdown close-out."
     },
     {
       "description": "Ctrl+Shift+V split + live local preview (components/vscode/MarkdownPreview.tsx, per DOC/10 §5)",
       "file": "components/vscode/MarkdownPreview.tsx",
       "id": "PV-C-MDPREVIEW",
-      "status": "backlog",
-      "title": "Markdown preview"
+      "status": "done",
+      "title": "Markdown preview",
+      "owner": "agent",
+      "started": "2026-10-19",
+      "finished": "2026-10-19",
+      "log": "f475d15 deps + f113910 lockfile + 7f739e5 isMarkdownPath + 1fd54aa store (mdPreviewPath/mdPreviewWidth session-only + close-tab cleanup) + 516af55 MermaidBlock (lazy import, strict security, token theme, serialized render queue, per-block error card) + 5465c69 markdown/Mermaid tokens + CSS + f3157a7 MarkdownPreview (GFM + slug + github-dark highlight, 300ms debounce, 35px preview strip, 22px dirty strip, 512KB cap, blob-milestone note) + 9340f12 rail action (open-preview/close) + 93b1787 commands (Ctrl+Shift+V / Markdown: Close Preview) + bb74163 terminal opens markdown as a code tab + 97edc2b module-scope rehydration fix + 7c31529 page split shell (5px sash, 240px floor, Ctrl+Shift+V + Ctrl+\\) + dcb63d3 drop page rehydrate. Verify: tsc 6 known validator stubs only; CDP: 2 Mermaid SVGs + 1 isolated parse error, GFM table/task/highlight, heading slugs, live typing + dirty strips, saved-edit strip, close-source cleanup, chord non-hijack, retarget, rail + palette. Click-test: works.",
+      "verified": true
     },
     {
       "description": "Iframe split + url bar + fallback card (components/vscode/BrowserPreview.tsx, per DOC/10 §4)",
       "file": "components/vscode/BrowserPreview.tsx",
       "id": "PV-C-BROWSERPREVIEW",
-      "status": "backlog",
-      "title": "Browser preview"
+      "status": "in_progress",
+      "title": "Browser preview",
+      "owner": "agent",
+      "started": "2026-10-19",
+      "log": "Plan per DOC/10 §4 (right split, url bar, reload, Open in new tab, fallback) under user review; build starts on go-ahead."
     },
     {
       "description": "Root mount folds into catch-all page (app/page.tsx deleted 6b939de: / collides with /[[...file]])",
