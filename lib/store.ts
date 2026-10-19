@@ -1,8 +1,8 @@
 // lib/store.ts — single zustand store for the workbench.
 // Orchestration lives here; computation delegates to lib/localGit.ts (dumb-depth).
-// Only edits/commits/renames/tmpFs/mode/sidebarWidth persist (localStorage
-// vscode-local-v1); drafts/expanded/selection/view/sidebar/palette stay
-// session-only (VS Code buffers).
+// Only edits/commits/renames/tmpFs/mode/sidebarWidth/browserHistory persist
+// (localStorage vscode-local-v1); drafts/expanded/selection/view/sidebar/
+// palette stay session-only (VS Code buffers).
 // See DOC/03 (state), rule 03-local-only, skill local-git.
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
@@ -95,6 +95,61 @@ function writeTermHistory(hist: string[]): void {
   }
 }
 
+// ---------------------------------------------------------------------------
+// Integrated browser (DOC/10 §4): one editor tab per browser instance. Each
+// instance keeps its own URL, address-bar back/forward stack, reload key and
+// manual suspend flag (session-only, like the tab strip); only the visited
+// history persists — VS Code keeps 200 entries (browser.maxHistoryEntries).
+// ---------------------------------------------------------------------------
+
+export type BrowserTabState = {
+  url: string; // last explicitly entered URL ("" = new tab)
+  hist: string[]; // address-bar navigation stack
+  idx: number; // cursor into hist (-1 = nothing yet)
+  reloadKey: number; // bump to remount the iframe (Reload)
+  suspended: boolean; // manual suspend — unmounts the iframe (frees RAM)
+};
+
+const BROWSER_HISTORY_CAP = 200;
+
+let browserSeq = 0;
+
+// Tab title + picker row label. VS Code titles browser tabs and history rows
+// with the page title/favicon; a web clone cannot read those cross-origin, so
+// it falls back to the host (the same fallback the real Recents picker uses
+// for untitled pages).
+export function browserTabLabel(url: string): string {
+  if (!url) return "Browser";
+  try {
+    return new URL(url).host;
+  } catch {
+    return url;
+  }
+}
+
+// Address-bar input → embeddable URL (http/https only), or null when it reads
+// as a search query instead. Bare hosts get https://, except localhost,
+// loopback and bare IPs which get http:// (dev servers). The scheme test
+// deliberately requires "://": "localhost:3000" is a host + port, not a scheme.
+export function normalizeBrowserUrl(raw: string): string | null {
+  const t = raw.trim();
+  if (!t || /\s/.test(t)) return null;
+  if (/^https?:\/\//i.test(t)) return t;
+  if (/^[a-z][a-z0-9+.-]*:\/\//i.test(t)) return null;
+  const host = t.split(/[/?#]/)[0];
+  const local =
+    /^(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/i.test(host) ||
+    /^\d{1,3}(\.\d{1,3}){3}(:\d+)?$/.test(host);
+  if (local) return `http://${t}`;
+  return /^(?:[a-z0-9-]+\.)+[a-z]{2,}(?::\d+)?$/i.test(host)
+    ? `https://${t}`
+    : null;
+}
+
+function pushBrowserHistory(hist: string[], url: string): string[] {
+  return [url, ...hist.filter((x) => x !== url)].slice(0, BROWSER_HISTORY_CAP);
+}
+
 type State = {
   sections: Section[];
   projects: Project[];
@@ -181,9 +236,18 @@ type State = {
   termClearNonce: number;
   clearTerminal: () => void;
 
-  previewUrl: string | null;
-  previewHist: string[];
-  openPreview: (url: string) => void;
+  // Integrated browser instances, keyed by editor tab id (session-only).
+  browser: Record<string, BrowserTabState>;
+  browserHistory: string[]; // newest first — persisted (Recents + History)
+  browserFocusNonce: number; // Ctrl+L / Focus URL Input request
+  openBrowser: (url?: string) => string;
+  navigateBrowser: (id: string, url: string) => void;
+  browserBack: (id: string) => void;
+  browserForward: (id: string) => void;
+  reloadBrowser: (id: string) => void;
+  suspendBrowser: (id: string) => void;
+  focusBrowserUrl: () => void;
+  clearBrowserHistory: () => void;
 
   // Markdown side preview (session-only): the source path bound to the
   // preview group, and its dragged width (0 = auto 50% on first open).
@@ -302,7 +366,10 @@ export const useStore = create<State>()(
             s.mdPreviewPath && tabs.some((t) => t.path === s.mdPreviewPath)
               ? s.mdPreviewPath
               : null;
-          return { tabs, activeTabId, mdPreviewPath };
+          // A browser instance dies with its tab (history stays persisted).
+          const browser = { ...s.browser };
+          delete browser[id];
+          return { tabs, activeTabId, mdPreviewPath, browser };
         }),
       setActiveTab: (activeTabId) =>
         set((s) => {
@@ -484,13 +551,102 @@ export const useStore = create<State>()(
       clearTerminal: () =>
         set((s) => ({ termClearNonce: s.termClearNonce + 1 })),
 
-      previewUrl: null,
-      previewHist: [],
-      openPreview: (previewUrl) =>
+      browser: {},
+      browserHistory: [],
+      browserFocusNonce: 0,
+      // New instance = new editor tab (multiple browser tabs are supported);
+      // the globe uses open-or-list, the terminal retargets (DOC/10 §4).
+      openBrowser: (url) => {
+        const target = url ? normalizeBrowserUrl(url) : null;
+        const id = `browser:${++browserSeq}`;
         set((s) => ({
-          previewUrl,
-          previewHist: [...s.previewHist, previewUrl].slice(-20),
-        })),
+          tabs: [
+            ...s.tabs,
+            { id, kind: "browser", path: target ?? "", sha: null },
+          ],
+          activeTabId: id,
+          browser: {
+            ...s.browser,
+            [id]: {
+              url: target ?? "",
+              hist: target ? [target] : [],
+              idx: target ? 0 : -1,
+              reloadKey: 0,
+              suspended: false,
+            },
+          },
+          ...(target
+            ? { browserHistory: pushBrowserHistory(s.browserHistory, target) }
+            : {}),
+        }));
+        return id;
+      },
+      navigateBrowser: (id, url) =>
+        set((s) => {
+          const st = s.browser[id];
+          if (!st) return {};
+          const target = normalizeBrowserUrl(url);
+          if (!target) return {};
+          // Vanilla stack semantics: a new navigation truncates forward entries.
+          const hist = [...st.hist.slice(0, st.idx + 1), target];
+          return {
+            browser: {
+              ...s.browser,
+              [id]: {
+                ...st,
+                url: target,
+                hist,
+                idx: hist.length - 1,
+                suspended: false,
+              },
+            },
+            browserHistory: pushBrowserHistory(s.browserHistory, target),
+            // The tab label follows the URL (host fallback).
+            tabs: s.tabs.map((t) => (t.id === id ? { ...t, path: target } : t)),
+          };
+        }),
+      browserBack: (id) =>
+        set((s) => {
+          const st = s.browser[id];
+          if (!st || st.idx <= 0) return {};
+          const idx = st.idx - 1;
+          const url = st.hist[idx];
+          return {
+            browser: { ...s.browser, [id]: { ...st, url, idx } },
+            tabs: s.tabs.map((t) => (t.id === id ? { ...t, path: url } : t)),
+          };
+        }),
+      browserForward: (id) =>
+        set((s) => {
+          const st = s.browser[id];
+          if (!st || st.idx >= st.hist.length - 1) return {};
+          const idx = st.idx + 1;
+          const url = st.hist[idx];
+          return {
+            browser: { ...s.browser, [id]: { ...st, url, idx } },
+            tabs: s.tabs.map((t) => (t.id === id ? { ...t, path: url } : t)),
+          };
+        }),
+      reloadBrowser: (id) =>
+        set((s) => {
+          const st = s.browser[id];
+          if (!st || !st.url) return {};
+          return {
+            browser: {
+              ...s.browser,
+              [id]: { ...st, suspended: false, reloadKey: st.reloadKey + 1 },
+            },
+          };
+        }),
+      suspendBrowser: (id) =>
+        set((s) => {
+          const st = s.browser[id];
+          if (!st || !st.url) return {};
+          return { browser: { ...s.browser, [id]: { ...st, suspended: true } } };
+        }),
+      focusBrowserUrl: () =>
+        set((s) => ({ browserFocusNonce: s.browserFocusNonce + 1 })),
+      clearBrowserHistory: () => set({ browserHistory: [] }),
 
       mdPreviewPath: null,
       mdPreviewWidth: 0,
@@ -515,6 +671,7 @@ export const useStore = create<State>()(
         tmpFs: s.tmpFs,
         mode: s.mode,
         sidebarWidth: s.sidebarWidth,
+        browserHistory: s.browserHistory,
       }),
       skipHydration: true,
     },
