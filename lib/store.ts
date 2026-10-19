@@ -114,6 +114,8 @@ type State = {
   commits: LocalCommit[];
   renames: Record<string, string>;
   tmpFs: Record<string, string>;
+  commitMsg: string; // SCM message box — session-only, survives view switches
+  setCommitMsg: (msg: string) => void;
   drafts: Record<string, string>; // unsaved editor buffers (session-only)
   saveEdit: (path: string, content: string) => void;
   setDraft: (path: string, content: string) => void;
@@ -271,6 +273,8 @@ export const useStore = create<State>()(
       commits: [],
       renames: {},
       tmpFs: {},
+      commitMsg: "",
+      setCommitMsg: (commitMsg) => set({ commitMsg }),
       saveEdit: (path, content) =>
         set((s) => ({
           edits: { ...s.edits, [path]: content },
