@@ -12,12 +12,22 @@ import FileViewer from "@/components/vscode/FileViewer";
 import PrimarySideBar from "@/components/vscode/PrimarySideBar";
 import Sash from "@/components/vscode/Sash";
 import Section from "@/components/vscode/Section";
+import SourceControl from "@/components/vscode/SourceControl";
 import StatusBar from "@/components/vscode/StatusBar";
 import Tabs from "@/components/vscode/Tabs";
 import TitleBar from "@/components/vscode/TitleBar";
 import { COMMANDS, newTextFile, nextFreeKey } from "@/lib/commands";
 import { supabase } from "@/lib/db";
 import { useStore } from "@/lib/store";
+
+// Sidebar titles per activity view (VS Code view pane names).
+const VIEW_TITLES: Record<string, string> = {
+  explorer: "Explorer",
+  search: "Search",
+  scm: "Source Control",
+  run: "Run and Debug",
+  extensions: "Extensions",
+};
 
 function loadSections() {
   supabase
@@ -142,9 +152,15 @@ export default function PortfolioPage() {
       >
         {showSidebar ? (
           <div className="relative flex shrink-0">
-            <PrimarySideBar active={view} onSelect={selectView}>
+            <PrimarySideBar
+              active={view}
+              onSelect={selectView}
+              title={VIEW_TITLES[view] ?? "Explorer"}
+            >
               {view === "explorer" ? (
                 <Explorer onOpenFile={openCodeTab} onAction={handleViewAction} />
+              ) : view === "scm" ? (
+                <SourceControl onOpenFile={openCodeTab} />
               ) : (
                 <p className="px-4 py-2 text-xs text-vscode-dim">
                   {view} view lands with its component.
