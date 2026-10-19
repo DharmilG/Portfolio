@@ -176,7 +176,7 @@ export function renderPrompt(
   const user = paint("user@portfolio", SGR.brightGreen);
   const dir = paint(cwd, SGR.brightBlue);
   const flag = dirty ? ` ${paint("main*", "\x1b[38;2;229;186;125m")}` : "";
-  if (shell === "pwsh") return `PS ${user}:${dir}${flag}> `;
+  if (shell === "pwsh") return `PS ${dir}${flag}> `;
   return `${user}:${dir}${flag}$ `;
 }
 
