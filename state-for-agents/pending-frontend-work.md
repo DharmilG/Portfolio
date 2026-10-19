@@ -13,12 +13,12 @@ portfolio page) stays empty placeholders until shell renders on local DB.
 - [ ] PV-C-TITLEBAR — `components/vscode/TitleBar.tsx` (36px, Command Center pill)
 - [ ] PV-C-ACTIVITYBAR — `ActivityBar.tsx` (48px, badges, avatar + gear bottom)
 - [ ] PV-C-SIDEBAR — `SideBar.tsx` + `Explorer.tsx` (280px, sections from DB, tree via API, rename/dirty states)
-- [ ] PV-C-STATUSBAR — `StatusBar.tsx` (24px accent, main*, Ln/Col, local:k)
+- [ ] PV-C-STATUSBAR — `StatusBar.tsx` (22px #181818 Dark Modern, main*, `0↓ k↑` sync, Ln/Col/LF/lang)
 
 ## Editor
 - [ ] PV-C-TABS — `Tabs.tsx` + `Breadcrumb.tsx` (dirty ●, split icons)
 - [ ] PV-C-FILEVIEWER — `FileViewer.tsx` (Shiki + textarea overlay, Ctrl+S local)
-- [ ] PV-C-PALETTE — `CommandPalette.tsx` (Ctrl+P/K, fuzzy open, commands)
+- [ ] PV-C-PALETTE — `CommandPalette.tsx` (Ctrl+P / Ctrl+Shift+P / F1, fuzzy open, 17 commands, `>` mode)
 - [ ] PV-C-SOURCECONTROL — `SourceControl.tsx` (input + local lane SVG + real list + View more)
 
 ## Interactive
