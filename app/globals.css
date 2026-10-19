@@ -70,6 +70,9 @@
   /* === Badges & Integrated Terminal === */
   --color-vscode-badge-bg: #0078d4;
   --color-vscode-badge-fg: #ffffff;
+  /* SCM group count badge — badge.background/foreground (Dark Modern) */
+  --color-vscode-count-bg: #616161;
+  --color-vscode-count-fg: #f8f8f8;
   --color-vscode-term-green: #23d18b;
   --color-vscode-term-blue: #3b8eea;
 
@@ -85,6 +88,7 @@
   --radius-quick-input: 6px; /* quick-input field (cornerRadius-medium) */
   --radius-quick-row: 3px; /* quick-input list rows */
   --radius-keybinding: 3px; /* keybinding chips (keybindingLabel.css) */
+  --radius-scm: 4px; /* SCM editor + Commit button (scm.css / button.css) */
   --font-vscode-ui: "Segoe WPC", "Segoe UI", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   --font-vscode-code: "Cascadia Code", "JetBrains Mono", Consolas, "Courier New", monospace;
   --font-vscode-term: "Fira Code", "Cascadia Code", Consolas, "Courier New", monospace;
@@ -104,4 +108,28 @@
   font-family: var(--font-vscode-term);
   font-size: 13px;
   line-height: 1.5;
+}
+
+/* SCM commit confetti (DOC/05 §7: 600ms burst, reduced-motion off).
+   Pieces are positioned by the component; only the motion lives here. */
+@keyframes vscode-confetti-burst {
+  from {
+    transform: translate(0, 0) rotate(0deg);
+    opacity: 1;
+  }
+  to {
+    transform: translate(var(--dx), var(--dy)) rotate(var(--rot));
+    opacity: 0;
+  }
+}
+
+.scm-confetti {
+  animation: vscode-confetti-burst 600ms cubic-bezier(0.2, 0.7, 0.3, 1) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scm-confetti {
+    animation: none;
+    opacity: 0;
+  }
 }
