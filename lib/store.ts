@@ -521,6 +521,14 @@ export const useStore = create<State>()(
   ),
 );
 
+// Hydrate at module scope on the client — before any component effect runs.
+// Children's effects fire before the page's (TerminalPanel calls initTerminal),
+// and a pre-hydration `set` would otherwise persist the default empty
+// edits/commits/renames/tmpFs over the saved snapshot (DOC/03).
+if (typeof window !== "undefined") {
+  void useStore.persist.rehydrate();
+}
+
 // Pure selectors (delegate to localGit).
 export const isDirty = (
   edits: Record<string, string>,
