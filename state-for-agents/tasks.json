@@ -19,10 +19,16 @@
       "sash: ⋮ dots always visible in the 5px sidebar/editor gutter (3px, dim #858585; hover AND drag -> emphasis #bfbfbf, never accent); col-resize cursor over the strip; drag -> pane reflows LIVE while dragging (session preview), stops at 170px min and editor floor 320px; release -> width persists (survives refresh + Ctrl+B toggle); idle layout has zero pixel shift",
       "tab actions: with tabs open the ... button sits pinned at the band's right (many tabs -> tab run scrolls, rail holds; few tabs -> no pixel shift); menu More Actions...: Copy path pastes the workspace path, Reveal in Explorer switches to the Explorer view + un-hides the sidebar + selects/scrolls the file, Open raw opens the raw.githubusercontent HEAD link for repo files and is dimmed for tmp files; Esc/click-away closes",
       "statusbar v2 (Dark Modern realign): 22px dark band flush at the bottom (#181818 bg, #CCCCCC text, 1px top hairline #2B2B2B) — no more accent blue; hover an item -> #F1F1F133 bg + white text; left: branch main (main* + git-branch-changes icon once a saved edit exists), sync shows ⟳ alone at zero local commits (⟳ 0↓ k↑ once SCM adds commits), one problems entry ⓧ0 ⚠0; right: Ln/Col live while typing/clicking in the editor (1-based), Spaces: 2, UTF-8, LF, file-icon + language label per file, editor items hide with no code tab; bell -> popover 'Cache warmed 2h ago' (Esc/outside click closes); branch click -> Source Control view in the sidebar; numerals tabular across the bar",
-      "palette (PV-C-PALETTE): Ctrl+P -> quick open floats min(62vw,600px) centered under the title bar (12px radius, #222222 bg + 1px #313131, shadow); input 26px (#313131, 6px radius, static #3C3C3C border, no focus ring); file list = open tabs first (tab order) then tmp files A-Z; typing filters fuzzy (matches bold #2AAAFF; basename beats deep path), whitespace = multi-term AND; ↑↓ wrap, hover row #2A2D2E, focus row #04395E + white, selection scrolls into view; Ctrl+Shift+P / F1 -> commands (17; disabled ones dimmed with hints); keybinding chips (Ctrl+P / Ctrl+Shift+P / Ctrl+B / Ctrl+S) in keybindingLabel style, chips clear + border goes currentColor-30% on focused/hover row; typing '>' at the start switches to commands, backspace past it returns to files, query suffix survives mode switches; Enter opens the file/existing tab or runs the command & closes; Go to File… / Show All Commands keep the palette open; Edits: Discard All Local Edits -> confirm Modal (Cancel / Discard All), Esc cancels back to the palette; same shortcut while open keeps the palette + selects the query; Esc / click-away closes; menu parity: File > New Text File / Open File… / Save (local), View > Explorer..Extensions / Command Palette… / Toggle Sidebar, Go > Go to File… all run the same commands; Command Center click opens files mode; no pixel shift to the shell behind it"
+      "palette (PV-C-PALETTE): Ctrl+P -> quick open floats min(62vw,600px) centered under the title bar (12px radius, #222222 bg + 1px #313131, shadow); input 26px (#313131, 6px radius, static #3C3C3C border, no focus ring); file list = open tabs first (tab order) then tmp files A-Z; typing filters fuzzy (matches bold #2AAAFF; basename beats deep path), whitespace = multi-term AND; ↑↓ wrap, hover row #2A2D2E, focus row #04395E + white, selection scrolls into view; Ctrl+Shift+P / F1 -> commands (17; disabled ones dimmed with hints); keybinding chips (Ctrl+P / Ctrl+Shift+P / Ctrl+B / Ctrl+S) in keybindingLabel style, chips clear + border goes currentColor-30% on focused/hover row; typing '>' at the start switches to commands, backspace past it returns to files, query suffix survives mode switches; Enter opens the file/existing tab or runs the command & closes; Go to File… / Show All Commands keep the palette open; Edits: Discard All Local Edits -> confirm Modal (Cancel / Discard All), Esc cancels back to the palette; same shortcut while open keeps the palette + selects the query; Esc / click-away closes; menu parity: File > New Text File / Open File… / Save (local), View > Explorer..Extensions / Command Palette… / Toggle Sidebar, Go > Go to File… all run the same commands; Command Center click opens files mode; no pixel shift to the shell behind it",
+      "explorer header (PV-C-EXPLORERHEADER): at rest the header shows only 'Explorer' (no action icons, no ...); hover anywhere in the sidebar pane -> new-file / new-folder / refresh / collapse-all + ... appear at the header's right (instant display toggle, no animation); click each: New File -> tmp tab, New Folder -> tmp/New Folder N (expands tmp), Refresh -> re-fetches sections, Collapse -> collapses every folder; click a tree row (focus stays in the tree) and move the pointer away -> the group stays visible while the tree has focus; root row shows chevron + 'Dharmil Gajjar' only and the name stays full at narrow widths (drag the sash toward 170px); Ctrl+B hide + reopen -> hidden again at rest; palette + tabs + statusbar pixel-unchanged"
     ],
-    "tip": "0447c9a",
+    "tip": "a620cc5",
     "unpushed": [
+      "a620cc5",
+      "33ba681",
+      "59c74d2",
+      "4b8cc99",
+      "78f0df7",
       "0447c9a",
       "49d3a92",
       "a985910",
@@ -336,7 +342,7 @@
       "144e580",
       "5bb34c7"
     ],
-    "last_updated": "2026-10-18"
+    "last_updated": "2026-10-19"
   },
   "source_of_truth": {
     "code": "E:/Portfolio (branch main, no origin)",
@@ -345,9 +351,9 @@
     "tokens": "app/globals.css @theme"
   },
   "summary": {
-    "total": 53,
+    "total": 54,
     "done": 25,
-    "in_progress": 7,
+    "in_progress": 8,
     "backlog": 21
   },
   "tasks": [
@@ -561,6 +567,16 @@
       "owner": "agent",
       "started": "2026-10-19",
       "log": "globals 874d00c (13 tokens from VS Code source — quickInput.css + dark_modern.json + keybindingLabel defaults: quickInput.background #222222, widget.border #313131, input.background #313131, input.border #3C3C3C, input.placeholderForeground #989898, list.highlightForeground #2AAAFF, keybindingLabel bg #8080802b + border #33333399 + bottomBorder #44444499; radii quick 12 / quick-input 6 / quick-row 3 / keybinding 3) + store c7aaa7f (session-only UI slice: view, showSidebar, paletteMode (null = closed — mode doubles as the open flag) + selectView/showView/toggleSidebar/openPalette/closePalette/setPaletteMode; ActivityId + PaletteMode types moved here) + ActivityBar b7d612c (re-exports ActivityId) + lib/fuzzy fc2fc70 (pure scorer: subsequence + start 10 / separator 8 / camel 7 / consecutive 5 bonuses, prefix +12, length penalty; whitespace = multi-term AND; node smoke 6/6) + lib/commands 61bc724 (17 commands; ids shared with TitleBar MENU_ITEMS so menus run the registry; nextFreeKey moved from the page; keepOpen = Go to File…/Show All Commands; confirm = discard-edits) + CommandPalette e659487 (real 2026 metrics: min(62vw,600px) centered at the 36px titlebar offset, radius 12, #222222 + 1px #313131, shadow; header 6/6/4/6; input 26px radius 6 #313131/#3C3C3C static border; list cap min(40vh,440px) = min(0.4×height,20×22px) pb 7; rows 22px radius 3, insets 6+6, icon 16+6, label ml 5; focus #04395E + white, hover #2A2D2E, bold #2AAAFF; keybindingLabel chips, focused/hover = transparent bg + currentColor 30%; ↑↓ wrap, hover-follows-mouse, scrollIntoView; Esc / click-away close; same shortcut keeps + selects query, other switches mode preserving the suffix (quickAccess.ts); Enter runs & closes; `>` prefix both ways; discard confirm via Modal; empty states No matching commands/results) + page 282aeea (store view/sidebar, Ctrl+B dialog-guarded, menus run registry ids, Command Center -> files mode, palette mounted) + DOC a985910 + DOC02 49d3a92 + pending-work 0447c9a (tsc clean; boot 200/no overlay; SSR: shell aria-labels intact; live CSS: all 13 tokens + bg-vscode-quick-bg + rounded-quick/-input/-row + rounded-keybinding + text-vscode-quick-match + border-b-vscode-keybinding-border-bottom + min(62vw,600px) + min(40vh,440px) emitted); remainder: palette click-test (rows/chips/confirm/menus), file list grows with /api/repo/tree, motion (250ms scale-in) deferred, Ctrl+K not bound (chord prefix in real VS Code)"
+    },
+    {
+      "id": "PV-C-EXPLORERHEADER",
+      "title": "Explorer header actions",
+      "owner": "agent",
+      "status": "in_progress",
+      "started": "2026-10-19",
+      "description": "View actions + overflow live in the pane header, hidden at rest and revealed on pane hover / focus-within (VS Code ViewPaneShowActions.Default); workspace root row is chevron + name only (components/vscode/SideBar.tsx + PrimarySideBar.tsx + Explorer.tsx + page.tsx, per DOC/05 §5)",
+      "file": "components/vscode/SideBar.tsx",
+      "log": "SideBar 78f0df7 (header title min-w-0 flex-1 truncate; one actions group = view actions slot + '...' overflow, hidden at rest, flex on group-hover/sidebar + group-focus-within/sidebar; aside carries group/sidebar; comment cites VS Code base/browser/ui/splitview/paneview.css `.pane:hover > .pane-header.expanded > .actions` + ViewPaneShowActions.Default = 'Show the actions when the view is hovered' — display toggle, no animation) + PrimarySideBar 4b8cc99 (forwards actions: ReactNode to SideBar) + page 59c74d2 (EXPLORER_ACTIONS moved here from Explorer; rendered through the PrimarySideBar actions slot only while view === 'explorer'; Explorer no longer receives onAction; handleViewAction unchanged: new-file -> newTextFile, new-folder -> nextFreeKey tmp/New Folder N/.gitkeep + expands tmp, refresh -> loadSections, collapse -> collapseAll) + Explorer 33ba681 (root row = chevron + Dharmil Gajjar only; EXPLORER_ACTIONS + ViewAction types + actions div + ViewActionButton import + onAction prop removed; header comment updated) + DOC a620cc5 (§5 header + root-row lines rewritten). Verify: tsc 0 real errors (only the 7 known .next/dev/types validator stubs), boot 200 / no overlay, live CSS emits group-hover/sidebar + group-focus-within/sidebar; headless Edge CDP at 1600x900 + sidebarWidth 222 + user's tmpFs: REST display none (5 children, 0px), HOVER display flex (5 x 28px), AWAY none; screenshots confirm rest header = Explorer only + root name full 'Dharmil Gajjar' at 222px, hover header shows new-file/new-folder/refresh/collapse-all/... at the right. remainder: click-test"
     },
     {
       "description": "Commit input + local lane SVG + real list + View more (components/vscode/SourceControl.tsx, per DOC/05 §7)",
