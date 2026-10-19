@@ -106,9 +106,33 @@ export const COMMANDS: Command[] = [
     run: () => useStore.getState().toggleSidebar(),
   },
   {
+    id: "toggle-panel",
+    label: "View: Toggle Panel",
+    keybinding: "Ctrl+J",
+    run: () => useStore.getState().togglePanel(),
+  },
+  {
+    id: "toggle-terminal",
+    label: "View: Toggle Terminal",
+    keybinding: "Ctrl+`",
+    run: () => useStore.getState().togglePanel(),
+  },
+  {
     id: "collapse",
     label: "View: Collapse Folders in Explorer",
     run: () => useStore.getState().collapseAll(),
+  },
+
+  // Terminal (the panel's active terminal; local parser + xterm)
+  {
+    id: "new-terminal",
+    label: "Terminal: New Terminal",
+    run: () => useStore.getState().spawnSession("bash"),
+  },
+  {
+    id: "clear-terminal",
+    label: "Terminal: Clear",
+    run: () => useStore.getState().clearTerminal(),
   },
 
   // Edits (the local edits layer; destructive — the palette confirms first).
@@ -131,20 +155,6 @@ export const COMMANDS: Command[] = [
   },
 
   // Land with their features (disabled + hint, like the menus) — run no-ops.
-  {
-    id: "toggle-panel",
-    label: "View: Toggle Panel",
-    disabled: true,
-    hint: "Available when the panel lands",
-    run: () => undefined,
-  },
-  {
-    id: "toggle-terminal",
-    label: "View: Toggle Terminal",
-    disabled: true,
-    hint: "Available when the terminal lands",
-    run: () => undefined,
-  },
   {
     id: "open-preview",
     label: "Open Browser Preview",
