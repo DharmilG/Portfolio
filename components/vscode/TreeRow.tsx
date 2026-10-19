@@ -14,7 +14,6 @@ type TreeRowProps = {
   focused?: boolean;
   onClick?: () => void;
   onDoubleClick?: () => void;
-  className?: string;
   children: ReactNode;
 };
 
@@ -26,7 +25,6 @@ export default function TreeRow({
   focused = false,
   onClick,
   onDoubleClick,
-  className = "",
   children,
 }: TreeRowProps) {
   // Hover is suppressed on the selected row — VS Code keeps the selection
@@ -41,7 +39,7 @@ export default function TreeRow({
       data-path={path}
       onClick={onClick}
       onDoubleClick={onDoubleClick}
-      className={`flex h-7 cursor-pointer items-center gap-1 ${indent} ${right} ${state} ${className}`}
+      className={`flex h-7 cursor-pointer items-center gap-1 ${indent} ${right} ${state}`}
     >
       {children}
     </div>
