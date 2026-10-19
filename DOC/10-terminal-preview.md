@@ -110,9 +110,18 @@ Misc:
 - `help` — grouped accent table; `whoami`, `date`, `neofetch`, `clear`.
 - `theme dark|light` — emits `SET_THEME`; light writes a dim "staying Dark
   Modern" note because the workbench palette is dark-only.
-- `curl <url>` — `CURL` effect; the panel fetches
-  `/api/proxy?url=…` (8s timeout, 20KB cap, ANSI stripped). A stubbed/failed
-  proxy prints `curl: (HTTP n) proxy unavailable` instead of breaking.
+- `curl <url>` — `CURL` effect. The parser accepts a bare host (prepends
+  `https://`), keeps an explicit `http(s)://`, and treats
+  `-l`/`--list-only`, `-s`/`--silent`, `-S`/`--show-error`,
+  `-L`/`--location` (plus combined short forms like `-sL`) as no-ops; other
+  options and multiple URLs are errors. The panel fetches
+  `/api/proxy?url=…`; the route allows GET only, validates public http(s)
+  URLs, rejects credentials and loopback/private/link-local/metadata hosts
+  and IPs (DNS and every redirect hop are rechecked, max 3), accepts text
+  content types, and returns at most 20 KB after an 8s deadline.
+  Proxy-generated errors carry `x-proxy-error` so the terminal prints the
+  reason (`Private or local addresses are blocked`, …) instead of a generic
+  failure; `x-proxy-truncated` drives the 20 KB note (ANSI stripped).
 
 ## 4. Browser preview (planned)
 
@@ -133,5 +142,6 @@ Misc:
 
 - No `eval`; terminal output caps at 20KB, `cat` at 100 lines, `diff` at 40 rows, `curl` at 20KB / 8s.
 - `commit` messages are shown as plain text in xterm (no HTML injection); ANSI is only emitted by the parser, remote curl text is stripped of escape sequences.
-- The proxy route owns URL validation (route is a stub today); the client never opens sockets directly.
+- The proxy route owns URL validation and SSRF guards (GET-only public http(s), DNS + redirect checks, 8s/20 KB); the client never opens sockets directly.
+- Proxy rate limiting (30/min/IP in DOC/09 5) stays backend-gated with Upstash; the SSRF guards and caps above are live today.
 - Persist `tmpFs/localEdits/localCommits` to localStorage (`vscode-local-v1`), cap 2MB total, `Reset local edits` in gear menu clears all.
