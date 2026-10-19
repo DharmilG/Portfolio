@@ -92,6 +92,10 @@ function buildCtx(session: TerminalSession): TerminalCtx {
   const st = useStore.getState();
   const vfs = new Set<string>();
   const dirs = new Set<string>();
+  // Canonical namespaces exist even before data loads (the terminal's `ls`
+  // never looks broken on a fresh session).
+  dirs.add("Projects");
+  dirs.add("tmp");
 
   for (const sec of st.sections) {
     if (sec.slug === "tmp") continue;
@@ -492,8 +496,10 @@ function PanelAction({
         onClick={onClick}
         disabled={disabled}
         aria-label={label}
-        className={`flex items-center justify-center rounded-control text-vscode-muted transition-colors hover:bg-vscode-toolbar-hover hover:text-vscode-fg disabled:pointer-events-none disabled:opacity-40 ${
-          compact ? "h-[22px] w-[22px]" : "h-7 w-7"
+        className={`flex items-center justify-center text-vscode-muted transition-colors hover:bg-vscode-toolbar-hover hover:text-vscode-fg disabled:pointer-events-none disabled:opacity-40 ${
+          compact
+            ? "h-[22px] w-[22px] rounded-control"
+            : "h-7 w-7 rounded-none"
         }`}
       >
         <Codicon name={icon} size={16} />
@@ -734,7 +740,11 @@ export default function TerminalPanel() {
     >
       {/* Panel title — 35px, composite tab + title actions */}
       <div className="flex h-[35px] shrink-0 items-center justify-between border-b border-vscode-panel-tab-border pl-1 pr-1">
-        <div className="flex h-full items-stretch">
+        <div
+          role="tablist"
+          aria-label="Panel views"
+          className="flex h-full items-stretch"
+        >
           <button
             type="button"
             role="tab"
