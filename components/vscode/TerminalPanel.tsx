@@ -625,6 +625,18 @@ export default function TerminalPanel() {
           }
           return true;
         }
+        // Ctrl+C copies a selection instead of cancelling the line (VS Code's
+        // terminal copySelection binding); without a selection xterm emits \x03.
+        if (
+          e.ctrlKey &&
+          !e.shiftKey &&
+          !e.altKey &&
+          e.code === "KeyC" &&
+          term.hasSelection()
+        ) {
+          void navigator.clipboard?.writeText(term.getSelection()).catch(() => {});
+          return false;
+        }
         if (e.ctrlKey && e.shiftKey && e.code === "KeyV") {
           void navigator.clipboard
             ?.readText()
