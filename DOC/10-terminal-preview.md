@@ -1,50 +1,117 @@
 # 10 — Terminal + Preview + Markdown (Detailed)
 
-> Dummy emulator, client-only. Same `localEdits/localCommits` store as `05`. No pty (Vercel serverless can't hold pty).
-> Depends on `04 §8`, `05 §6-7`, `09 §5, §8`.
+> As-built for the terminal (PV-C-TERMINAL); preview + markdown are planned.
+> Dummy emulator, client-only. Same `localEdits/localCommits` store as `05`.
+> No pty (Vercel serverless can't hold pty). Depends on `04 §8`, `05 §6-7`, `09 §5, §8`.
 
 ## 1. Terminal UI (`components/vscode/TerminalPanel.tsx`)
 
-- `@xterm/xterm + @xterm/addon-fit` in bottom Panel (280px, resizable, maximize toggles 60vh). Tabs `pwsh | bash` (same engine, different prompt glyph `PS>` vs `$`). `+` spawns session `id`, trash kills, chevron hides (`Ctrl+``).
-- Prompt: `user@portfolio:<cwd>$` green `user@portfolio`, blue `cwd`, `main*` suffix if dirty (from `localEdits`).
-- Keys: `Up/Down` history (per session, 100 cap, localStorage `vscode-term-hist`), `Tab` completes from `vfs + tmpFs + commands`, `Ctrl+L` clear, `Ctrl+C` cancel line, `Ctrl+Enter` commit shortcut when input starts `commit`.
-- Output: xterm rows, `help` prints accent-colored table. Errors red `command not found: X — try 'help'`.
+- Bottom Panel card under the editor, 5px card gutter, **closed by default**.
+  `Ctrl+`` and `Ctrl+J` toggle it; `Ctrl+B` still toggles the sidebar. A dialog
+  owns the keyboard while open. TitleBar layout-panel + View menu use the same
+  commands.
+- Height 280px default. The 5px gutter carries a horizontal `Sash` (min 120px,
+  max = row − 215px, editor floor 200px). Drag live via `panelPreview`, commit
+  on release. Maximize toggles `min(60vh, editor-floor cap)`; restore returns
+  to the last height. Close (`x`) hides the panel but keeps xterm buffers
+  mounted, so scrollback survives.
+- Chrome: 35px panel title (11px uppercase `TERMINAL` tab, 1px accent
+  underline inset 2px, square 28px maximize/close actions), 22px terminal tab
+  strip (12px labels, 10px horizontal padding, 1px separators, 1px
+  `#0078D4` active left border, 22px +/clear/trash actions). Panel surface
+  `#181818`, border/separators `#2b2b2b`, card radius 8px, toolbar hover
+  `#5a5d5e50`.
+- Sessions: seeds `pwsh` then `bash` (bash active). `+` spawns a new bash;
+  trash kills the active session; killing the last closes the panel
+  (reopening seeds a fresh bash). `Ctrl+D` on an empty line also kills.
+  One xterm instance per session; tab labels show the shell name.
+- xterm: `@xterm/xterm` 5.5.0 + `@xterm/addon-fit`, Fira Code 13px,
+  `lineHeight: 1`, block cursor (blink), scrollback 1000, 20px left gutter
+  (VS Code `--vscode-spacing-size200`). Dark Modern ANSI palette: bg `#181818`,
+  fg `#CCCCCC`, selection `#264F78`; normal `#000000/#cd3131/#0DBC79/#e5e510/
+  #2472c8/#bc3fbc/#11a8cd/#e5e5e5`; bright `#666666/#f14c4c/#23d18b/#f5f543/
+  #3b8eea/#d670d6/#29b8db/#e5e5e5`.
+- Prompt: bash `user@portfolio:<cwd>$ `; pwsh `PS <cwd>>`. User bright green
+  (`#23d18b`), cwd blue (`#3b8eea`), `main*` amber (`#e5ba7d`) iff
+  `localEdits` is non-empty. ANSI SGR strings from the pure parser.
+- Keys: `Enter` submit; `Ctrl+Enter` explicit submit (same commit path);
+  `Up/Down` history; `Left/Right/Home/End/Delete/Backspace`; `Tab`
+  completes; `Ctrl+L`/`Ctrl+K` clear; `Ctrl+C` copies selection else cancels
+  the line with `^C`; `Ctrl+Shift+C/V` copy/paste; `Ctrl+A/E/U/W` line edits;
+  multi-line paste is processed line by line. Workbench chords (`Ctrl+J`,
+  ``Ctrl+` ``, `Ctrl+B`) pass through to the window handler.
+- History: per session, 100 cap, mirrored flat to localStorage
+  `vscode-term-hist`; new sessions replay the flat list. Panel/session state
+  itself is session-only (`vscode-local-v1` excludes it).
 
 ## 2. Parser (`lib/terminal/parser.ts`)
 
 ```ts
-type Ctx = { cwd:string; vfs:string[]; localEdits:Record<string,string>; localCommits:LocalCommit[]; tmpFs:Record<string,string> };
+type TerminalShell = "bash" | "pwsh";
+type Ctx = {
+  cwd: string; shell: TerminalShell;
+  vfs: string[]; dirs: string[];
+  localEdits: Record<string, string>;
+  localCommits: LocalCommit[];
+  tmpFs: Record<string, string>;
+  cached?: Record<string, string>;      // blob API pending
+  realCommits?: RealCommit[];           // commits API pending
+  branch?: string;
+};
 type Effect =
- | {kind:'OPEN_TAB', path:string}
- | {kind:'WRITE_EDIT'|'WRITE_TMP', path:string, content:string}
- | {kind:'DELETE', path:string}
- | {kind:'COMMIT', msg:string}
- | {kind:'DISCARD', path?:string}
- | {kind:'SET_THEME', mode:'dark'|'light'}
- | {kind:'CLEAR'|'RELOAD_PREVIEW'};
-parse(input:string, ctx:Ctx): {output:string; effects:Effect[]};
+  | {kind:'OPEN_TAB', path:string}
+  | {kind:'WRITE_EDIT'|'WRITE_TMP', path:string, content:string}
+  | {kind:'DELETE', path:string}
+  | {kind:'COMMIT', msg:string}
+  | {kind:'DISCARD', path?:string}
+  | {kind:'SET_THEME', mode:'dark'|'light'}
+  | {kind:'CLEAR'|'RELOAD_PREVIEW'}
+  | {kind:'CURL', url:string};
+parse(input:string, ctx:Ctx): {output:string; effects:Effect[]; cwd?:string};
+renderPrompt(cwd:string, dirty:boolean, shell:TerminalShell): string;
+complete(line:string, ctx:Ctx, cursor?:number): {line:string; cursor:number; listing?:string};
 ```
 
-Pure function, no fetch except `curl` effect handled by caller via `/api/proxy`.
+Pure and synchronous (no fetch); `CURL` is performed by the panel. Rendered
+output is ANSI text; errors are red `command not found: X — try 'help'`.
+
+VFS: sections map to folders (`projects` → `Projects`), repo trees map to
+`Projects/<owner>/<repo>/...`, and `Projects/` + `tmp/` always exist. Saved
+edits and `tmpFs` overlay the tree; parent dirs are derived. `cached` supplies
+blob content until the backend lands (missing → dim note, not an error).
 
 ## 3. Commands
 
-Base (vfs = sections+projects tree + tmp overlay):
-- `help` — grouped table (files / git local / web).
-- `ls [path] | pwd | cd <dir>` — `ls` merges real vfs + `tmpFs`, marks `M` dirty, `tmp/` dimmed. `cd` updates `cwd` only.
-- `cat <file>` — prints `localEdits[path] ?? cached` (first 100 lines, `... truncated`). Binary -> `binary file, use 'open'`.
-- `echo <txt> > <file> | touch <file> | mkdir <d> | rm <p>` — `echo/touch` under `/tmp/` or existing file edit -> `WRITE_EDIT` (dirty). `mkdir/rm` only under `/tmp/`, else `permission denied: read-only snapshot`.
-- `open <path>` — `OPEN_TAB`. `theme dark|light` — `SET_THEME`. `whoami|date|neofetch|clear` — fun static.
-- `curl <url>` — `fetch('/api/proxy?url='+encodeURIComponent(url))` (see `09 §5`), prints truncated 20KB, 8s timeout.
+Files:
+- `ls [path]`, `pwd`, `cd <dir>` — `ls` marks edited files `M`, blue dirs,
+  dim `tmp/` paths.
+- `cat <file>` — saved edit > tmp > cached; first 100 lines, truncation note;
+  binaries/deep dirs are errors.
+- `echo <txt> > <file>` / `>>` — writes `tmp/` or an existing repo file
+  (dirty edit); other paths are a read-only snapshot error. `touch` mirrors
+  that rule; `mkdir`/`rm` are tmp-only.
+- `open <path>` — `OPEN_TAB` (markdown kinds detected by extension).
 
-Git local (same store as Source Control §7):
-- `status` — `On branch main / Changes (n): M path / Local commits (k): ... / nothing to commit` + hint.
-- `diff [file]` — line `-/+` peek (first 40 lines) from `cached vs localEdits`.
-- `commit -m "msg"` — requires dirty, pushes `localCommits`, clears dirty for those files, prints `✔ Committed locally “msg” (not pushed)`.
-- `log --graph | branch | checkout -- <file>` — `log` draws ASCII `* local-xyz msg` + real commits (top 10 from cache, dimmed); `branch` prints `* main`; `checkout --` discards single/all (`DISCARD`).
-- Unknown `git push/pull` -> `Nice try — this portfolio is read-only upstream 😄. Your commits live in browser only.`
+Local git (same store as Source Control §7; `git <verb>` accepted for git
+verbs only):
+- `status` — branch, modified files, local commits, commit hint.
+- `diff [file]` — LCS `-/+` rows (40-row cap) from cached vs local edits.
+- `commit -m "msg"` — requires dirty files; commits all and clears them,
+  or `Please provide a commit message` / `nothing to commit`.
+- `log --graph` — local commits + cached real commits (`origin` tags), flat
+  star rows; `branch` prints `* main`; `checkout -- <file>` / `checkout -- .`
+  discards one/all local edits.
+- `push`/`pull`/`fetch` are read-only-upstream jokes — no network, no remote.
 
-## 4. Browser preview (`components/vscode/BrowserPreview.tsx`)
+Misc:
+- `help` — grouped accent table; `whoami`, `date`, `neofetch`, `clear`.
+- `theme dark|light` — emits `SET_THEME`; light writes a dim "staying Dark
+  Modern" note because the workbench palette is dark-only.
+- `curl <url>` — `CURL` effect; the panel fetches
+  `/api/proxy?url=…` (8s timeout, 20KB cap, ANSI stripped). A stubbed/failed
+  proxy prints `curl: (HTTP n) proxy unavailable` instead of breaking.
+
+## 4. Browser preview (planned)
 
 - Trigger: tab icon `split-right` when `projects.preview_url != null`, or Run icon, or terminal `open --preview <repo>`, or palette `Open Preview`.
 - Layout: second editor group split right, url bar (readonly input + reload + `Open in new tab`), iframe `flex-1 bg-white` (flush, square).
@@ -52,7 +119,7 @@ Git local (same store as Source Control §7):
 - Embed fix (your own Vercel apps): remove `X-Frame-Options: DENY`, set `Content-Security-Policy: frame-ancestors https://<portfolio>.vercel.app`. If `preview_embeddable=false` or `onError/load timeout 8s` -> fallback card `Preview blocked by site — [Open in new tab]`.
 - State: `previewUrl, history[], reloadKey` in Zustand `previewSlice`, `RELOAD_PREVIEW` from terminal.
 
-## 5. Markdown preview (`components/vscode/MarkdownPreview.tsx`)
+## 5. Markdown preview (planned)
 
 - Detect `.md/.mdx` in FileViewer. `Ctrl+Shift+V` (or split icon) toggles split group.
 - Render: `react-markdown + remark-gfm + rehype-highlight (github-dark)` + VS Code markdown CSS (max-width 860px, 16px/1.7).
@@ -61,5 +128,7 @@ Git local (same store as Source Control §7):
 
 ## 6. Safety / perf
 
-- No `eval`, truncate all outputs 20KB, `curl` denylist private IPs (see `09 §5`), `commit msg` max 200 chars escaped.
+- No `eval`; terminal output caps at 20KB, `cat` at 100 lines, `diff` at 40 rows, `curl` at 20KB / 8s.
+- `commit` messages are shown as plain text in xterm (no HTML injection); ANSI is only emitted by the parser, remote curl text is stripped of escape sequences.
+- The proxy route owns URL validation (route is a stub today); the client never opens sockets directly.
 - Persist `tmpFs/localEdits/localCommits` to localStorage (`vscode-local-v1`), cap 2MB total, `Reset local edits` in gear menu clears all.
