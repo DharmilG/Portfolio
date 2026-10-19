@@ -70,7 +70,7 @@ const TERM_THEME = {
 } as const;
 
 const WELCOME =
-  "\x1b[2mPortfolio terminal — browser-only shell. Type \x1b[0m\x1b[94mhelp\x1b[0m\x1b[2m for commands.\x1b[0m";
+  "\x1b[2mType \x1b[0m\x1b[94mhelp\x1b[0m\x1b[2m for commands.\x1b[0m";
 
 const PROMPT_DIRTY = (cwd: string, dirty: boolean, shell: TerminalSession["shell"]) =>
   renderPrompt(cwd, dirty, shell);
