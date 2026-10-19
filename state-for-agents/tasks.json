@@ -1,11 +1,12 @@
 {
-  "in_progress": null,
+  "in_progress": "PV-C-SOURCECONTROL",
   "project": "Portfolio VS Code",
   "pushed_count": 0,
   "session": {
     "branch": "main",
-    "next_up": "PV-C-SOURCECONTROL (commit input + local lane + real list); then PV-C-TERMINAL (xterm + git-local commands)",
+    "next_up": "PV-C-TERMINAL (xterm + git-local commands); then PV-C-MDPREVIEW -> PV-C-BROWSERPREVIEW -> page polish -> backend last",
     "pending_verifications": [
+      "scm pane (PV-C-SOURCECONTROL): git icon -> sidebar title Source Control; commit editor 26px at one line (#313131 bg, 1px #3C3C3C, radius 4, UI font 13px/20px, placeholder Message (Ctrl+Enter to commit on \"main\")) grows to 10 lines then scrolls; focus ring 1px #0078D4 offset -1; Commit 26px #0078D4 -> #026EC1 hover, disabled opacity .4 with 0 changes; empty-message click -> Please provide a commit message strip + focus, nothing committed; Ctrl+Enter and the button both commit (edits clear, local commit prepended, editor clears, 600ms confetti, status announcement); Changes rows 28px sorted by name (app/globals.css before README.md), icon + name + dim dir + M, hover reveals discard; discard -> modal Are you sure you want to discard changes in '<name>'? (Discard File / Cancel), confirming removes just that file; row click opens the file tab; Local (not pushed) lane shows accent line + dots, top dot pulses, hidden when empty; Commits group shows No repository linked today, View more appears once /api/commits ships; empty state No local changes - edit any file to start the tree; per-view titles Explorer / Search / Source Control / Run and Debug / Extensions; no horizontal scrollbar in the pane; Explorer / palette / statusbar pixel-unchanged",
       "visual: chrome vs current VS Code (floating sections on titlebar base, title bar controls, ActivityBar pill/badge, Explorer glyphs + static root; sidebar shows no horizontal scrollbar)",
       "visual: tab shape vs VS Code screenshot (35px flush band, active tab #121314 merges into the opened-file surface, no accent line, sharp bottom corners)",
       "breadcrumb picker: click any crumb -> tree of that level with the clicked node auto-expanded in place; folder rows toggle with \u25b8/\u25be chevrons, file glyphs on files (an icon on every row); focused row 1px accent outline + scrolled into view; content inset 5px + 16px per level; picking a file opens its tab; Esc/click-away closes",
@@ -22,8 +23,15 @@
       "palette (PV-C-PALETTE): Ctrl+P -> quick open floats min(62vw,600px) centered under the title bar (12px radius, #222222 bg + 1px #313131, shadow); input 26px (#313131, 6px radius, static #3C3C3C border, no focus ring); file list = open tabs first (tab order) then tmp files A-Z; typing filters fuzzy (matches bold #2AAAFF; basename beats deep path), whitespace = multi-term AND; ↑↓ wrap, hover row #2A2D2E, focus row #04395E + white, selection scrolls into view; Ctrl+Shift+P / F1 -> commands (17; disabled ones dimmed with hints); keybinding chips (Ctrl+P / Ctrl+Shift+P / Ctrl+B / Ctrl+S) in keybindingLabel style, chips clear + border goes currentColor-30% on focused/hover row; typing '>' at the start switches to commands, backspace past it returns to files, query suffix survives mode switches; Enter opens the file/existing tab or runs the command & closes; Go to File… / Show All Commands keep the palette open; Edits: Discard All Local Edits -> confirm Modal (Cancel / Discard All), Esc cancels back to the palette; same shortcut while open keeps the palette + selects the query; Esc / click-away closes; menu parity: File > New Text File / Open File… / Save (local), View > Explorer..Extensions / Command Palette… / Toggle Sidebar, Go > Go to File… all run the same commands; Command Center click opens files mode; no pixel shift to the shell behind it",
       "explorer root row (PV-C-EXPLORERHEADER): at rest the row shows chevron + 'Dharmil Gajjar' only (name full at 170/222/280px); hover ANYWHERE in the Explorer sidebar pane (header, tree body, empty space below the rows) -> new-file / new-folder / refresh / collapse-all appear right-aligned beside the name (instant, no animation); move the pointer into the editor -> they hide again; at <=~238px the name ellipsizes only while they are shown (280px keeps it full); click each: New File -> tmp tab, New Folder -> tmp/New Folder N (expands tmp), Refresh -> re-fetches sections, Collapse -> collapses every folder; Explorer header keeps its always-visible ... ; Ctrl+B hide + reopen -> hidden at rest; palette + tabs + statusbar pixel-unchanged"
     ],
-    "tip": "64a203c",
+    "tip": "1b5e2c1",
     "unpushed": [
+      "1b5e2c1",
+      "55df986",
+      "ff912d5",
+      "bb75673",
+      "30a4aa3",
+      "1bd5889",
+      "8c3a4aa",
       "64a203c",
       "377de19",
       "4c74a35",
@@ -363,8 +371,8 @@
   "summary": {
     "total": 54,
     "done": 25,
-    "in_progress": 8,
-    "backlog": 21
+    "in_progress": 9,
+    "backlog": 20
   },
   "tasks": [
     {
@@ -592,8 +600,11 @@
       "description": "Commit input + local lane SVG + real list + View more (components/vscode/SourceControl.tsx, per DOC/05 §7)",
       "file": "components/vscode/SourceControl.tsx",
       "id": "PV-C-SOURCECONTROL",
-      "status": "backlog",
-      "title": "Source Control"
+      "status": "in_progress",
+      "title": "Source Control",
+      "owner": "agent",
+      "started": "2026-10-19",
+      "log": "globals 1bd5889 (count-badge tokens #616161/#F8F8F8 + radius-scm 4 + confetti keyframes with reduced-motion guard) + store 30a4aa3 (session-only commitMsg/setCommitMsg, absent from partialize) + globals bb75673 (SCM editor tokens: input.background #313131 / input.border #3C3C3C / placeholderForeground #989898 + inputValidation.errorBackground #5A1D1D / errorBorder #BE1100) + SourceControl ff912d5 (commit editor auto-grows 1->10 lines; empty box pinned at 26px because the placeholder wraps at sidebar widths and must not drive scrollHeight; focus ring via Tailwind focus:outline utilities 1px #0078D4 offset -1 — an unlayered .scm-input:focus rule was tried and dropped so the validation outline can win; Commit 26px #0078D4 -> #026EC1, disabled .4, $(check) + Commit; empty message -> inline Please provide a commit message + focus, no commit; Ctrl+Enter; commitLocal + 16-piece CSS confetti + sr-only announcement; Changes group 28px rows sorted compareFileNames with icon/name/dim dir/M and hover discard via shared Tooltip; discard -> shared Modal Are you sure you want to discard changes in '<name>'? Discard File / Cancel; Local (not pushed) accent lane, top dot pulses, hidden when empty; Commits group fetches /api/commits page 1 + View more with loading/error/No repository linked/No commits yet states; count badge 18px/radius 11/3px 5px padding/11px; empty state with source-control glyph) + page 55df986 (mount SourceControl for view === scm + VIEW_TITLES per activity) + DOC 1b5e2c1 (§7 rewritten to as-built + deferred list). Verify: tsc 0 real errors (7 known validator stubs), boot 200/no overlay; CDP (focus emulation on): title Source Control, textarea 199x26 #313131 border #3C3C3C 13px/20px radius 4 pad 2px 6px placeholder exact, button 199x26 #0078D4 12px/16px radius 4 pad 4px 8px, group rows 28px, badge 18x18 #616161 radius 11 11px, pane bg #181818, no horizontal overflow (scrollWidth = clientWidth = 222); empty-message click blocks + shows strip, Ctrl+Enter commits (16 confetti pieces, edits cleared, local commit stored, status announced, empty state + disabled button after), discard modal uses git's wording and removes only the chosen edit, row click opens README.md tab; focus ring rgb(0,120,212) solid 1px offset -1; growth 66px at 3 lines, capped 206px at 20 lines with scroll. Deferred: diff peek (no diff viewer), toast (PV-UI-TOAST), staging, split-button dropdown, real history (projects never fetched + /api/commits 0-byte)."
     },
     {
       "description": "xterm panel + git-local commands (components/vscode/TerminalPanel.tsx, per DOC/10 §1-3)",
