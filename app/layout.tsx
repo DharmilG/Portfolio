@@ -13,6 +13,8 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
   themeColor: "#191a1b",
 };
 
@@ -24,7 +26,11 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className="bg-vscode-bg font-vscode-ui text-vscode-fg antialiased">
-        <div className="flex h-screen">{children}</div>
+        {/* h-dvh: stable on mobile (URL bar) — the shell never exceeds the
+            viewport, panes own their scrolling (see globals.css). */}
+        <div className="flex h-dvh min-h-0 min-w-0 overflow-hidden">
+          {children}
+        </div>
       </body>
     </html>
   );
