@@ -217,7 +217,15 @@ async function runCurl(term: XTerm, url: string): Promise<void> {
       signal: controller.signal,
     });
     if (!res.ok) {
-      term.write(`\x1b[91mcurl: (HTTP ${res.status}) proxy unavailable\x1b[0m\r\n`);
+      // Only trust the body for errors this proxy generated; an upstream 404
+      // may be a whole HTML page, not a useful one-line message.
+      const detail =
+        res.headers.get("x-proxy-error") === "1"
+          ? (await res.text()).replace(/\s+/g, " ").trim().slice(0, 200)
+          : "";
+      term.write(
+        `\x1b[91mcurl: (HTTP ${res.status}) ${detail || "proxy unavailable"}\x1b[0m\r\n`,
+      );
       return;
     }
     const raw = await res.text();
@@ -230,7 +238,8 @@ async function runCurl(term: XTerm, url: string): Promise<void> {
       term.write("\x1b[2mcurl: (empty response)\x1b[0m\r\n");
       return;
     }
-    const capped = text.length > 20000;
+    const capped =
+      res.headers.get("x-proxy-truncated") === "1" || text.length > 20000;
     term.write(toCRLF(text.slice(0, 20000)) + "\r\n");
     if (capped) term.write("\x1b[2m... truncated at 20 KB\x1b[0m\r\n");
   } catch (e) {
