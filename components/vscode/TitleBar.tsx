@@ -71,7 +71,7 @@ export const MENU_ITEMS: Menu[] = [
     menu: "Terminal",
     items: [
       { label: "New Terminal", id: "new-terminal" },
-      { label: "Clear", disabled: true, hint: "Available when the terminal lands" },
+      { label: "Clear", id: "clear-terminal" },
     ],
   },
   {
