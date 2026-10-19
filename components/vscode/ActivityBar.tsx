@@ -3,12 +3,13 @@
 // ActivityBar — 48px icon rail (store-connected for badge only; rest via props).
 // 2025-refresh look: active item = white icon + rounded pill bg (no left bar).
 // Shared primitives: IconButton + Badge + Codicon. See DOC/05 §4.
-import { dirtyCount, useStore } from "@/lib/store";
+import { dirtyCount, useStore, type ActivityId } from "@/lib/store";
 import Badge from "./Badge";
 import IconButton from "./IconButton";
 import Menu from "./Menu";
 
-export type ActivityId = "explorer" | "search" | "scm" | "run" | "extensions";
+// ActivityId now lives in the store (shared with the page + palette).
+export type { ActivityId };
 
 type ActivityBarProps = {
   active?: ActivityId;
