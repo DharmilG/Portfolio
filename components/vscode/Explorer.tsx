@@ -1,8 +1,9 @@
 "use client";
 
 // Explorer — folder tree from store (sections + allowlisted projects).
-// Static workspace root ("Dharmil Gajjar") always on top with the view
-// actions on its row; DB sections + pinned tmp scratch nest inside.
+// Static workspace root ("Dharmil Gajjar") always on top; the view actions
+// live in the SideBar pane header (hover/focus-revealed), not on this row —
+// VS Code keeps the root row as chevron + name only.
 // Rows are shared TreeRows: selection follows autoReveal (openTab/setActiveTab
 // in lib/store), ancestors expand + the view scrolls to revealed rows via
 // revealNonce; selection renders blue only while the tree has focus.
@@ -16,28 +17,12 @@ import { isDirty, ROOT_NAME, useStore } from "@/lib/store";
 import Codicon from "./Codicon";
 import RenameInput from "./RenameInput";
 import TreeRow from "./TreeRow";
-import ViewActionButton from "./ViewActionButton";
 
 type ExplorerProps = {
   onOpenFile?: (path: string) => void;
   onRename?: (path: string, name: string | null) => void;
-  onAction?: (id: string) => void;
   filter?: string;
 };
-
-type ViewAction = {
-  id: string;
-  icon: string;
-  label: string;
-};
-
-// Root-row view actions (VS Code tooltips; behavior owned by the page).
-const EXPLORER_ACTIONS: ViewAction[] = [
-  { id: "new-file", icon: "new-file", label: "New File..." },
-  { id: "new-folder", icon: "new-folder", label: "New Folder..." },
-  { id: "refresh", icon: "refresh", label: "Refresh Explorer" },
-  { id: "collapse", icon: "collapse-all", label: "Collapse Folders in View" },
-];
 
 export function resolveName(
   fullPath: string,
@@ -50,7 +35,6 @@ export function resolveName(
 export default function Explorer({
   onOpenFile,
   onRename,
-  onAction,
   filter = "",
 }: ExplorerProps) {
   const sections = useStore((s) => s.sections);
@@ -157,16 +141,6 @@ export default function Explorer({
             <span className="min-w-0 flex-1 truncate text-vscode-emphasis">
               {ROOT_NAME}
             </span>
-            <div className="ml-auto flex shrink-0 items-center">
-              {EXPLORER_ACTIONS.map((a) => (
-                <ViewActionButton
-                  key={a.id}
-                  icon={a.icon}
-                  label={a.label}
-                  onClick={() => onAction?.(a.id)}
-                />
-              ))}
-            </div>
           </TreeRow>
           {rootOpen && tmpKeys.length > 0 ? (
             <div>
