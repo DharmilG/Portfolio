@@ -15,6 +15,7 @@ import {
   mergeCommits,
   resolveContent,
 } from "./localGit";
+import type { TerminalShell } from "./terminal/parser";
 
 export type TabKind = "code" | "markdown" | "browser";
 
@@ -62,7 +63,37 @@ export type TerminalSession = {
   id: string;
   hist: string[];
   cwd: string;
+  shell: TerminalShell;
 };
+
+// Terminal history survives reloads on its own key (DOC/10 §1); the panel and
+// sessions themselves are session-only, like VS Code buffers.
+const TERM_HIST_KEY = "vscode-term-hist";
+
+function readTermHistory(): string[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = window.localStorage.getItem(TERM_HIST_KEY);
+    const parsed: unknown = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed)
+      ? parsed.filter((x): x is string => typeof x === "string").slice(-100)
+      : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeTermHistory(hist: string[]): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(
+      TERM_HIST_KEY,
+      JSON.stringify(hist.slice(-100)),
+    );
+  } catch {
+    // Private mode / quota — history is a convenience, never fatal.
+  }
+}
 
 type State = {
   sections: Section[];
@@ -129,10 +160,26 @@ type State = {
 
   sessions: TerminalSession[];
   activeSessionId: string | null;
-  spawnSession: () => void;
+  initTerminal: () => void;
+  setActiveSession: (id: string) => void;
+  spawnSession: (shell?: TerminalShell) => void;
   killSession: (id: string) => void;
   pushHist: (id: string, line: string) => void;
   setCwd: (id: string, cwd: string) => void;
+
+  // Bottom panel (terminal today, preview group later). Session-only: closed
+  // by default like VS Code; 280px tall, maximize toggles 60vh (DOC/10 §1).
+  panelOpen: boolean;
+  panelHeight: number;
+  panelPreview: number | null;
+  panelMaximized: boolean;
+  togglePanel: () => void;
+  closePanel: () => void;
+  setPanelHeight: (h: number) => void;
+  setPanelPreview: (h: number | null) => void;
+  togglePanelMaximized: () => void;
+  termClearNonce: number;
+  clearTerminal: () => void;
 
   previewUrl: string | null;
   previewHist: string[];
@@ -331,12 +378,37 @@ export const useStore = create<State>()(
 
       sessions: [],
       activeSessionId: null,
-      spawnSession: () =>
+      // Mount seed: pwsh first, bash active (DOC/10 §1), history replayed from
+      // the flat vscode-term-hist array. StrictMode-safe: only seeds once.
+      initTerminal: () =>
+        set((s) => {
+          if (s.sessions.length) return {};
+          const hist = readTermHistory();
+          const pwsh: TerminalSession = {
+            id: "term-pwsh",
+            hist: [],
+            cwd: "~",
+            shell: "pwsh",
+          };
+          const bash: TerminalSession = {
+            id: "term-bash",
+            hist,
+            cwd: "~",
+            shell: "bash",
+          };
+          return { sessions: [pwsh, bash], activeSessionId: bash.id };
+        }),
+      setActiveSession: (activeSessionId) => set({ activeSessionId }),
+      spawnSession: (shell = "bash") =>
         set((s) => {
           const id = `term-${Date.now()}-${s.sessions.length}`;
           return {
-            sessions: [...s.sessions, { id, hist: [], cwd: "~" }],
+            sessions: [
+              ...s.sessions,
+              { id, hist: readTermHistory(), cwd: "~", shell },
+            ],
             activeSessionId: id,
+            panelOpen: true,
           };
         }),
       killSession: (id) =>
@@ -348,20 +420,55 @@ export const useStore = create<State>()(
               s.activeSessionId === id
                 ? (sessions[sessions.length - 1]?.id ?? null)
                 : s.activeSessionId,
+            // Killing the last shell closes the panel (DOC/10 §1).
+            ...(sessions.length === 0 ? { panelOpen: false } : {}),
           };
         }),
-      pushHist: (id, line) =>
+      pushHist: (id, line) => {
+        const session = useStore.getState().sessions.find((x) => x.id === id);
+        if (!session) return;
+        const hist = [...session.hist, line].slice(-100);
+        writeTermHistory(hist);
         set((s) => ({
-          sessions: s.sessions.map((x) =>
-            x.id === id ? { ...x, hist: [...x.hist, line].slice(-100) } : x,
-          ),
-        })),
+          sessions: s.sessions.map((x) => (x.id === id ? { ...x, hist } : x)),
+        }));
+      },
       setCwd: (id, cwd) =>
         set((s) => ({
           sessions: s.sessions.map((x) =>
             x.id === id ? { ...x, cwd } : x,
           ),
         })),
+
+      panelOpen: false,
+      panelHeight: 280,
+      panelPreview: null,
+      panelMaximized: false,
+      togglePanel: () =>
+        set((s) => {
+          if (s.panelOpen) return { panelOpen: false };
+          // Reopen after the last shell was trashed: bash comes back.
+          if (s.sessions.length) return { panelOpen: true };
+          const id = `term-${Date.now()}`;
+          return {
+            panelOpen: true,
+            sessions: [
+              { id, hist: readTermHistory(), cwd: "~", shell: "bash" },
+            ],
+            activeSessionId: id,
+          };
+        }),
+      closePanel: () => set({ panelOpen: false }),
+      setPanelHeight: (panelHeight) => set({ panelHeight }),
+      setPanelPreview: (panelPreview) => set({ panelPreview }),
+      togglePanelMaximized: () =>
+        set((s) => ({
+          panelMaximized: !s.panelMaximized,
+          panelPreview: null,
+        })),
+      termClearNonce: 0,
+      clearTerminal: () =>
+        set((s) => ({ termClearNonce: s.termClearNonce + 1 })),
 
       previewUrl: null,
       previewHist: [],
