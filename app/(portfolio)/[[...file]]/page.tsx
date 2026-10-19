@@ -15,6 +15,7 @@ import Section from "@/components/vscode/Section";
 import SourceControl from "@/components/vscode/SourceControl";
 import StatusBar from "@/components/vscode/StatusBar";
 import Tabs from "@/components/vscode/Tabs";
+import TerminalPanel from "@/components/vscode/TerminalPanel";
 import TitleBar from "@/components/vscode/TitleBar";
 import { COMMANDS, newTextFile, nextFreeKey } from "@/lib/commands";
 import { supabase } from "@/lib/db";
@@ -54,17 +55,36 @@ export default function PortfolioPage() {
   const selectView = useStore((s) => s.selectView);
   const showView = useStore((s) => s.showView);
   const openPalette = useStore((s) => s.openPalette);
+  const panelOpen = useStore((s) => s.panelOpen);
+  const panelHeight = useStore((s) => s.panelHeight);
+  const panelPreview = useStore((s) => s.panelPreview);
+  const panelMaximized = useStore((s) => s.panelMaximized);
+  const setPanelHeight = useStore((s) => s.setPanelHeight);
+  const setPanelPreview = useStore((s) => s.setPanelPreview);
   const [rowWidth, setRowWidth] = useState(0);
+  const [rowHeight, setRowHeight] = useState(0);
   const rowRef = useRef<HTMLDivElement>(null);
 
   // Sash max: keep the editor >= 320px in the workspace row
   // (10px padding + 48px activity rail + 5px gutter + 320px editor = 383px).
   const maxPane = Math.max(170, rowWidth - 383);
+  // Panel: keep >= 120px terminal and >= 200px editor; maximize is 60% of the
+  // workspace row (DOC/10 §1). rowHeight includes the 5px grid padding.
+  const maxPanel = rowHeight > 0 ? Math.max(170, rowHeight - 215) : 10000;
+  const panelPx = Math.min(
+    panelMaximized
+      ? Math.max(160, Math.round(rowHeight * 0.6))
+      : (panelPreview ?? panelHeight),
+    maxPanel,
+  );
 
   useEffect(() => {
     const el = rowRef.current;
     if (!el) return;
-    const measure = () => setRowWidth(el.clientWidth);
+    const measure = () => {
+      setRowWidth(el.clientWidth);
+      setRowHeight(el.clientHeight);
+    };
     measure();
     const observer = new ResizeObserver(measure);
     observer.observe(el);
@@ -73,18 +93,27 @@ export default function PortfolioPage() {
 
   useEffect(() => {
     useStore.persist.rehydrate();
+    useStore.getState().initTerminal();
     loadSections();
   }, []);
 
   // Ctrl+B — toggle primary sidebar (VS Code default); a dialog owns the
-  // keyboard while it is up (Modal convention).
+  // keyboard while it is up (Modal convention). Ctrl+J / Ctrl+` toggle the
+  // bottom Panel (VS Code Toggle Panel / Toggle Terminal defaults).
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (!(e.ctrlKey && !e.shiftKey && !e.altKey)) return;
-      if (e.key.toLowerCase() !== "b") return;
+      const key = e.key.toLowerCase();
+      const toggle =
+        key === "b" ||
+        key === "j" ||
+        key === "`" ||
+        e.code === "Backquote";
+      if (!toggle) return;
       if (document.querySelector('[role="dialog"]')) return;
       e.preventDefault();
-      useStore.getState().toggleSidebar();
+      if (key === "b") useStore.getState().toggleSidebar();
+      else useStore.getState().togglePanel();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -181,17 +210,45 @@ export default function PortfolioPage() {
             />
           </div>
         ) : null}
-        <Section className="flex-1 bg-vscode-editor">
-          <Tabs onReveal={handleReveal} />
-          <Breadcrumb onOpenFile={openCodeTab} />
-          {hasTabs ? (
-            <FileViewer />
-          ) : (
-            <div className="flex min-h-0 flex-1 items-center justify-center text-sm text-vscode-dim">
-              Open a file from the Explorer
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+          <Section className="flex-1 bg-vscode-editor">
+            <Tabs onReveal={handleReveal} />
+            <Breadcrumb onOpenFile={openCodeTab} />
+            {hasTabs ? (
+              <FileViewer />
+            ) : (
+              <div className="flex min-h-0 flex-1 items-center justify-center text-sm text-vscode-dim">
+                Open a file from the Explorer
+              </div>
+            )}
+          </Section>
+          {panelOpen ? (
+            <div className="relative h-[5px] shrink-0">
+              {!panelMaximized ? (
+                <Sash
+                  orientation="horizontal"
+                  label="Resize panel"
+                  value={panelPx}
+                  min={120}
+                  max={maxPanel}
+                  onPreview={setPanelPreview}
+                  onCommit={(h) => {
+                    setPanelPreview(null);
+                    setPanelHeight(h);
+                  }}
+                />
+              ) : null}
             </div>
-          )}
-        </Section>
+          ) : null}
+          {/* Kept mounted while closed so xterm scrollback survives (VS Code
+              keeps terminal buffers on panel hide). */}
+          <div
+            className={panelOpen ? "shrink-0" : "hidden"}
+            style={panelOpen ? { height: panelPx } : undefined}
+          >
+            <TerminalPanel />
+          </div>
+        </div>
       </div>
       <StatusBar onBranchClick={handleBranchClick} />
       <CommandPalette />
