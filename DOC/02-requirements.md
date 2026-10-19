@@ -35,4 +35,4 @@
 - [ ] Source Control local lane + real list + commit input + confetti
 - [ ] Terminal 280px + `pwsh|bash` + history/complete
 - [ ] StatusBar Dark Modern 22px `#181818` + `main*`, `0↓ k↑` sync, `ⓧ0 ⚠0`, `Ln/Col`, `Spaces/UTF-8/LF`, language, bell
-- [ ] Palette 480px + fuzzy + commands
+- [ ] Palette min(62vw, 600px) + fuzzy + commands
