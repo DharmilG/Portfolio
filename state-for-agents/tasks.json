@@ -4,7 +4,7 @@
   "pushed_count": 0,
   "session": {
     "branch": "main",
-    "next_up": "PV-C-BROWSERPREVIEW (iframe split + url bar + reload + Open in new tab + fallback, DOC/10 §4; plan awaiting go-ahead); then page polish -> backend last",
+    "next_up": "PV-C-BROWSERPREVIEW (integrated-browser chrome: editor tab + navbar + URL picker with Recents/History; iframe engine; plan revised awaiting go-ahead); then page polish -> backend last",
     "pending_verifications": [
       "terminal panel (PV-C-TERMINAL): closed by default -> Ctrl+J / Ctrl+` opens a 280px bottom card with a 5px gutter (editor shrinks, titlebar/tabs/statusbar pixel-unchanged); drag the gutter live (min 120px, 200px editor floor), release persists for the session; Maximize -> 60vh capped by the floor, Restore returns to the last height; close -> editor restores and reopen keeps xterm scrollback; chrome: 35px title (11px uppercase TERMINAL, 1px #0078D4 underline, square 28px maximize/close), 22px tab strip (1px separators, 1px #0078D4 active left border, 22px +/clear/trash), #181818 surface, 8px radius, toolbar hover #5a5d5e50",
       "terminal behavior: sessions pwsh + bash, + adds bash, trash kills the active session, killing the last closes the panel (reopen seeds bash), tab switch preserves scrollback; bash prompt user@portfolio:~$ / pwsh PS ~>, blue cwd, amber main* only with saved edits, Fira Code 13px, Dark Modern ANSI; type help, ls (Projects + tmp), cat, echo > tmp/a, open; Up/Down history, Tab completion, Ctrl+L/K clear, Ctrl+C cancel or copy selection, Ctrl+Enter commit, Ctrl+Shift+C/V, multi-line paste; Ctrl+J/Ctrl+`/Ctrl+B while xterm is focused do not insert LF/^B and still toggle; git status/diff/commit -m/log/branch/checkout -- . (local only, SCM + statusbar sync), push/pull/fetch stay jokes; curl -> GET + up to 20 KB body / specific proxy error (live route); theme light leaves the UI dark with a dim note; history survives new sessions via vscode-term-hist, panel height/session state resets on reload; View menu, layout-panel icon, palette, Terminal > New Terminal/Clear all work",
@@ -675,14 +675,14 @@
       "verified": true
     },
     {
-      "description": "Iframe split + url bar + fallback card (components/vscode/BrowserPreview.tsx, per DOC/10 §4)",
+      "description": "Integrated-browser editor tab (navbar + URL picker with Recents/History + iframe + suspend; components/vscode/BrowserPreview.tsx, DOC/10 §4 to be rewritten as built)",
       "file": "components/vscode/BrowserPreview.tsx",
       "id": "PV-C-BROWSERPREVIEW",
       "status": "in_progress",
       "title": "Browser preview",
       "owner": "agent",
       "started": "2026-10-19",
-      "log": "Plan per DOC/10 §4 (right split, url bar, reload, Open in new tab, fallback) under user review; build starts on go-ahead."
+      "log": "Plan revised per user screenshot: clone VS Code integrated browser — editor tab (globe + Browser), navbar (back/forward/reload + URL input), suggestions picker (Recents/History groups, Go to/Search rows), welcome state; engine = sandboxed iframe (VS Code's own is Electron-native and unavailable in web); RAM design = single instance, keep-alive, suspend/close frees renderer. Awaiting go-ahead."
     },
     {
       "description": "Root mount folds into catch-all page (app/page.tsx deleted 6b939de: / collides with /[[...file]])",
