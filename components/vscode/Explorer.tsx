@@ -2,9 +2,9 @@
 
 // Explorer — folder tree from store (sections + allowlisted projects).
 // Static workspace root ("Dharmil Gajjar") always on top; its row carries the
-// view actions right-aligned, hidden at rest and revealed on row hover —
-// VS Code tree-row actions (.customview-tree .actions { display: none } ->
-// display on row hover in views.css).
+// view actions right-aligned, hidden at rest and revealed whenever the
+// sidebar pane is hovered (group/pane lives on SideBar's aside — VS Code
+// `.pane:hover > .pane-header > .actions`, paneview.css).
 // Rows are shared TreeRows: selection follows autoReveal (openTab/setActiveTab
 // in lib/store), ancestors expand + the view scrolls to revealed rows via
 // revealNonce; selection renders blue only while the tree has focus.
@@ -149,7 +149,6 @@ export default function Explorer({
               selectPath(ROOT_NAME);
               toggleExpanded(ROOT_NAME);
             }}
-            className="group/root"
           >
             <span className="flex w-4 shrink-0 items-center justify-center text-vscode-dim">
               <Codicon
@@ -160,7 +159,7 @@ export default function Explorer({
             <span className="min-w-0 flex-1 truncate text-vscode-emphasis">
               {ROOT_NAME}
             </span>
-            <div className="ml-auto hidden shrink-0 items-center group-hover/root:flex">
+            <div className="ml-auto hidden shrink-0 items-center group-hover/pane:flex">
               {EXPLORER_ACTIONS.map((a) => (
                 <ViewActionButton
                   key={a.id}
