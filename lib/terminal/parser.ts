@@ -607,13 +607,63 @@ function checkoutCmd(ctx: TerminalCtx, args: string[]): ParseResult {
   ]);
 }
 
+const CURL_NOOP_FLAGS = new Set([
+  "-l",
+  "--list-only",
+  "-s",
+  "--silent",
+  "-S",
+  "--show-error",
+  "-L",
+  "--location",
+]);
+
 function curlCmd(args: string[]): ParseResult {
-  if (!args.length) return err("curl: try 'curl <url>'");
-  const url = args[args.length - 1];
-  if (!/^https?:\/\/[^\s]+$/i.test(url)) {
+  const urls: string[] = [];
+  let options = true;
+  for (const arg of args) {
+    if (options && arg === "--") {
+      options = false;
+      continue;
+    }
+    if (options && arg.startsWith("-") && arg !== "-") {
+      if (CURL_NOOP_FLAGS.has(arg)) continue;
+      // Accept the common combined short flags we treat as no-ops (-sL).
+      if (/^-[a-zA-Z]+$/.test(arg) && arg.length > 2) {
+        const known = [...arg.slice(1)].every((ch) => "lsSL".includes(ch));
+        if (known) continue;
+      }
+      return err(`curl: option ${arg}: is not supported here`);
+    }
+    urls.push(arg);
+  }
+
+  if (!urls.length) return err("curl: try 'curl <url>'");
+  if (urls.length > 1) return err("curl: only one URL is supported here");
+
+  const raw = urls[0].replace(/^\/\//, "");
+  const scheme = raw.match(/^([a-z][a-z0-9+.-]*):/i);
+  // `example.com:8080` is a host + port, not a scheme.
+  const hostPort = scheme
+    ? /^\d+(?:[/?#]|$)/.test(raw.slice(scheme[0].length))
+    : false;
+  const candidate = scheme && !hostPort ? raw : `https://${raw}`;
+
+  let parsed: URL;
+  try {
+    parsed = new URL(candidate);
+  } catch {
     return err("curl: (3) URL rejected: Malformed input");
   }
-  return ok("", [{ kind: "CURL", url }]);
+  if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+    return err(
+      `curl: (1) Protocol "${parsed.protocol.slice(0, -1)}" not supported`,
+    );
+  }
+  if (!parsed.hostname || parsed.username || parsed.password) {
+    return err("curl: (3) URL rejected: Malformed input");
+  }
+  return ok("", [{ kind: "CURL", url: parsed.href }]);
 }
 
 const HELP = [
