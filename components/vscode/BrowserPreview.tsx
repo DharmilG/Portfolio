@@ -546,8 +546,10 @@ export default function BrowserPreview({ tabId }: { tabId: string }) {
         </div>
 
         <div className="flex shrink-0 items-center gap-1">
-          <NavButton icon="comment" label="Comment on Elements" disabled />
-          <NavButton icon="inspect" label="Add Element to Chat" disabled />
+          <div className="hidden items-center gap-1 sm:flex">
+            <NavButton icon="comment" label="Comment on Elements" disabled />
+            <NavButton icon="inspect" label="Add Element to Chat" disabled />
+          </div>
           <div ref={menuRef} className="relative">
             <NavButton
               icon="more"
