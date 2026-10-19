@@ -15,9 +15,20 @@ import Section from "@/components/vscode/Section";
 import StatusBar from "@/components/vscode/StatusBar";
 import Tabs from "@/components/vscode/Tabs";
 import TitleBar from "@/components/vscode/TitleBar";
+import ViewActionButton from "@/components/vscode/ViewActionButton";
 import { COMMANDS, newTextFile, nextFreeKey } from "@/lib/commands";
 import { supabase } from "@/lib/db";
 import { useStore } from "@/lib/store";
+
+// Explorer pane-header actions (VS Code tooltips; behavior owned here).
+// They render in the SideBar header actions group — hidden at rest,
+// revealed on pane hover / focus (ViewPaneShowActions.Default).
+const EXPLORER_ACTIONS = [
+  { id: "new-file", icon: "new-file", label: "New File..." },
+  { id: "new-folder", icon: "new-folder", label: "New Folder..." },
+  { id: "refresh", icon: "refresh", label: "Refresh Explorer" },
+  { id: "collapse", icon: "collapse-all", label: "Collapse Folders in View" },
+] as const;
 
 function loadSections() {
   supabase
@@ -142,9 +153,24 @@ export default function PortfolioPage() {
       >
         {showSidebar ? (
           <div className="relative flex shrink-0">
-            <PrimarySideBar active={view} onSelect={selectView}>
+            <PrimarySideBar
+              active={view}
+              onSelect={selectView}
+              actions={
+                view === "explorer"
+                  ? EXPLORER_ACTIONS.map((a) => (
+                      <ViewActionButton
+                        key={a.id}
+                        icon={a.icon}
+                        label={a.label}
+                        onClick={() => handleViewAction(a.id)}
+                      />
+                    ))
+                  : null
+              }
+            >
               {view === "explorer" ? (
-                <Explorer onOpenFile={openCodeTab} onAction={handleViewAction} />
+                <Explorer onOpenFile={openCodeTab} />
               ) : (
                 <p className="px-4 py-2 text-xs text-vscode-dim">
                   {view} view lands with its component.
