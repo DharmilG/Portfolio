@@ -73,6 +73,13 @@
   /* SCM group count badge — badge.background/foreground (Dark Modern) */
   --color-vscode-count-bg: #616161;
   --color-vscode-count-fg: #f8f8f8;
+  /* SCM commit editor — input.background/border/placeholderForeground */
+  --color-vscode-scm-input-bg: #313131;
+  --color-vscode-scm-input-border: #3c3c3c;
+  --color-vscode-scm-placeholder: #989898;
+  /* SCM input validation — inputValidation.error* (inputColors.ts) */
+  --color-vscode-validation-error-bg: #5a1d1d;
+  --color-vscode-validation-error-border: #be1100;
   --color-vscode-term-green: #23d18b;
   --color-vscode-term-blue: #3b8eea;
 
