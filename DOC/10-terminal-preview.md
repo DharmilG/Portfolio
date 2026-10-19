@@ -1,6 +1,7 @@
 # 10 — Terminal + Preview + Markdown (Detailed)
 
-> As-built for the terminal (PV-C-TERMINAL); preview + markdown are planned.
+> As-built for the terminal (PV-C-TERMINAL) and markdown preview
+> (PV-C-MDPREVIEW); browser preview is planned.
 > Dummy emulator, client-only. Same `localEdits/localCommits` store as `05`.
 > No pty (Vercel serverless can't hold pty). Depends on `04 §8`, `05 §6-7`, `09 §5, §8`.
 
@@ -131,12 +132,41 @@ Misc:
 - Embed fix (your own Vercel apps): remove `X-Frame-Options: DENY`, set `Content-Security-Policy: frame-ancestors https://<portfolio>.vercel.app`. If `preview_embeddable=false` or `onError/load timeout 8s` -> fallback card `Preview blocked by site — [Open in new tab]`.
 - State: `previewUrl, history[], reloadKey` in Zustand `previewSlice`, `RELOAD_PREVIEW` from terminal.
 
-## 5. Markdown preview (planned)
+## 5. Markdown preview (PV-C-MDPREVIEW, as built)
 
-- Detect `.md/.mdx` in FileViewer. `Ctrl+Shift+V` (or split icon) toggles split group.
-- Render: `react-markdown + remark-gfm + rehype-highlight (github-dark)` + VS Code markdown CSS (max-width 860px, 16px/1.7).
-- Content: `localEdits[path] ?? blob.content` — edits live-update preview on `Ctrl+S` (debounce 300ms). Dirty banner `Previewing local edits ●`.
-- Scroll: independent (linked headings V2). Print-safe, no scripts.
+- Detect `.md/.mdx` in FileViewer. `Ctrl+Shift+V` toggles the side split;
+  `Ctrl+\` and the editor rail action (`Open Preview to the Side` / `Close
+  Preview`) run the same bound toggle, and the palette carries `Markdown: Open
+  Preview to the Side` + `Markdown: Close Preview`. The preview binds to one
+  source path: opening it on another markdown tab retargets, active-tab
+  switches do not change what it shows, and closing the source closes the
+  preview. The source stays a normal `code` tab, so the tab strip never
+  duplicates.
+- Layout: second editor group right of the source. 50% default, 5px sash
+  (240px preview floor, ~300px source floor), dragged width session-only. The
+  pane owns a 35px tab strip (`Preview <name>.md` + close) and, while the
+  source carries local content, a 22px dirty strip: `Previewing unsaved edits
+  ●` (draft buffer) / `Previewing local edits ●` (saved edit).
+- Content: `drafts[path] ?? localEdits[path] ?? tmpFs[path]`, re-rendered 300ms
+  after the last keystroke (typing stays responsive; Mermaid re-renders
+  coalesce). Repo files with no local content show the blob-milestone note
+  until `/api/repo/blob` lands; sources over 512 KB show a size note. The
+  whole preview is a dynamic import; Mermaid adds a second lazy chunk.
+- Renderer: `react-markdown` + `remark-gfm` + `rehype-slug` +
+  `rehype-highlight` (github-dark; `plainText: ["mermaid"]` keeps Mermaid
+  fences out of the highlighter). GFM tables/task lists/strikethrough, heading
+  slugs, 860px column, independent scroll. Links open in a new tab (heading
+  anchors smooth-scroll in place), images are lazy + `no-referrer`; raw HTML
+  is not executed. `.mdx` renders as plain Markdown (JSX is not compiled).
+- Mermaid: every ` ```mermaid ` fence maps to `MermaidBlock` — lazy
+  `import("mermaid")` after first mount, `theme: "base"` + `darkMode` with
+  workbench tokens, `securityLevel: "strict"`, `htmlLabels: false`,
+  `maxTextSize: 50_000`, `maxEdges: 500`, sanitized `useId`, and a module-level
+  render queue (Mermaid's pipeline is global state). A broken diagram renders
+  an isolated error card (message + source) without taking down the preview;
+  no zoom/pan/click links.
+- Persistence: bound path + width are session-only (absent from
+  `vscode-local-v1`); the preview never appears in the editor tab strip.
 
 ## 6. Safety / perf
 
