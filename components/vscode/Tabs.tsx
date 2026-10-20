@@ -9,7 +9,8 @@
 // actions rail (stays put while the tab run scrolls) — `...` menu: Copy path /
 // Copy URL (browser) / Reveal in Explorer / Open raw (repo file ->
 // raw.githubusercontent.com/<owner>/<repo>/HEAD/<path>); Markdown sources add
-// Open/Close Preview to the Side (DOC/10 §5). See DOC/05 §6.
+// an Open Preview / Open Source action that switches the same tab (DOC/10 §5).
+// See DOC/05 §6.
 import { useEffect, useRef, useState } from "react";
 import { isMarkdownPath } from "@/lib/langs";
 import { browserTabLabel, hasChanges, useStore } from "@/lib/store";
@@ -42,8 +43,8 @@ export default function Tabs({ onReveal }: TabsProps) {
   const closeTab = useStore((s) => s.closeTab);
   const saveDraft = useStore((s) => s.saveDraft);
   const discardDraft = useStore((s) => s.discardDraft);
-  const mdPreviewPath = useStore((s) => s.mdPreviewPath);
-  const toggleMdPreview = useStore((s) => s.toggleMdPreview);
+  const mdViewMode = useStore((s) => s.mdViewMode);
+  const toggleMdView = useStore((s) => s.toggleMdView);
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [pendingClose, setPendingClose] = useState<string | null>(null);
@@ -100,6 +101,7 @@ export default function Tabs({ onReveal }: TabsProps) {
     active && active.kind === "code" && isMarkdownPath(active.path)
       ? active.path
       : null;
+  const mdMode = mdActive ? (mdViewMode[mdActive] ?? "preview") : null;
   const rawUrl =
     active && active.kind !== "browser" ? rawUrlFor(active.path) : null;
   const items: MenuItem[] = [
@@ -160,15 +162,11 @@ export default function Tabs({ onReveal }: TabsProps) {
         })}
       </div>
       <div className="flex shrink-0 items-center px-1">
-        {mdActive ? (
+        {mdActive && mdMode ? (
           <ViewActionButton
-            icon={mdPreviewPath === mdActive ? "close" : "open-preview"}
-            label={
-              mdPreviewPath === mdActive
-                ? "Close Preview"
-                : "Open Preview to the Side"
-            }
-            onClick={() => toggleMdPreview(mdActive)}
+            icon={mdMode === "preview" ? "code" : "open-preview"}
+            label={mdMode === "preview" ? "Open Source" : "Open Preview"}
+            onClick={() => toggleMdView(mdActive)}
           />
         ) : null}
         <ViewActionButton
