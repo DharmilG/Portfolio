@@ -1,5 +1,17 @@
 # 11 — Deployment + Roadmap (Vercel, detailed)
 
+> **DEPLOY GATE — DO NOT DEPLOY YET.** Remove this block only when the human starts the deployment stage.
+> A Vercel deploy stays blocked until all of these are true:
+> 1. `pnpm build` passes locally; the six 0-byte API route stubs are implemented.
+> 2. Cloud Supabase is linked, migrations are applied, and real `sections` / `projects` rows exist.
+> 3. Vercel env is set; production never reads `.env.local` or `127.0.0.1`.
+> 4. GitHub reads are verified against `DharmilG/Portfolio`: branches, branch-aware tree/blob, and 16 commits/page in Source Control.
+> 5. Status-bar project/branch pickers and Source-Control-only commit history pass a smoke test.
+>
+> **Current scope (2026-10-20):** project picker + branch picker in the status bar; 16 real commits per page,
+> branch-aware, shown only in Source Control; repo owner stays backend-only; title/description/tags come from
+> DB overrides or GitHub metadata. The iframe/preview-URL work is deferred until the projects have public URLs.
+
 ## Env (Vercel Project > Settings > Env)
 ```
 NEXT_PUBLIC_SUPABASE_URL=... (public)
@@ -28,6 +40,6 @@ Pick region near Supabase (e.g. `bom1` for India/SG DB). Nodejs runtime for all 
 6. Custom domain + `frame-ancestors` on your preview apps to allow iframe embed.
 
 ## Roadmap (updated: history + fake-git are MVP, not V2)
-- **MVP (now):** flush shell + `profile.json` + Explorer + Shiki + local edit + fake commits + real paginated commits + terminal + markdown split + iframe preview + palette + cache + cron.
+- **MVP (now):** flush shell + `profile.json` + Explorer + Shiki + local edit + fake commits + real branch-aware commits (16/page) + terminal + markdown split + palette + cache + cron. The iframe preview waits for public project URLs.
 - **V1:** search across repos, `log --graph` full SVG, light theme, `View more` infinite, OG images, web-vitals 90+.
-- **V2:** multi-branch switcher (data from `github_cache.branch` list), shareable deep-links `/Projects/repo/path?line=12`, i18n, guestbook via Supabase inserts (authed only).
+- **V2:** shareable deep-links `/Projects/repo/path?line=12`, i18n, guestbook via Supabase inserts (authed only). The multi-branch switcher moved into the current scope.
