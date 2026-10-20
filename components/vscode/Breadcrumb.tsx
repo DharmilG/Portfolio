@@ -13,6 +13,7 @@
 import { Fragment, useEffect, useRef, useState } from "react";
 import { fileIcon } from "@/lib/fileIcons";
 import {
+  repoTreeKey,
   useStore,
   type Project,
   type Section,
@@ -120,6 +121,8 @@ function childrenOf(
   sections: Section[],
   projects: Project[],
   trees: Record<string, TreeEntry[]>,
+  branchByRepo: Record<string, string>,
+  treeBranch: Record<string, string>,
   tmpFs: Record<string, string>,
   renames: Record<string, string>,
 ): PickerItem[] | null {
@@ -184,7 +187,7 @@ function childrenOf(
     const parts = path.split("/");
     if (parts.length < 3) return null;
     const repo = `${parts[1]}/${parts[2]}`;
-    const tree = trees[repo];
+    const tree = trees[repoTreeKey(repo, branchByRepo[repo] ?? treeBranch[repo])];
     if (!tree) return null;
     const repoKey = `Projects/${repo}`;
     const rest = parts.slice(3).join("/");
@@ -235,6 +238,8 @@ function rowsFor(
   sections: Section[],
   projects: Project[],
   trees: Record<string, TreeEntry[]>,
+  branchByRepo: Record<string, string>,
+  treeBranch: Record<string, string>,
   tmpFs: Record<string, string>,
   renames: Record<string, string>,
 ): PickerRow[] {
@@ -248,6 +253,8 @@ function rowsFor(
           sections,
           projects,
           trees,
+          branchByRepo,
+          treeBranch,
           tmpFs,
           renames,
         );
@@ -255,7 +262,19 @@ function rowsFor(
       }
     }
   };
-  walk(childrenOf(level, sections, projects, trees, tmpFs, renames) ?? [], 0);
+  walk(
+    childrenOf(
+      level,
+      sections,
+      projects,
+      trees,
+      branchByRepo,
+      treeBranch,
+      tmpFs,
+      renames,
+    ) ?? [],
+    0,
+  );
   return rows;
 }
 
@@ -265,6 +284,8 @@ export default function Breadcrumb({ onOpenFile }: BreadcrumbProps) {
   const sections = useStore((s) => s.sections);
   const projects = useStore((s) => s.projects);
   const trees = useStore((s) => s.trees);
+  const branchByRepo = useStore((s) => s.branchByRepo);
+  const treeBranch = useStore((s) => s.treeBranch);
   const tmpFs = useStore((s) => s.tmpFs);
   const renames = useStore((s) => s.renames);
 
@@ -319,6 +340,8 @@ export default function Breadcrumb({ onOpenFile }: BreadcrumbProps) {
         sections,
         projects,
         trees,
+        branchByRepo,
+        treeBranch,
         tmpFs,
         renames,
       )
@@ -330,10 +353,32 @@ export default function Breadcrumb({ onOpenFile }: BreadcrumbProps) {
       return;
     }
     // No children (empty folder / non-tree section) = no-op, like VS Code.
-    if (!childrenOf(list, sections, projects, trees, tmpFs, renames)) return;
+    if (
+      !childrenOf(
+        list,
+        sections,
+        projects,
+        trees,
+        branchByRepo,
+        treeBranch,
+        tmpFs,
+        renames,
+      )
+    ) {
+      return;
+    }
     // The clicked node becomes the focused row and auto-expands (folder).
     const expandable =
-      childrenOf(crumbKey, sections, projects, trees, tmpFs, renames) !== null;
+      childrenOf(
+        crumbKey,
+        sections,
+        projects,
+        trees,
+        branchByRepo,
+        treeBranch,
+        tmpFs,
+        renames,
+      ) !== null;
     setPicker({
       crumb: crumbKey,
       list,
@@ -349,7 +394,16 @@ export default function Breadcrumb({ onOpenFile }: BreadcrumbProps) {
       // In-place expand/collapse like the Explorer; childless folders just
       // take focus.
       const expandable =
-        childrenOf(id, sections, projects, trees, tmpFs, renames) !== null;
+        childrenOf(
+          id,
+          sections,
+          projects,
+          trees,
+          branchByRepo,
+          treeBranch,
+          tmpFs,
+          renames,
+        ) !== null;
       setPicker((p) =>
         p
           ? {
