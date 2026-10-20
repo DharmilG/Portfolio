@@ -4,8 +4,10 @@
   "pushed_count": 417,
   "session": {
     "branch": "main",
-    "next_up": "Start Wave R R1 against the now-pushed DharmilG/Portfolio public repo: lib/github + local repo fallback, /api/projects|repo/tree|repo/blob, add the real sections/projects rows, then R2 client wiring. Public GitHub read works without a PAT (60 req/h); add GITHUB_PAT for 5k/h if needed. Then re-scope PV-UI-TOAST to real error/extension/update producers. Remaining UI click-tests stay tracked (palette rows/chips/confirm/menus, ActivityBar/Explorer eyepass, Sash drag feel). Browser follow-ups stay deferred (per-row remove-from-history, search-engine gear, Quick Open Browser Tab + Ctrl+Shift+A chord, DevTools button, favorites).",
+    "next_up": "DO NOT DEPLOY YET — deployment gate is recorded in DOC/11 (remove it only when the human starts deployment). Next: Wave R R1 — implement lib/github + lib/allowlist + lib/cache + lib/vfs and /api/projects|repo/tree|repo/blob|repo/branches|commits. Commits are branch-aware, 16/page, hasMore via Link, and render only in Source Control. R2: status-bar project + branch pickers, Explorer branch-aware tree, metadata title/description/tags. Use public GitHub reads for DharmilG/Portfolio now; add GITHUB_PAT for 5k/h. Add real sections/projects rows, get `pnpm build` green, then cloud Supabase + Vercel env. Preview iframe stays deferred. No pushes until the human says so.",
     "pending_verifications": [
+      "branch/commits: /api/repo/branches + branch-aware tree/blob + /api/commits?branch&per_page=16; hasMore via Link; history only in Source Control; project/branch pickers in status bar",
+      "deploy gate: `pnpm build` currently fails on six 0-byte API routes; do not deploy until DOC/11 gate passes",
       "responsive wave (a0d8646..4371c15, 6 commits; CDP matrix): at 1500px nothing moved (command center still 600px, menu row/window controls/status bar unchanged); resizing down never produces document or pane scrollbars — the command center shrinks first (585px at 1280, 329px at 1024, 161px at 768) and the shell/header/footer/row all stay inside the viewport at 1500/1280/1024/768/640/390; window controls hide <1024, Customize Layout + Secondary Side Bar hide <768, Spaces/UTF-8/LF hide <768, Ln/Col + sync + language label hide <640, menu row + command center hide <640 (logo + back/forward + sidebar/panel/globe icons remain), status bar keeps branch/problems/bell on phones; <768 the sidebar starts collapsed on load, Ctrl+B opens it as an absolutely-positioned drawer (shadow, sash hidden, editor full width underneath), opening a file from the drawer closes it — CONFIRM this approach; browser tab at 390/768: tab strip + navbar fit (chat actions hidden <640), the iframe card scroll == client (no pane h/v scrollbars; the framed page's own scrollbar is expected), no gap below the status bar; the two chat glyphs + welcome subtitle wording remain open confirmations",
       "terminal panel (PV-C-TERMINAL): closed by default -> Ctrl+J / Ctrl+` opens a 280px bottom card with a 5px gutter (editor shrinks, titlebar/tabs/statusbar pixel-unchanged); drag the gutter live (min 120px, 200px editor floor), release persists for the session; Maximize -> 60vh capped by the floor, Restore returns to the last height; close -> editor restores and reopen keeps xterm scrollback; chrome: 35px title (11px uppercase TERMINAL, 1px #0078D4 underline, square 28px maximize/close), 22px tab strip (1px separators, 1px #0078D4 active left border, 22px +/clear/trash), #181818 surface, 8px radius, toolbar hover #5a5d5e50",
       "terminal behavior: sessions pwsh + bash, + adds bash, trash kills the active session, killing the last closes the panel (reopen seeds bash), tab switch preserves scrollback; bash prompt user@portfolio:~$ / pwsh PS ~>, blue cwd, amber main* only with saved edits, Fira Code 13px, Dark Modern ANSI; type help, ls (Projects + tmp), cat, echo > tmp/a, open; Up/Down history, Tab completion, Ctrl+L/K clear, Ctrl+C cancel or copy selection, Ctrl+Enter commit, Ctrl+Shift+C/V, multi-line paste; Ctrl+J/Ctrl+`/Ctrl+B while xterm is focused do not insert LF/^B and still toggle; git status/diff/commit -m/log/branch/checkout -- . (local only, SCM + statusbar sync), push/pull/fetch stay jokes; curl -> GET + up to 20 KB body / specific proxy error (live route); theme light leaves the UI dark with a dim note; history survives new sessions via vscode-term-hist, panel height/session state resets on reload; View menu, layout-panel icon, palette, Terminal > New Terminal/Clear all work",
@@ -28,8 +30,10 @@
       "explorer root row (PV-C-EXPLORERHEADER): at rest the row shows chevron + 'Dharmil Gajjar' only (name full at 170/222/280px); hover ANYWHERE in the Explorer sidebar pane (header, tree body, empty space below the rows) -> new-file / new-folder / refresh / collapse-all appear right-aligned beside the name (instant, no animation); move the pointer into the editor -> they hide again; at <=~238px the name ellipsizes only while they are shown (280px keeps it full); click each: New File -> tmp tab, New Folder -> tmp/New Folder N (expands tmp), Refresh -> re-fetches sections, Collapse -> collapses every folder; Explorer header keeps its always-visible ... ; Ctrl+B hide + reopen -> hidden at rest; palette + tabs + statusbar pixel-unchanged",
       "browser preview (PV-C-BROWSERPREVIEW): globe -> no browser tabs = opens an Integrated Browser tab; with tabs open = menu (New Integrated Browser Tab + a row per open tab, active marked); a fresh tab shows the welcome state (globe glyph, 'Browser', 'Enter a URL above to get started.') with the URL field focused + the picker open; navbar: back/forward/reload 28px (40% dimmed when unavailable, tooltips on hover), URL container #313131, 1px #3C3C3C, 6px radius, focus #0078D4, placeholder 'Search or enter URL'; typing 'localhost:3000' -> rows 'localhost:3000' + 'localhost:3000 - Bing Search' (go-to first), typing 'hello world' -> search row only, typing 'local' -> up to 6 History matches below; empty field -> top-3 'Recents' + other tabs under 'Open Tabs', group label right-aligned on the first row; 22px rows (focus #04395E/white, hover #2A2D2E); Enter/click navigates the current tab (label -> host, globe glyph); search rows open in THIS tab while it is still empty, else in a NEW browser tab; back/forward move the stack, reload remounts the frame; switching editor tabs keeps each page alive (hidden, not unloaded); ... menu: Copy URL / Open in External Browser / Reload / Suspend Tab (unmounts the frame -> 'Tab Suspended' card + Reload; menu becomes Resume Tab) / Clear Browser History (Recents empties); the two dimmed chat actions (codicon-comment 'Comment on Elements' + codicon-inspect 'Add Element to Chat' — CONFIRM these glyphs) sit right of the URL, no pointer cursor, tooltips still show; Ctrl+L focuses+selects the URL and reopens the picker (never while typing in another field/xterm; Esc closes the picker, a second Esc blurs); Recents/History survive reload (cap 200); terminal: 'open --preview localhost:3000' retargets the active/first browser tab (creates one when none; help lists a BROWSER section), 'reload' remounts it (dim note when no browser tab); palette: Browser: Open Integrated Browser / Focus URL Input (Ctrl+L chip) / Reload; Run > Open Integrated Browser; known web-clone limits: no title/favicon in the tab, in-page links do not move the address bar, Google/Bing/DDG refuse framing (escape hatch = Open in External Browser), Ctrl+L cannot be caught while focus is inside the framed page; welcome subtitle note: the real VS Code no-chat string is used ('Enter a URL above to get started.') — say the word if you want different copy"
     ],
-    "tip": "6cfff43",
-    "unpushed": [],
+    "tip": "98f139e",
+    "unpushed": [
+      "98f139e"
+    ],
     "last_updated": "2026-10-20"
   },
   "source_of_truth": {
@@ -39,10 +43,10 @@
     "tokens": "app/globals.css @theme"
   },
   "summary": {
-    "total": 56,
+    "total": 57,
     "done": 29,
     "in_progress": 10,
-    "backlog": 17
+    "backlog": 18
   },
   "tasks": [
     {
@@ -363,16 +367,23 @@
       "title": "API blob"
     },
     {
-      "description": "Wave R (queued after terminal UX): R1 — seed.sql + cache/allowlist/github/repoLocal libs + /api/projects|repo/tree|repo/blob (local provider in dev, GitHub read-only elsewhere); R2 — repo cache loaders, lib/vfs, shared useFileContent, Explorer folder nesting + auto-open README, FileViewer/MarkdownPreview wiring, langs. Covers the PV-API-PROJECTS/TREE/BLOB backlog subtasks when it starts.",
+      "description": "Branch list for a project + branch picker (Contents read; branch param feeds tree/blob/commits)",
+      "file": "app/api/repo/branches/route.ts",
+      "id": "PV-API-BRANCHES",
+      "status": "backlog",
+      "title": "API branches"
+    },
+    {
+      "description": "Wave R (queued): R1 — seed.sql + cache/allowlist/github/vfs libs + /api/projects|repo/tree|repo/blob|repo/branches|commits (local provider in dev, GitHub read-only elsewhere); branch-aware tree/blob/commits, 16 commits/page, hasMore via Link. R2 — repo cache loaders, shared useFileContent, Explorer folder nesting + auto-open README, FileViewer/MarkdownPreview wiring, langs, status-bar project + branch pickers, Source-Control-only history, metadata title/description/tags. Preview iframe deferred until public project URLs exist. Covers the PV-API-PROJECTS/TREE/BLOB/BRANCHES/COMMITS backlog subtasks when it starts.",
       "file": "lib/vfs.ts",
       "id": "PV-REPO-CONTENT",
       "status": "backlog",
       "owner": "agent",
       "title": "Repo content (Wave R) — pending",
-      "log": "Queued 2026-10-20 at user request; starts only after the terminal UX wave. R1/R2 plans are ready (local provider + GitHub, 512KB blob cap, tree cap 5000, allowlist first, README auto-open)."
+      "log": "Queued 2026-10-20 at user request. Scope clarified: newest 16 commits per page (not full history at once), branch-specific history, commits only in Source Control, project + branch selectors in the status bar, repo owner backend-only, title/description/tags from overrides or GitHub metadata. Deploy gate written to DOC/11; no pushes until the human says so. R1/R2 plans are ready (local provider + GitHub, 512KB blob cap, tree cap 5000, allowlist first, README auto-open)."
     },
     {
-      "description": "Paginated real history (app/api/commits/route.ts, per DOC/09 §4)",
+      "description": "Per-project, branch-aware paginated real history (app/api/commits/route.ts): 16/page, hasMore from GitHub Link, Source Control only, 24h per branch/page cache.",
       "file": "app/api/commits/route.ts",
       "id": "PV-API-COMMITS",
       "status": "backlog",
@@ -407,14 +418,16 @@
       "file": null,
       "id": "PV-ENV-PROD",
       "status": "backlog",
-      "title": "Prod env + link"
+      "title": "Prod env + link",
+      "log": "Cloud Supabase + Vercel env required; local 127.0.0.1 / .env.local are not deployable. Add NEXT_PUBLIC_SUPABASE_URL + anon key, SUPABASE_SERVICE_ROLE_KEY, GITHUB_PAT, Upstash, REVALIDATE_SECRET, CRON_SECRET."
     },
     {
       "description": "Custom domain + frame-ancestors + final smoke (per DOC/11)",
       "file": null,
       "id": "PV-DEPLOY",
       "status": "backlog",
-      "title": "Deploy"
+      "title": "Deploy",
+      "log": "Deploy gate recorded 2026-10-20 in DOC/11: blocked on `pnpm build` (six 0-byte API routes), cloud Supabase + real rows, Vercel env, and branch/16-commit/source-control smoke. Do not deploy until the human starts the deployment stage."
     },
     {
       "id": "PV-SKILL-DEPTH",
