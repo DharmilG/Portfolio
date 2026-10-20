@@ -16,6 +16,7 @@ import { useEffect, useRef, useState } from "react";
 import { fileIcon } from "@/lib/fileIcons";
 import {
   isDirty,
+  repoTreeKey,
   ROOT_NAME,
   useStore,
   type TreeEntry,
@@ -147,6 +148,9 @@ export default function Explorer({
   const revealNonce = useStore((s) => s.revealNonce);
   const selectPath = useStore((s) => s.selectPath);
   const setTree = useStore((s) => s.setTree);
+  const setTreeBranch = useStore((s) => s.setTreeBranch);
+  const branchByRepo = useStore((s) => s.branchByRepo);
+  const treeBranch = useStore((s) => s.treeBranch);
   const [renaming, setRenaming] = useState<string | null>(null);
   const [focused, setFocused] = useState(false);
   const [treeLoading, setTreeLoading] = useState<Record<string, boolean>>({});
@@ -175,50 +179,65 @@ export default function Explorer({
     repo_name: string;
   }) => {
     const repo = `${project.repo_owner}/${project.repo_name}`;
-    if (requested.current.has(repo) || trees[repo]) return;
-    requested.current.add(repo);
-    setTreeLoading((prev) => ({ ...prev, [repo]: true }));
-    fetch(
-      `/api/repo/tree?owner=${encodeURIComponent(project.repo_owner)}&repo=${encodeURIComponent(project.repo_name)}`,
-      { cache: "no-store" },
-    )
+    // A branch picked in the status bar wins; without one the route falls
+    // back to the repository's default branch and tells us which it used.
+    const branch = branchByRepo[repo];
+    const key = repoTreeKey(repo, branch ?? treeBranch[repo]);
+    if (requested.current.has(key) || trees[key]) return;
+    requested.current.add(key);
+    setTreeLoading((prev) => ({ ...prev, [key]: true }));
+    const query = new URLSearchParams({
+      owner: project.repo_owner,
+      repo: project.repo_name,
+    });
+    if (branch) query.set("branch", branch);
+    fetch(`/api/repo/tree?${query.toString()}`, { cache: "no-store" })
       .then(async (res) => {
-        const data: { tree?: TreeEntry[]; error?: string } = await res.json();
+        const data: {
+          tree?: TreeEntry[];
+          branch?: string;
+          error?: string;
+        } = await res.json();
         if (!res.ok) throw new Error(data.error ?? "Could not load files");
-        setTree(repo, Array.isArray(data.tree) ? data.tree : []);
+        const loaded = data.branch ?? branch ?? "";
+        setTree(repo, loaded, Array.isArray(data.tree) ? data.tree : []);
+        setTreeBranch(repo, loaded);
       })
       .catch((error: unknown) => {
         const message =
           error instanceof Error ? error.message : "Could not load files";
-        setTreeErrors((prev) => ({ ...prev, [repo]: message }));
+        setTreeErrors((prev) => ({ ...prev, [key]: message }));
       })
       .finally(() => {
-        requested.current.delete(repo);
+        requested.current.delete(key);
         setTreeLoading((prev) => {
           const next = { ...prev };
-          delete next[repo];
+          delete next[key];
           return next;
         });
       });
   };
 
-  // Fetch once when a project folder is opened; the tree is session-cached in
-  // the store. A failed request stays put until the Retry row is clicked.
+  // Fetch once per project + branch when the folder is opened; the tree is
+  // session-cached in the store (per branch). A failed request stays put
+  // until the Retry row is clicked.
   useEffect(() => {
     for (const project of projects) {
       const repo = `${project.repo_owner}/${project.repo_name}`;
       const key = `Projects/${repo}`;
+      const branch = branchByRepo[repo] ?? treeBranch[repo];
+      const treeKey = repoTreeKey(repo, branch);
       if (
         !expanded[key] ||
-        trees[repo] ||
-        treeLoading[repo] ||
-        treeErrors[repo]
+        trees[treeKey] ||
+        treeLoading[treeKey] ||
+        treeErrors[treeKey]
       ) {
         continue;
       }
       requestTree(project);
     }
-  }, [expanded, projects, treeErrors, treeLoading, trees]);
+  }, [expanded, projects, treeErrors, treeLoading, trees, branchByRepo, treeBranch]);
 
   const rootOpen = expanded[ROOT_NAME] ?? false;
   const showRoot =
@@ -487,7 +506,9 @@ export default function Explorer({
                             p.title_override ?? p.repo_name,
                           );
                           if (!match(name)) return null;
-                          const tree = trees[repo];
+                          const branch = branchByRepo[repo] ?? treeBranch[repo];
+                          const treeKey = repoTreeKey(repo, branch);
+                          const tree = trees[treeKey];
                           const rkey = `Projects/${repo}`;
                           const ropen = expanded[rkey] ?? false;
                           return (
@@ -523,13 +544,13 @@ export default function Explorer({
                                 )}
                               </TreeRow>
                               {ropen ? (
-                                treeErrors[repo] ? (
+                                treeErrors[treeKey] ? (
                                   <button
                                     type="button"
                                     onClick={() => {
                                       setTreeErrors((prev) => {
                                         const next = { ...prev };
-                                        delete next[repo];
+                                        delete next[treeKey];
                                         return next;
                                       });
                                       requestTree(p);
