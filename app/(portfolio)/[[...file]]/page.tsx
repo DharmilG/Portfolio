@@ -88,8 +88,8 @@ function closeSidebarOnNarrow() {
   if (st.showSidebar) st.toggleSidebar();
 }
 
-function openCodeTab(path: string) {
-  useStore.getState().openTab({ kind: "code", path, sha: null });
+function openCodeTab(path: string, sha?: string | null) {
+  useStore.getState().openTab({ kind: "code", path, sha: sha ?? null });
   closeSidebarOnNarrow();
 }
 
