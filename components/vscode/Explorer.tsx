@@ -14,14 +14,19 @@
 // See DOC/05 §5, skills vscode-tokens + local-git.
 import { useEffect, useRef, useState } from "react";
 import { fileIcon } from "@/lib/fileIcons";
-import { isDirty, ROOT_NAME, useStore } from "@/lib/store";
+import {
+  isDirty,
+  ROOT_NAME,
+  useStore,
+  type TreeEntry,
+} from "@/lib/store";
 import Codicon from "./Codicon";
 import RenameInput from "./RenameInput";
 import TreeRow from "./TreeRow";
 import ViewActionButton from "./ViewActionButton";
 
 type ExplorerProps = {
-  onOpenFile?: (path: string) => void;
+  onOpenFile?: (path: string, sha?: string | null) => void;
   onRename?: (path: string, name: string | null) => void;
   onAction?: (id: string) => void;
   filter?: string;
@@ -40,6 +45,81 @@ const EXPLORER_ACTIONS: ViewAction[] = [
   { id: "refresh", icon: "refresh", label: "Refresh Explorer" },
   { id: "collapse", icon: "collapse-all", label: "Collapse Folders in View" },
 ];
+
+// Nested repo folders are built from GitHub's recursive tree, so the Explorer
+// does not need one request per directory. Indents stay static Tailwind
+// classes (computed class names would not be emitted by the compiler).
+const REPO_INDENTS = [
+  "pl-14",
+  "pl-[3.5rem]",
+  "pl-[4.5rem]",
+  "pl-[5.5rem]",
+  "pl-[6.5rem]",
+  "pl-[7.5rem]",
+  "pl-[8.5rem]",
+];
+
+type VfsNode = {
+  name: string;
+  path: string;
+  type: "blob" | "tree";
+  sha: string;
+  size?: number;
+  children: VfsNode[];
+};
+
+function buildVfs(entries: TreeEntry[]): VfsNode[] {
+  const root: VfsNode[] = [];
+  const dirs = new Map<string, VfsNode>();
+
+  const ensureDir = (path: string): VfsNode => {
+    const existing = dirs.get(path);
+    if (existing) return existing;
+    const slash = path.lastIndexOf("/");
+    const node: VfsNode = {
+      name: slash < 0 ? path : path.slice(slash + 1),
+      path,
+      type: "tree",
+      sha: "",
+      children: [],
+    };
+    dirs.set(path, node);
+    if (slash < 0) root.push(node);
+    else ensureDir(path.slice(0, slash)).children.push(node);
+    return node;
+  };
+
+  for (const entry of entries) {
+    if (entry.type === "tree") {
+      ensureDir(entry.path).sha = entry.sha;
+      continue;
+    }
+    const slash = entry.path.lastIndexOf("/");
+    const node: VfsNode = {
+      name: slash < 0 ? entry.path : entry.path.slice(slash + 1),
+      path: entry.path,
+      type: "blob",
+      sha: entry.sha,
+      size: entry.size,
+      children: [],
+    };
+    const parent = slash < 0 ? null : ensureDir(entry.path.slice(0, slash));
+    (parent ? parent.children : root).push(node);
+  }
+
+  const sort = (nodes: VfsNode[]) => {
+    nodes.sort((a, b) =>
+      a.type === b.type
+        ? a.name.localeCompare(b.name)
+        : a.type === "tree"
+          ? -1
+          : 1,
+    );
+    nodes.forEach((node) => sort(node.children));
+  };
+  sort(root);
+  return root;
+}
 
 export function resolveName(
   fullPath: string,
@@ -66,8 +146,12 @@ export default function Explorer({
   const selectedPath = useStore((s) => s.selectedPath);
   const revealNonce = useStore((s) => s.revealNonce);
   const selectPath = useStore((s) => s.selectPath);
+  const setTree = useStore((s) => s.setTree);
   const [renaming, setRenaming] = useState<string | null>(null);
   const [focused, setFocused] = useState(false);
+  const [treeLoading, setTreeLoading] = useState<Record<string, boolean>>({});
+  const [treeErrors, setTreeErrors] = useState<Record<string, string>>({});
+  const requested = useRef(new Set<string>());
   const treeRef = useRef<HTMLDivElement>(null);
 
   // autoReveal scroll: openTab/setActiveTab bump revealNonce; bring the
@@ -86,11 +170,135 @@ export default function Explorer({
     filter.trim() === "" ||
     name.toLowerCase().includes(filter.trim().toLowerCase());
 
+  const requestTree = (project: {
+    repo_owner: string;
+    repo_name: string;
+  }) => {
+    const repo = `${project.repo_owner}/${project.repo_name}`;
+    if (requested.current.has(repo) || trees[repo]) return;
+    requested.current.add(repo);
+    setTreeLoading((prev) => ({ ...prev, [repo]: true }));
+    fetch(
+      `/api/repo/tree?owner=${encodeURIComponent(project.repo_owner)}&repo=${encodeURIComponent(project.repo_name)}`,
+      { cache: "no-store" },
+    )
+      .then(async (res) => {
+        const data: { tree?: TreeEntry[]; error?: string } = await res.json();
+        if (!res.ok) throw new Error(data.error ?? "Could not load files");
+        setTree(repo, Array.isArray(data.tree) ? data.tree : []);
+      })
+      .catch((error: unknown) => {
+        const message =
+          error instanceof Error ? error.message : "Could not load files";
+        setTreeErrors((prev) => ({ ...prev, [repo]: message }));
+      })
+      .finally(() => {
+        requested.current.delete(repo);
+        setTreeLoading((prev) => {
+          const next = { ...prev };
+          delete next[repo];
+          return next;
+        });
+      });
+  };
+
+  // Fetch once when a project folder is opened; the tree is session-cached in
+  // the store. A failed request stays put until the Retry row is clicked.
+  useEffect(() => {
+    for (const project of projects) {
+      const repo = `${project.repo_owner}/${project.repo_name}`;
+      const key = `Projects/${repo}`;
+      if (
+        !expanded[key] ||
+        trees[repo] ||
+        treeLoading[repo] ||
+        treeErrors[repo]
+      ) {
+        continue;
+      }
+      requestTree(project);
+    }
+  }, [expanded, projects, treeErrors, treeLoading, trees]);
+
   const rootOpen = expanded[ROOT_NAME] ?? false;
   const showRoot =
     sections.length === 0 ||
     match(ROOT_NAME) ||
     sections.some((sec) => match(resolveName(sec.slug, renames, sec.title)));
+
+  const nodeMatches = (node: VfsNode, repoKey: string): boolean => {
+    const key = `${repoKey}/${node.path}`;
+    if (match(resolveName(key, renames, node.name))) return true;
+    return node.type === "tree" && node.children.some((child) => nodeMatches(child, repoKey));
+  };
+
+  const renderRepoNodes = (
+    nodes: VfsNode[],
+    repoKey: string,
+    depth: number,
+  ) =>
+    nodes.map((node) => {
+      if (!nodeMatches(node, repoKey)) return null;
+      const key = `${repoKey}/${node.path}`;
+      const name = resolveName(key, renames, node.name);
+      const indent = REPO_INDENTS[Math.min(depth, REPO_INDENTS.length - 1)];
+
+      if (node.type === "tree") {
+        const open = expanded[key] ?? false;
+        return (
+          <div key={key}>
+            <TreeRow
+              path={key}
+              indent={indent}
+              selected={selectedPath === key}
+              focused={focused}
+              onClick={() => {
+                selectPath(key);
+                toggleExpanded(key);
+              }}
+            >
+              <span className="flex w-4 shrink-0 items-center justify-center text-vscode-dim">
+                <Codicon
+                  name={open ? "chevron-down" : "chevron-right"}
+                  className="translate-y-px"
+                />
+              </span>
+              <span className="text-vscode-dim">
+                <Codicon name="folder" />
+              </span>
+              <span className="truncate">{name}</span>
+            </TreeRow>
+            {open ? renderRepoNodes(node.children, repoKey, depth + 1) : null}
+          </div>
+        );
+      }
+
+      const dirty = isDirty(edits, key);
+      return (
+        <TreeRow
+          key={key}
+          path={key}
+          indent={indent}
+          selected={selectedPath === key}
+          focused={focused}
+          onClick={() => onOpenFile?.(key, node.sha)}
+        >
+          <span className="text-vscode-dim">
+            <Codicon name={fileIcon(name)} />
+          </span>
+          <span
+            className={`truncate ${dirty ? "text-vscode-modified" : ""}`}
+          >
+            {name}
+          </span>
+          {dirty ? (
+            <span className="ml-auto text-[10px] font-semibold text-vscode-modified">
+              M
+            </span>
+          ) : null}
+        </TreeRow>
+      );
+    });
 
   // Pinned tmp scratch (local-only) — appears when tmpFs has entries.
   const tmpKeys = Object.keys(tmpFs).filter((k) => k.startsWith("tmp/"));
@@ -315,53 +523,31 @@ export default function Explorer({
                                 )}
                               </TreeRow>
                               {ropen ? (
-                                !tree ? (
+                                treeErrors[repo] ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setTreeErrors((prev) => {
+                                        const next = { ...prev };
+                                        delete next[repo];
+                                        return next;
+                                      });
+                                      requestTree(p);
+                                    }}
+                                    className="w-full py-1 pl-14 pr-2 text-left text-xs text-vscode-dim hover:text-vscode-fg"
+                                  >
+                                    Could not load files · Retry
+                                  </button>
+                                ) : !tree ? (
                                   <p className="animate-pulse py-1 pl-14 pr-2 text-xs text-vscode-dim">
-                                    Loading tree…
+                                    Loading files…
+                                  </p>
+                                ) : tree.length === 0 ? (
+                                  <p className="py-1 pl-14 pr-2 text-xs text-vscode-dim">
+                                    No files
                                   </p>
                                 ) : (
-                                  tree
-                                    .filter((e) => e.type === "blob")
-                                    .map((e) => {
-                                      const fkey = `${rkey}/${e.path}`;
-                                      const fname = resolveName(
-                                        fkey,
-                                        renames,
-                                        e.path.split("/").pop() ?? e.path,
-                                      );
-                                      if (!match(fname)) return null;
-                                      const dirty = isDirty(edits, fkey);
-                                      return (
-                                        <TreeRow
-                                          key={e.sha}
-                                          path={fkey}
-                                          indent="pl-14"
-                                          selected={selectedPath === fkey}
-                                          focused={focused}
-                                          onClick={() => onOpenFile?.(fkey)}
-                                        >
-                                          <span className="text-vscode-dim">
-                                            <Codicon
-                                              name={fileIcon(fname)}
-                                            />
-                                          </span>
-                                          <span
-                                            className={`truncate ${
-                                              dirty
-                                                ? "text-vscode-modified"
-                                                : ""
-                                            }`}
-                                          >
-                                            {fname}
-                                          </span>
-                                          {dirty ? (
-                                            <span className="ml-auto text-[10px] font-semibold text-vscode-modified">
-                                              M
-                                            </span>
-                                          ) : null}
-                                        </TreeRow>
-                                      );
-                                    })
+                                  renderRepoNodes(buildVfs(tree), rkey, 0)
                                 )
                               ) : null}
                             </div>
