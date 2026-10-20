@@ -192,6 +192,7 @@ export default function TitleBar({
       </div>
       <button
         type="button"
+        data-command-center
         onClick={() => {
           setOpenMenu(null);
           onQuickOpen?.();
