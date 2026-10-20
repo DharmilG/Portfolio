@@ -83,24 +83,31 @@ export const COMMANDS: Command[] = [
     },
   },
 
-  // Markdown (DOC/10 §5) — the source tab stays put; the preview is a bound
-  // split beside it, so the same command opens or closes depending on state.
+  // Markdown (DOC/10 §5) — preview and source share the same editor tab.
+  // Toggle is the keyboard/action behavior; Open Source is the explicit
+  // palette command for switching a preview back to the editable surface.
   {
     id: "markdown-preview",
-    label: "Markdown: Open Preview to the Side",
+    label: "Markdown: Toggle Preview",
     keybinding: "Ctrl+Shift+V",
     run: () => {
       const st = useStore.getState();
       const tab = st.tabs.find((t) => t.id === st.activeTabId);
       if (tab && tab.kind === "code" && isMarkdownPath(tab.path)) {
-        st.toggleMdPreview(tab.path);
+        st.toggleMdView(tab.path);
       }
     },
   },
   {
-    id: "markdown-close-preview",
-    label: "Markdown: Close Preview",
-    run: () => useStore.getState().closeMdPreview(),
+    id: "markdown-open-source",
+    label: "Markdown: Open Source",
+    run: () => {
+      const st = useStore.getState();
+      const tab = st.tabs.find((t) => t.id === st.activeTabId);
+      if (tab && tab.kind === "code" && isMarkdownPath(tab.path)) {
+        st.setMdViewMode(tab.path, "source");
+      }
+    },
   },
 
   // View
