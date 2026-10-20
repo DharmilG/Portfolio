@@ -27,7 +27,7 @@ import {
 import { COMMANDS, type Command } from "@/lib/commands";
 import { fileIcon } from "@/lib/fileIcons";
 import { fuzzyScore } from "@/lib/fuzzy";
-import { useStore, type PaletteMode } from "@/lib/store";
+import { repoTreeKey, useStore, type PaletteMode } from "@/lib/store";
 import Codicon from "./Codicon";
 import Modal from "./Modal";
 
@@ -150,6 +150,9 @@ export default function CommandPalette() {
   const tabs = useStore((s) => s.tabs);
   const tmpFs = useStore((s) => s.tmpFs);
   const trees = useStore((s) => s.trees);
+  const projects = useStore((s) => s.projects);
+  const branchByRepo = useStore((s) => s.branchByRepo);
+  const treeBranch = useStore((s) => s.treeBranch);
   const setPaletteMode = useStore((s) => s.setPaletteMode);
   const closePalette = useStore((s) => s.closePalette);
 
@@ -277,11 +280,13 @@ export default function CommandPalette() {
     const paths = [
       ...codeTabs.map((t) => t.path),
       ...Object.keys(tmpFs),
-      ...Object.entries(trees).flatMap(([repo, entries]) =>
-        entries
+      ...projects.flatMap((p) => {
+        const repo = `${p.repo_owner}/${p.repo_name}`;
+        const branch = branchByRepo[repo] ?? treeBranch[repo];
+        return (trees[repoTreeKey(repo, branch)] ?? [])
           .filter((e) => e.type === "blob")
-          .map((e) => `Projects/${repo}/${e.path}`),
-      ),
+          .map((e) => `Projects/${repo}/${e.path}`);
+      }),
     ];
     const scored = [...new Set(paths)].flatMap((path) => {
       const m = fuzzyScore(query, path);
@@ -311,7 +316,7 @@ export default function CommandPalette() {
     return scored.sort(
       (a, b) => b.score - a.score || a.path.localeCompare(b.path),
     );
-  }, [open, mode, query, tabs, tmpFs, trees]);
+  }, [open, mode, query, tabs, tmpFs, trees, projects, branchByRepo, treeBranch]);
 
   // Keep the selection in range (filters can shrink the list).
   useEffect(() => {
