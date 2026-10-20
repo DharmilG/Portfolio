@@ -22,8 +22,29 @@
 Cards: `Section` primitive — `rounded-section` (8px), 1px #2b2b2b border,
 `overflow-hidden`; grid gap 5px + padding 5px on `bg-vscode-titlebar` (the workbench base).
 Sash (`Sash.tsx`): the 5px gutter right of the sidebar card is a drag grip — always-visible ⋮ (three 3px dots in `--color-vscode-dim`, brighten to `--color-vscode-emphasis` on hover and keep it through the drag, `col-resize` over the strip), drag resizes the pane live (min 170px, editor floor 320px: the live width rides session-only `sidebarPreview`, the released width persists as `sidebarWidth` in `vscode-local-v1`); the Panel reuses the same grip horizontally (5px gutter, 120px min, 200px editor floor; the secondary bar is still pending).
-Mobile <768px: Activity 48px stays, Sidebar becomes overlay drawer, Editor full-width, Panel bottom-sheet.
+Mobile <768px: Activity 48px stays, Sidebar becomes an overlay drawer, Editor full-width; see §1.1 for the as-built breakpoints.
 ```
+
+### 1.1 Responsive behavior (2026-10, as built)
+
+The document is pinned to the viewport (`html, body { height: 100%; overflow:
+hidden; overscroll-behavior: none }`), the shell is `h-dvh` with an explicit
+`width=device-width` viewport, and the workspace row is `min-w-0`; only panes
+scroll. The title bar's Command Center yields width first, so no window width
+produces a document-level scrollbar. At ≈1307px and wider it keeps its 600px;
+below, it shrinks with the window.
+
+| Width | Behavior |
+|---|---|
+| ≥1024px | full title bar (decorative window controls visible), all status bar items |
+| <1024px | decorative window controls hidden |
+| <768px | Customize Layout + Secondary Side Bar hidden; Spaces/UTF-8/LF hidden; sidebar starts collapsed, Ctrl+B opens it as an absolute overlay drawer (shadow, sash hidden, editor full width underneath; opening a file closes it) |
+| <640px | menu row + Command Center hidden (logo, back/forward, sidebar/panel/globe remain); status bar keeps branch/problems/bell only; browser toolbar hides the two chat actions; Ln/Col + sync + language label hidden |
+
+Verified with CDP at 1500/1280/1024/768/640/390: shell == viewport, no visible
+overflow in the title bar/footer/workspace, and an open browser page's iframe
+card has `scrollWidth/Height == clientWidth/Height` (no pane scrollbars; the
+framed site's own scrollbar is its content).
 
 ## 2. Tailwind 4 design tokens (`app/globals.css` — source of truth)
 
@@ -99,7 +120,7 @@ Accent usage: active tab top-border 1px accent, Activity active icon = white + r
 
 ## 3. TitleBar (36px, bg `--color-vscode-titlebar` #191a1b, square)
 
-Left: VS Code logo (`/vscode-logo.svg`, 16px) + menu row (`File Edit Selection View Go Run Terminal Help`, real dropdowns via shared `Menu`, density `menu`). Center: Command Center — `rounded-control bg-vscode-command-bg border 1px #2b2b2b`, max 600px, `⌕ Portfolio`, click -> `Ctrl+P`, hover text white. Right: back/forward (history), layout controls — Customize Layout (`layout`), Toggle Primary Side Bar (`layout-sidebar-left`, wired, Ctrl+B), Toggle Panel (`layout-panel`, wired, Ctrl+J), Toggle Secondary Side Bar (`layout-sidebar-right`), Browser Preview (`globe`) — all with hover tooltips, decorative window controls `— ▢ ✕`.
+Left: VS Code logo (`/vscode-logo.svg`, 16px) + menu row (`File Edit Selection View Go Run Terminal Help`, real dropdowns via shared `Menu`, density `menu`). Center: Command Center — `rounded-control bg-vscode-command-bg border 1px #2b2b2b`, max 600px, `⌕ Portfolio`, click -> `Ctrl+P`, hover text white. Right: back/forward (history), layout controls — Customize Layout (`layout`), Toggle Primary Side Bar (`layout-sidebar-left`, wired, Ctrl+B), Toggle Panel (`layout-panel`, wired, Ctrl+J), Toggle Secondary Side Bar (`layout-sidebar-right`), Browser Preview (`globe`) — all with hover tooltips, decorative window controls `— ▢ ✕`. Responsive (§1.1): the Command Center is `min-w-0` (the shrink target); menu row + center hide <640px, Customize Layout + Secondary Side Bar <768px, window controls <1024px.
 
 ## 4. ActivityBar (48px, flush, 1px right hairline)
 
@@ -113,6 +134,8 @@ Static workspace root `Dharmil Gajjar` (always present, name in `--color-vscode-
 Sections as folders from `04`: `About/ Experience/ Projects/<repo>/ Skills/ Contact/` + pinned `tmp` scratch node (local-only `tmpFs`; renders when non-empty, open by default, dimmed italic; DB sections with slug `tmp` are ignored): files `untitled-N` + folders `New Folder N/` with `.gitkeep` inside, rows open/focus tabs like repo files.
 Folder rows: chevron + name only (no folder icon, chevron vertically centered). Row: 28px, indent 12px/level, chevron + `vscode-icons` by ext + `resolveName(): uiRenames ?? title_override ?? repo_name`. Decorations (git conventions): edited existing files get an amber name + `M` badge (`--color-vscode-modified`, once `Ctrl+S` saved the buffer); new `tmp/` files tint green (`--color-vscode-added`, untracked — no badge). Right-click: `Rename (session only) -> uiRenames`, `Open Preview (if preview_url)`, `Discard local changes`. Rows are shared `TreeRow`s (`data-path` each): clicking selects (folders too); opening/activating a file auto-reveals it (autoReveal in `lib/store` — expand ancestors, scroll into view, select). Selection renders blue `list-active` while the tree has focus, gray `list-inactive` otherwise.
 `Projects/<repo>/` expand -> `GET /api/repo/tree`, skeleton shimmer rows while loading, README auto-open.
+
+Responsive (§1.1): <768px the sidebar card (rail + pane, 330px) leaves the flex flow — it starts collapsed on load and `Ctrl+B` opens it as an absolute overlay drawer above the editor (shadow, sash hidden, editor full width underneath); opening a file from it dismisses the drawer.
 
 ## 6. Editor (core: read + local edit + split)
 
@@ -130,7 +153,7 @@ buffer persists until `Ctrl+S`; the blob cache waits for `/api/repo/blob`, a dim
 placeholder line shows until then):
 - Seamless single surface — no read/edit modes: the Shiki 1.x `dark-plus` highlight layer (fine-grained core bundle + JS regex engine, no wasm/bundler config; exact Dark Modern token polish later) with a sticky 48px number gutter paints below a transparent-text `textarea` that owns all input (same metrics, `wrap=off`, ligatures off on both layers). Colors stay while typing, caret/selection/undo are native, clicks land the caret exactly. The active line (caret line) gets `--color-vscode-line-highlight` and its gutter number brightens to `--color-vscode-fg`. Minimap fake gradient bar right (decorative, 80px, `pointer-events-none`). Code font: `font-code` = Cascadia Code 14px/1.6 (real face ships via `@fontsource/cascadia-code`); terminal will use `font-term` = Fira Code.
 - Typing writes the session buffer (`drafts[path]` — session-only, the tab dot appears live; the buffer persists until saved). `Ctrl+S` promotes the buffer into `localEdits[path]` (buffer clears, amber `M` appears; toast `Saved locally` lands with `PV-UI-TOAST`). No banner, no mode toggle (`Ctrl+E` / `Esc` unbound). No server call (per `09 §8`).
-- Split: `Ctrl+\` or the editor rail preview action opens the second group; `MarkdownPreview` binds to the active `.md/.mdx` source (`Ctrl+Shift+V` toggles; another markdown tab retargets; closing the source closes the preview; active-tab switches do not change it). Chrome: 35px preview strip (`Preview <name>.md` + close), 22px dirty strip while local content exists (`Previewing unsaved edits ●` / `Previewing local edits ●`), 5px sash (240px preview floor / ~300px source floor, 50% default, width session-only). Read-only GFM + Mermaid SVG (per-block error card), 300ms debounce, 512 KB cap; content = `drafts > localEdits > tmpFs`, repo content waits for `/api/repo/blob`, `.mdx` renders as plain Markdown (DOC/10 §5). `BrowserPreview` (iframe + url bar + reload + `Open in new tab`, sandbox allow-scripts allow-same-origin) lands next.
+- Split: `Ctrl+\` or the editor rail preview action opens the second group; `MarkdownPreview` binds to the active `.md/.mdx` source (`Ctrl+Shift+V` toggles; another markdown tab retargets; closing the source closes the preview; active-tab switches do not change it). Chrome: 35px preview strip (`Preview <name>.md` + close), 22px dirty strip while local content exists (`Previewing unsaved edits ●` / `Previewing local edits ●`), 5px sash (240px preview floor / ~300px source floor, 50% default, width session-only). Read-only GFM + Mermaid SVG (per-block error card), 300ms debounce, 512 KB cap; content = `drafts > localEdits > tmpFs`, repo content waits for `/api/repo/blob`, `.mdx` renders as plain Markdown (DOC/10 §5). `BrowserPreview` is an editor-pane browser tab (globe glyph, host label): navbar with back/forward/reload + URL picker, framing pre-flight with a branded blocked card (Read-Only View / Try Again / Open in External Browser), Google `igu=1` + YouTube `/embed` src mappings, Bing search rows, suspend/resume. Live iframes run `allow-scripts allow-forms allow-same-origin allow-downloads allow-popups`; read-only ones run `sandbox=""` (DOC/10 §4).
 
 ### Bottom Panel — Terminal (PV-C-TERMINAL, as built)
 
@@ -152,7 +175,7 @@ Panel replaces Explorer when the git icon is active; header title `Source Contro
 
 ## 8. StatusBar (22px, bg `--color-vscode-statusbar` #181818, flush)
 
-Left: branch — `$(git-branch)` flips to `$(git-branch-changes)` and the label gains `*` when working-tree changes exist (the store `edits` layer; drafts don't count until `Ctrl+S`; `+` staged / `!` conflicts arrive with SCM), then the sync item — `$(sync)` + `${behind}↓ ${ahead}↑` (`0↓ k↑` in our fake-repo terms; k = local commits awaiting push; icon-only at k=0, exactly like core git), then `$(error) 0 $(warning) 0` (one problems entry, static for now). Right: `Ln X, Col Y` (1-based, live from the store `caret` that FileViewer pushes on caret moves), `Spaces: 2`, `UTF-8`, `LF`, the active file's language (file icon + `langLabelFor` in `lib/langs.ts`), `$(bell)` (popover card — header + `Cache warmed 2h ago`; `Esc`/click-away closes; the toast stack lands with `PV-UI-TOAST`). All values are VS Code source-true (Dark Modern): 22px, #181818 bg, #CCCCCC text, 1px top hairline #2B2B2B, item hover #F1F1F133 + white text, label metrics margin 3px / padding 5px (8px at the first/last item), `tabular-nums`. Editor items (Ln/Col, Spaces, UTF-8, LF, language) hide when no code tab is open; branch/sync/problems/bell always show; every item hover-highlights. Click branch -> focuses Source Control (`scm` view).
+Left: branch — `$(git-branch)` flips to `$(git-branch-changes)` and the label gains `*` when working-tree changes exist (the store `edits` layer; drafts don't count until `Ctrl+S`; `+` staged / `!` conflicts arrive with SCM), then the sync item — `$(sync)` + `${behind}↓ ${ahead}↑` (`0↓ k↑` in our fake-repo terms; k = local commits awaiting push; icon-only at k=0, exactly like core git), then `$(error) 0 $(warning) 0` (one problems entry, static for now). Right: `Ln X, Col Y` (1-based, live from the store `caret` that FileViewer pushes on caret moves), `Spaces: 2`, `UTF-8`, `LF`, the active file's language (file icon + `langLabelFor` in `lib/langs.ts`), `$(bell)` (popover card — header + `Cache warmed 2h ago`; `Esc`/click-away closes; the toast stack lands with `PV-UI-TOAST`). All values are VS Code source-true (Dark Modern): 22px, #181818 bg, #CCCCCC text, 1px top hairline #2B2B2B, item hover #F1F1F133 + white text, label metrics margin 3px / padding 5px (8px at the first/last item), `tabular-nums`. Editor items (Ln/Col, Spaces, UTF-8, LF, language) hide when no code tab is open; branch/problems/bell always show; every item hover-highlights. Responsive (§1.1): Spaces/UTF-8/LF hide <768px; Ln/Col, sync and the language label hide <640px; branch/problems/bell stay. Click branch -> focuses Source Control (`scm` view).
 
 ## 9. Command Palette + keybinds
 
