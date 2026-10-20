@@ -221,24 +221,23 @@ Misc:
 
 ## 5. Markdown preview (PV-C-MDPREVIEW, as built)
 
-- Detect `.md/.mdx` in FileViewer. `Ctrl+Shift+V` toggles the side split;
-  `Ctrl+\` and the editor rail action (`Open Preview to the Side` / `Close
-  Preview`) run the same bound toggle, and the palette carries `Markdown: Open
-  Preview to the Side` + `Markdown: Close Preview`. The preview binds to one
-  source path: opening it on another markdown tab retargets, active-tab
-  switches do not change what it shows, and closing the source closes the
-  preview. The source stays a normal `code` tab, so the tab strip never
-  duplicates.
-- Layout: second editor group right of the source. 50% default, 5px sash
-  (240px preview floor, ~300px source floor), dragged width session-only. The
-  pane owns a 35px tab strip (`Preview <name>.md` + close) and, while the
-  source carries local content, a 22px dirty strip: `Previewing unsaved edits
-  ●` (draft buffer) / `Previewing local edits ●` (saved edit).
-- Content: `drafts[path] ?? localEdits[path] ?? tmpFs[path]`, re-rendered 300ms
-  after the last keystroke (typing stays responsive; Mermaid re-renders
-  coalesce). Repo files with no local content show the blob-milestone note
-  until `/api/repo/blob` lands; sources over 512 KB show a size note. The
-  whole preview is a dynamic import; Mermaid adds a second lazy chunk.
+- Detect `.md/.mdx` in FileViewer. A Markdown tab opens in **preview mode**
+  by default; `Ctrl+Shift+V` and the editor rail action (`Open Source` / `Open
+  Preview`) toggle the same tab between preview and source. There is no split
+  group, 5px sash, or second `Preview <name>.md` tab. The palette carries
+  `Markdown: Toggle Preview` (same keybinding) and `Markdown: Open Source`.
+- Layout: one editor surface. The preview fills the same card as source; a
+  22px dirty strip appears while the source carries local content:
+  `Previewing unsaved edits ●` (draft buffer) / `Previewing local edits ●`
+  (saved edit). The source textarea is mounted only in source mode.
+- Content: FileViewer resolves `drafts[path] ?? localEdits[path] ??
+  tmpFs[path] ?? repo blob` once and passes the same string to the preview,
+  so toggling modes does not refetch `/api/repo/blob` or lose a buffer. The
+  preview re-renders 300ms after the last keystroke (typing stays responsive;
+  Mermaid re-renders coalesce). Sources over 512 KB show a size note.
+- Loading: the whole preview is a dynamic import from FileViewer; Mermaid adds
+  a second lazy chunk. A repo blob error or missing content keeps the shared
+  editor status line instead of mounting the preview.
 - Renderer: `react-markdown` + `remark-gfm` + `rehype-slug` +
   `rehype-highlight` (github-dark; `plainText: ["mermaid"]` keeps Mermaid
   fences out of the highlighter). GFM tables/task lists/strikethrough, heading
@@ -252,8 +251,9 @@ Misc:
   render queue (Mermaid's pipeline is global state). A broken diagram renders
   an isolated error card (message + source) without taking down the preview;
   no zoom/pan/click links.
-- Persistence: bound path + width are session-only (absent from
-  `vscode-local-v1`); the preview never appears in the editor tab strip.
+- Persistence: `mdViewMode[path]` is session-only (absent from
+  `vscode-local-v1`); closing the tab drops it, so reopening starts in
+  preview. The preview never appears as a separate editor tab.
 
 ## 6. Safety / perf
 
