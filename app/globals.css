@@ -64,8 +64,9 @@
   /* === Editor Selection, Line Highlight & Scrollbars === */
   --color-vscode-selection: #264f78;
   --color-vscode-line-highlight: #282828;
-  --color-vscode-scroll: rgba(121, 121, 121, 0.4);
-  --color-vscode-scroll-hover: rgba(121, 121, 121, 0.7);
+  /* Scrollbar thumb — slightly transparent white, revealed on hover. */
+  --color-vscode-scroll: rgba(255, 255, 255, 0.22);
+  --color-vscode-scroll-hover: rgba(255, 255, 255, 0.36);
 
   /* === Badges & Integrated Terminal === */
   --color-vscode-badge-bg: #0078d4;
@@ -114,6 +115,7 @@
   --radius-quick-row: 3px; /* quick-input list rows */
   --radius-keybinding: 3px; /* keybinding chips (keybindingLabel.css) */
   --radius-scm: 4px; /* SCM editor + Commit button (scm.css / button.css) */
+  --radius-scrollbar: 4px; /* scrollbar thumb (rounded pill) */
   --font-vscode-ui: "Segoe WPC", "Segoe UI", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   --font-vscode-code: "Cascadia Code", "JetBrains Mono", Consolas, "Courier New", monospace;
   --font-vscode-term: "Fira Code", "Cascadia Code", Consolas, "Courier New", monospace;
@@ -168,23 +170,57 @@ body {
   background-color: transparent !important;
 }
 
-.terminal-xterm .xterm .xterm-viewport::-webkit-scrollbar {
-  width: 14px;
+/* === Scrollbars (every scrollable surface) ===
+   VS Code-style: a slim, rounded, slightly transparent white thumb that is
+   invisible until the pointer is over the scroller, then fades in. The
+   track, the corner and the arrow buttons stay invisible; the thumb is a
+   pill (2px transparent border + padding-box clip) with the theme radius. */
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
 }
 
-.terminal-xterm .xterm .xterm-viewport::-webkit-scrollbar-track {
+*::-webkit-scrollbar-track,
+*::-webkit-scrollbar-corner {
   background: transparent;
 }
 
-.terminal-xterm .xterm .xterm-viewport::-webkit-scrollbar-thumb {
-  background-color: var(--color-vscode-scroll);
-  border: 4px solid transparent;
-  background-clip: padding-box;
-  border-radius: 7px;
+*::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
 }
 
-.terminal-xterm .xterm .xterm-viewport::-webkit-scrollbar-thumb:hover {
+*::-webkit-scrollbar-thumb {
+  background-color: transparent;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  border-radius: var(--radius-scrollbar);
+  transition: background-color 120ms ease;
+}
+
+/* The thumb brightens under the pointer; the rule below (same specificity,
+   later) keeps the revealed color while the scroller is hovered. */
+*::-webkit-scrollbar-thumb:hover {
   background-color: var(--color-vscode-scroll-hover);
+}
+
+*:hover::-webkit-scrollbar-thumb {
+  background-color: var(--color-vscode-scroll);
+}
+
+/* Firefox has no webkit pseudo-elements: the same behaviour through the
+   standard properties. The guard keeps Chromium on the rules above (setting
+   scrollbar-color there would switch it to the native bar). */
+@supports not selector(::-webkit-scrollbar) {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+  }
+
+  *:hover {
+    scrollbar-color: var(--color-vscode-scroll) transparent;
+  }
 }
 
 /* === Markdown preview (DOC/10 §5) ===
