@@ -2,7 +2,8 @@
 
 // CommandPalette — Ctrl+P quick open / Ctrl+Shift+P / F1 commands (DOC/05 §9).
 // Real 2026 quick input (quickInput.css + quickInputController.ts): widget
-// min(62vw, 600px) centered, top = 36px titlebar offset, radius 12px,
+// min(62vw, 600px), top = 36px titlebar offset, aligned under the Command
+// Center pill (falls back to viewport center when the pill is hidden), radius 12px,
 // #222222 bg + 1px #313131 (widget.border); header pad 6/6/4/6; input 26px,
 // 6px radius, #313131/#3C3C3C (no focus ring); list cap min(40vh, 440px)
 // (= min(0.4×height, 20×22px)), rows 22px / 3px radius / 6+6 insets, icon
@@ -17,6 +18,7 @@
 import {
   Fragment,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -178,6 +180,44 @@ export default function CommandPalette() {
     setIndex(0);
     inputRef.current?.focus();
   }, [mode]);
+
+  // The Command Center is not viewport-centered: its left menu group is wider
+  // than the right controls, so mx-auto shifts it right. Anchor the quick input
+  // to the pill's measured center so it opens directly beneath it; clamp to the
+  // viewport and fall back to center when the pill is hidden (<640px).
+  useLayoutEffect(() => {
+    if (!open) return;
+    const box = boxRef.current;
+    if (!box) return;
+    const place = () => {
+      const width = box.getBoundingClientRect().width;
+      const pill = document.querySelector<HTMLElement>("[data-command-center]");
+      const pillRect = pill?.getBoundingClientRect();
+      const center =
+        pillRect && pillRect.width > 0
+          ? pillRect.left + pillRect.width / 2
+          : window.innerWidth / 2;
+      const left = Math.min(
+        Math.max(8, center - width / 2),
+        Math.max(8, window.innerWidth - width - 8),
+      );
+      box.style.left = `${Math.round(left)}px`;
+      box.style.transform = "none";
+      // Tailwind v4's -translate-x-1/2 uses the standalone `translate`
+      // property, so `transform: none` alone leaves the -50% shift in place.
+      box.style.setProperty("translate", "none");
+    };
+    place();
+    const ro = new ResizeObserver(place);
+    ro.observe(box);
+    const pill = document.querySelector<HTMLElement>("[data-command-center]");
+    if (pill) ro.observe(pill);
+    window.addEventListener("resize", place);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", place);
+    };
+  }, [open]);
 
   // Global shortcuts (the palette owns its keys). Same shortcut while open:
   // keep the palette, select the query (real adjustValueSelection). Other
