@@ -153,12 +153,24 @@ export default function FileViewer() {
     const owner = parts[1];
     const repo = parts[2];
     const rel = parts.slice(3).join("/");
+    // The blob route verifies the SHA against the cached tree of this
+    // repository — it needs to know which branch the file came from.
+    const state = useStore.getState();
+    const repoKey = `${owner}/${repo}`;
+    const branch = state.branchByRepo[repoKey] ?? state.treeBranch[repoKey];
+    const query = new URLSearchParams({
+      owner,
+      repo,
+      sha,
+      path: rel,
+    });
+    if (branch) query.set("branch", branch);
     const controller = new AbortController();
     setLoaded(null);
-    fetch(
-      `/api/repo/blob?owner=${encodeURIComponent(owner)}&repo=${encodeURIComponent(repo)}&sha=${encodeURIComponent(sha)}&path=${encodeURIComponent(rel)}`,
-      { cache: "no-store", signal: controller.signal },
-    )
+    fetch(`/api/repo/blob?${query.toString()}`, {
+      cache: "no-store",
+      signal: controller.signal,
+    })
       .then(async (res) => {
         const data: {
           content?: string;
