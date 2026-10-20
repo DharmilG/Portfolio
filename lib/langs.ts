@@ -57,7 +57,7 @@ export function langLabelFor(path: string): string {
   return LABEL_BY_LANG[langFor(path)] ?? "Plain Text";
 }
 
-// Markdown-family source files get the side preview (DOC/10 §5).
+// Markdown-family source files open in preview mode (DOC/10 §5).
 export function isMarkdownPath(path: string): boolean {
   const name = path.split("/").pop() ?? "";
   const dot = name.lastIndexOf(".");
