@@ -74,6 +74,10 @@ export const MENU_ITEMS: Menu[] = [
     menu: "Terminal",
     items: [
       { label: "New Terminal", id: "new-terminal" },
+      { label: "Split Terminal", id: "split-terminal" },
+      { label: "Unsplit Terminal", id: "unsplit-terminal" },
+      { label: "Kill Terminal", id: "kill-terminal" },
+      { separator: true },
       { label: "Clear", id: "clear-terminal" },
     ],
   },
