@@ -1,7 +1,9 @@
 // GET /api/repo/tree?owner=X&repo=Y&branch=main
-// Allowlist first, then one recursive GitHub tree request (DOC/06 §3).
+// Allowlist first, then the cached snapshot (github_cache, 48h) or one
+// recursive GitHub tree request (DOC/06 §3, DOC/09 §2).
 import { NextRequest, NextResponse } from "next/server";
 import { assertAllowlisted } from "@/lib/allowlist";
+import { supabase } from "@/lib/db";
 import { getOctokit, githubStatus } from "@/lib/github";
 import { filterTree, type GitTreeEntry } from "@/lib/vfs";
 import { RepoQuery } from "@/lib/validators";
@@ -33,6 +35,37 @@ export async function GET(request: NextRequest) {
     return error(status === 404 ? 404 : 503, status === 404 ? "repo not allowlisted" : "project lookup failed");
   }
 
+  // Cached snapshot first: the cron keeps one fresh tree per repository for
+  // 48h, so a visitor never spends a GitHub request on a known tree.
+  const requested = parsed.data.branch;
+  const full = `${project.repo_owner}/${project.repo_name}`;
+  const { data: cached } = await supabase
+    .from("github_cache")
+    .select("branch,sha,tree,expires_at,fetched_at")
+    .eq("repo_full_name", full)
+    .maybeSingle();
+  const fresh = Boolean(
+    cached?.expires_at && new Date(cached.expires_at).getTime() > Date.now(),
+  );
+  if (fresh && cached && (!requested || cached.branch === requested)) {
+    return NextResponse.json(
+      {
+        full_name: full,
+        branch: cached.branch,
+        sha: cached.sha ?? null,
+        tree: cached.tree ?? [],
+        truncated: false,
+        fetched_at: cached.fetched_at ?? new Date().toISOString(),
+      },
+      {
+        headers: {
+          "x-cache": "HIT",
+          "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400",
+        },
+      },
+    );
+  }
+
   const octokit = getOctokit();
   let branch = parsed.data.branch;
   try {
@@ -54,6 +87,19 @@ export async function GET(request: NextRequest) {
     });
   }
 
+  const emptyTree = (branchName: string) =>
+    NextResponse.json(
+      {
+        full_name: `${project.repo_owner}/${project.repo_name}`,
+        branch: branchName,
+        sha: null,
+        tree: [],
+        truncated: false,
+        fetched_at: new Date().toISOString(),
+      },
+      { headers: { "x-cache": "MISS", "Cache-Control": "no-store" } },
+    );
+
   try {
     let result;
     try {
@@ -62,8 +108,15 @@ export async function GET(request: NextRequest) {
       // A requested branch should surface as 404; the default branch can fall
       // back to master for older repositories.
       if (githubStatus(cause) === 404 && !parsed.data.branch) {
-        result = await readTree("master");
-        branch = "master";
+        // GitHub answers 404 for a recursive tree without entries — the
+        // branch can exist and simply be empty. Confirm before giving up.
+        try {
+          await octokit.repos.getBranch({ owner, repo, branch });
+          return emptyTree(branch);
+        } catch {
+          result = await readTree("master");
+          branch = "master";
+        }
       } else {
         throw cause;
       }
@@ -92,7 +145,7 @@ export async function GET(request: NextRequest) {
         truncated: Boolean(result.data.truncated) || filtered.truncated,
         fetched_at: new Date().toISOString(),
       },
-      { headers: { "Cache-Control": "no-store" } },
+      { headers: { "x-cache": "MISS", "Cache-Control": "no-store" } },
     );
   } catch (cause) {
     const status = githubStatus(cause);
