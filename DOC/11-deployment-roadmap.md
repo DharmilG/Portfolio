@@ -2,7 +2,7 @@
 
 > **DEPLOY GATE — DO NOT DEPLOY YET.** Remove this block only when the human starts the deployment stage.
 > A Vercel deploy stays blocked until all of these are true:
-> 1. `pnpm build` passes locally; the five remaining 0-byte API route stubs are implemented.
+> 1. `pnpm build` passes locally; the three remaining 0-byte API route stubs (commits, cron/sync, revalidate) are implemented.
 > 2. Cloud Supabase is linked, migrations are applied, and real `sections` / `projects` rows exist.
 > 3. Vercel env is set; production never reads `.env.local` or `127.0.0.1`.
 > 4. GitHub reads are verified against `DharmilG/Portfolio`: branches, branch-aware tree/blob, and 16 commits/page in Source Control.
