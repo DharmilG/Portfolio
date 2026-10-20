@@ -200,6 +200,23 @@ export default function PortfolioPage() {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
+  // Terminal: Ctrl+Shift+` new terminal, Ctrl+Shift+5 split (VS Code
+  // defaults). xterm releases both chords; a dialog owns the keyboard.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (!(e.ctrlKey && e.shiftKey && !e.altKey)) return;
+      const newTerminal = e.code === "Backquote";
+      const split = e.code === "Digit5";
+      if (!newTerminal && !split) return;
+      if (document.querySelector('[role="dialog"]')) return;
+      e.preventDefault();
+      if (newTerminal) useStore.getState().spawnSession("bash");
+      else useStore.getState().splitTerminal("bash");
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
   // Markdown preview: Ctrl+Shift+V (VS Code) and Ctrl+\ (split command).
   // Ignore fields outside the source editor and the terminal: Ctrl+Shift+V is
   // paste in xterm/SCM, and the palette owns its input while open.
