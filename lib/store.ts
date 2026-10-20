@@ -22,6 +22,15 @@ export type TabKind = "code" | "markdown" | "browser";
 
 export type MarkdownViewMode = "preview" | "source";
 
+// Toast kinds map to the codicons the toast host shows.
+export type ToastKind = "info" | "success" | "warning";
+
+export type Toast = {
+  id: string;
+  message: string;
+  kind: ToastKind;
+};
+
 // Activity views (ActivityBar icons) — the page, palette and commands share
 // this union (ActivityBar re-exports it for its props).
 export type ActivityId = "explorer" | "search" | "scm" | "run" | "extensions";
@@ -245,6 +254,16 @@ type State = {
 
   caret: { line: number; col: number }; // editor Ln/Col, 0-based — session-only
   setCaret: (line: number, col: number) => void;
+
+  // Toast notifications (session-only): the "Saved locally" / "Committed
+  // locally" stack (PV-UI-TOAST).
+  toasts: Toast[];
+  pushToast: (message: string, kind?: ToastKind) => void;
+  dismissToast: (id: string) => void;
+
+  // Search term of the Search view — the FileViewer marks its occurrences.
+  searchQuery: string;
+  setSearchQuery: (q: string) => void;
 
   expanded: Record<string, boolean>;
   toggleExpanded: (key: string) => void;
@@ -506,6 +525,20 @@ export const useStore = create<State>()(
         }),
       caret: { line: 0, col: 0 }, // absent from partialize: session-only
       setCaret: (line, col) => set({ caret: { line, col } }),
+
+      // Toasts + search term — session-only, never persisted.
+      toasts: [],
+      pushToast: (message, kind = "info") =>
+        set((s) => ({
+          toasts: [
+            ...s.toasts,
+            { id: `toast-${Date.now()}-${s.toasts.length}`, message, kind },
+          ].slice(-4),
+        })),
+      dismissToast: (id) =>
+        set((s) => ({ toasts: s.toasts.filter((t) => t.id !== id) })),
+      searchQuery: "",
+      setSearchQuery: (searchQuery) => set({ searchQuery }),
       toggleExpanded: (key) =>
         set((s) => ({
           expanded: { ...s.expanded, [key]: !s.expanded[key] },
@@ -535,14 +568,18 @@ export const useStore = create<State>()(
       setDraft: (path, content) =>
         set((s) => ({ drafts: { ...s.drafts, [path]: content } })),
       // Ctrl+S: promote the buffer into the saved-edits layer; buffer clears.
-      saveDraft: (path) =>
+      saveDraft: (path) => {
+        const content = useStore.getState().drafts[path];
         set((s) => {
-          const content = s.drafts[path];
           const drafts = { ...s.drafts };
           delete drafts[path];
           if (content === undefined) return { drafts };
           return { edits: { ...s.edits, [path]: content }, drafts };
-        }),
+        });
+        if (content !== undefined) {
+          useStore.getState().pushToast("Saved locally", "success");
+        }
+      },
       discardDraft: (path) =>
         set((s) => {
           const drafts = { ...s.drafts };
@@ -556,6 +593,9 @@ export const useStore = create<State>()(
         const edits = { ...useStore.getState().edits };
         files.forEach((f) => delete edits[f]);
         set((s) => ({ commits: [commit, ...s.commits], edits }));
+        useStore
+          .getState()
+          .pushToast(`Committed locally: ${commit.msg}`, "success");
         return commit;
       },
       discardEdit: (path) =>
