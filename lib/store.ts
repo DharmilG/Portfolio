@@ -62,6 +62,18 @@ export type TreeEntry = {
   size?: number;
 };
 
+// Branch list for one repository (GET /api/repo/branches).
+export type BranchInfo = {
+  default_branch: string;
+  branches: { name: string; sha: string }[];
+  fetched_at?: string;
+};
+
+// Trees are cached per branch: "owner/repo@branch".
+export function repoTreeKey(repo: string, branch?: string | null): string {
+  return branch ? `${repo}@${branch}` : repo;
+}
+
 export type TerminalPane = "left" | "right";
 
 export type TerminalSession = {
@@ -163,8 +175,20 @@ type State = {
   explorerLoading: boolean;
   setSections: (s: Section[]) => void;
   setProjects: (p: Project[]) => void;
-  setTree: (repo: string, tree: TreeEntry[]) => void;
+  setTree: (repo: string, branch: string, tree: TreeEntry[]) => void;
   setExplorerLoading: (b: boolean) => void;
+
+  // Repo selection (session-only): the project the workbench points at, the
+  // branch picked per project, the cached branch list, and the branch each
+  // loaded tree belongs to (DOC/05 §7 Source Control + §8 StatusBar).
+  activeRepo: string | null;
+  branchByRepo: Record<string, string>;
+  branchInfo: Record<string, BranchInfo>;
+  treeBranch: Record<string, string>;
+  setActiveRepo: (repo: string | null) => void;
+  setBranch: (repo: string, branch: string) => void;
+  setBranchInfo: (repo: string, info: BranchInfo) => void;
+  setTreeBranch: (repo: string, branch: string) => void;
 
   sidebarWidth: number; // layout pref (sash, DOC/05 §3/§5) — persisted
   sidebarPreview: number | null; // live sash drag width — session-only
@@ -324,10 +348,35 @@ export const useStore = create<State>()(
       trees: {},
       explorerLoading: false,
       setSections: (sections) => set({ sections }),
-      setProjects: (projects) => set({ projects }),
-      setTree: (repo, tree) =>
-        set((s) => ({ trees: { ...s.trees, [repo]: tree } })),
+      // The first visible project becomes the workbench's active repository
+      // (status-bar pickers + Source Control follow it).
+      setProjects: (projects) =>
+        set((s) => ({
+          projects,
+          activeRepo:
+            s.activeRepo ??
+            (projects[0]
+              ? `${projects[0].repo_owner}/${projects[0].repo_name}`
+              : null),
+        })),
+      setTree: (repo, branch, tree) =>
+        set((s) => ({
+          trees: { ...s.trees, [repoTreeKey(repo, branch)]: tree },
+        })),
       setExplorerLoading: (explorerLoading) => set({ explorerLoading }),
+
+      // Repo selection — session-only (never persisted).
+      activeRepo: null,
+      branchByRepo: {},
+      branchInfo: {},
+      treeBranch: {},
+      setActiveRepo: (activeRepo) => set({ activeRepo }),
+      setBranch: (repo, branch) =>
+        set((s) => ({ branchByRepo: { ...s.branchByRepo, [repo]: branch } })),
+      setBranchInfo: (repo, info) =>
+        set((s) => ({ branchInfo: { ...s.branchInfo, [repo]: info } })),
+      setTreeBranch: (repo, branch) =>
+        set((s) => ({ treeBranch: { ...s.treeBranch, [repo]: branch } })),
 
       sidebarWidth: 280,
       sidebarPreview: null, // not in partialize: the drag preview never persists
