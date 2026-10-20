@@ -14,8 +14,9 @@ export const RepoQuery = z.object({
 });
 
 export const CommitsQuery = RepoQuery.extend({
-  per_page: z.coerce.number().min(1).max(20).default(10),
-  page: z.coerce.number().min(1).max(10).default(1),
+  // 16 per page is the Source Control page size (DOC/09 §4).
+  per_page: z.coerce.number().min(1).max(32).default(16),
+  page: z.coerce.number().min(1).max(20).default(1),
 });
 
 export const BlobQuery = RepoQuery.extend({
