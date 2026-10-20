@@ -9,15 +9,19 @@ import { useEffect, useRef, useState } from "react";
 import Breadcrumb from "@/components/vscode/Breadcrumb";
 import CommandPalette from "@/components/vscode/CommandPalette";
 import Explorer from "@/components/vscode/Explorer";
+import ExtensionsView from "@/components/vscode/ExtensionsView";
 import FileViewer from "@/components/vscode/FileViewer";
 import PrimarySideBar from "@/components/vscode/PrimarySideBar";
+import RunView from "@/components/vscode/RunView";
 import Sash from "@/components/vscode/Sash";
+import SearchView from "@/components/vscode/SearchView";
 import Section from "@/components/vscode/Section";
 import SourceControl from "@/components/vscode/SourceControl";
 import StatusBar from "@/components/vscode/StatusBar";
 import Tabs from "@/components/vscode/Tabs";
 import TerminalPanel from "@/components/vscode/TerminalPanel";
 import TitleBar from "@/components/vscode/TitleBar";
+import Toast from "@/components/vscode/Toast";
 import { COMMANDS, newTextFile, nextFreeKey } from "@/lib/commands";
 import { supabase } from "@/lib/db";
 import { isMarkdownPath } from "@/lib/langs";
@@ -320,6 +324,12 @@ export default function PortfolioPage() {
                 <Explorer onOpenFile={openCodeTab} onAction={handleViewAction} />
               ) : view === "scm" ? (
                 <SourceControl onOpenFile={openCodeTab} />
+              ) : view === "search" ? (
+                <SearchView onOpenFile={openCodeTab} />
+              ) : view === "run" ? (
+                <RunView />
+              ) : view === "extensions" ? (
+                <ExtensionsView />
               ) : (
                 <p className="px-4 py-2 text-xs text-vscode-dim">
                   {view} view lands with its component.
@@ -399,6 +409,7 @@ export default function PortfolioPage() {
       </div>
       <StatusBar />
       <CommandPalette />
+      <Toast />
     </div>
   );
 }
