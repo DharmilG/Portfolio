@@ -65,6 +65,21 @@ function loadSections() {
     });
 }
 
+// Projects are read through the Route Handler (same allowlisted rows the repo
+// APIs use), not queried directly from the browser.
+async function loadProjects() {
+  try {
+    const res = await fetch("/api/projects", { cache: "no-store" });
+    if (!res.ok) throw new Error(`projects ${res.status}`);
+    const data: { projects?: unknown } = await res.json();
+    if (Array.isArray(data.projects)) {
+      useStore.getState().setProjects(data.projects);
+    }
+  } catch (error) {
+    console.error("Could not load projects:", error);
+  }
+}
+
 // <768px the sidebar is an overlay drawer; opening a file from it dismisses
 // the drawer so the editor (full width underneath) is visible.
 function closeSidebarOnNarrow() {
@@ -168,6 +183,7 @@ export default function PortfolioPage() {
     // doing it here would run after child effects and lose the snapshot.
     useStore.getState().initTerminal();
     loadSections();
+    void loadProjects();
   }, []);
 
   // Phones start with the sidebar collapsed (Ctrl+B / the rail reveal it as
@@ -294,6 +310,7 @@ export default function PortfolioPage() {
     const st = useStore.getState();
     if (id === "refresh") {
       loadSections();
+      void loadProjects();
       return;
     }
     if (id === "collapse") {
