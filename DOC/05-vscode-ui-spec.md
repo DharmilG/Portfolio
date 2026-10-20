@@ -204,10 +204,14 @@ Palette UI (VS Code 2026 source-true — `quickInput.css` + `quickInputControlle
 
 Behavior: `>` prefix = commands mode (backspace past it returns to files); file mode lists open tabs (tab order) then tmp scratch + loaded repo trees A–Z, filtered by `lib/fuzzy` (subsequence + boundary/camel/consecutive bonuses, whitespace = multi-term AND, basename boost); commands mode lists `lib/commands.ts` (25; ids shared with the title-bar menus; Enter runs, mode-switch commands keep the palette open; discard-edits raises the confirm `Modal`). `↑↓` wrap, `Enter` runs & closes, `Esc` / click-away closes; the same shortcut while open keeps the palette and selects the query, the other one switches mode preserving the query suffix (`quickAccess.ts`). Empty states `No matching commands` / `No matching results`. Motion (250ms scale-in) deferred.
 
-## 10. Search / Run / Extensions (dummy but alive)
+## 10. Search / Run / Extensions (live)
 
-- Search: filters current tree client-side, highlights matches in FileViewer (mark tag accent).
-- Run: opens `preview_url` in BrowserPreview or `Open in new tab` if `preview_embeddable=false`.
-- Extensions: static cards (`Prettier, ESLint`) with `Install (dummy)` -> toast.
+- **Search** (`components/vscode/SearchView.tsx`): a search field (magnifier glyph, `#313131` bg, 4px radius, `Esc` clears, `Enter` opens the first hit) filters the files the workbench already knows — the loaded repo trees (per selected branch) plus the `tmp/` scratch — client-side, so a search costs no GitHub request. The matched part of the file name is painted in the quick-input match color (`#2AAAFF`); a count line reads `N results` / `No results in the loaded files`, and an empty workspace explains that a project has to be expanded first. Clicking a result opens the file and leaves the term in the store — the FileViewer marks every occurrence of it with the find-match background (`--color-vscode-find-match` `rgba(234,92,0,.33)`, VS Code's `findMatchHighlightBackground`).
+- **Run** (`components/vscode/RunView.tsx`): a card for the project the status bar points at. With a `preview_url` the `Run` button opens the integrated browser (or a new tab when `preview_embeddable=false`, with the reason spelled out); without one the button is disabled and the pane explains that live previews need a public URL.
+- **Extensions** (`components/vscode/ExtensionsView.tsx`): static cards for Prettier and ESLint (publisher, description, rating, install count); `Install` is a dummy that raises a toast.
+
+### 10.1 Toasts (PV-UI-TOAST)
+
+Notification stack in the **top-right** corner, below the title bar: a 320px card with a kind glyph (`info` / `pass` / `warning`), the message and a close button; it fades out after 4.5s and the stack keeps the last four. The store owns the list (session-only, never persisted) and pushes from the actions that change something: `Saved locally` (`Ctrl+S`), `Committed locally: <msg>` (commit button + terminal `commit -m`).
 
 All surfaces flush/square; radii only for controls (`rounded-control`); colors/type/shadow from §2 tokens only.
