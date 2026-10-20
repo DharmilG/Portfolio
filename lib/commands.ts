@@ -153,11 +153,35 @@ export const COMMANDS: Command[] = [
     run: () => useStore.getState().collapseAll(),
   },
 
-  // Terminal (the panel's active terminal; local parser + xterm)
+  // Terminal (the panel's focused pane; local parser + xterm)
   {
     id: "new-terminal",
     label: "Terminal: New Terminal",
+    keybinding: "Ctrl+Shift+`",
     run: () => useStore.getState().spawnSession("bash"),
+  },
+  {
+    id: "split-terminal",
+    label: "Terminal: Split Terminal",
+    keybinding: "Ctrl+Shift+5",
+    run: () => useStore.getState().splitTerminal("bash"),
+  },
+  {
+    id: "unsplit-terminal",
+    label: "Terminal: Unsplit Terminal",
+    run: () => useStore.getState().unsplitTerminal(),
+  },
+  {
+    id: "kill-terminal",
+    label: "Terminal: Kill Terminal",
+    run: () => {
+      const st = useStore.getState();
+      const id =
+        st.focusedPane === "right" && st.splitSessionId
+          ? st.splitSessionId
+          : st.activeSessionId;
+      if (id) st.killSession(id);
+    },
   },
   {
     id: "clear-terminal",
