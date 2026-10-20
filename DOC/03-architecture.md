@@ -35,7 +35,7 @@ lib/{db.ts (anon+admin), github.ts (octokit), cache.ts (redis+tags), allowlist.t
 ```
 
 ## Hybrid content rule
-- UI-only (code): shell, tokens, keybinds, terminal grammar, branch SVG, confetti.
+- UI-only (code): shell, tokens, keybinds, terminal grammar, branch SVG.
 - DB-controlled: sections, projects (`owner/name`, `title_override`, `preview_url/embeddable`, `orders/visible/featured`), profiles, skills/experiences/socials, settings.
 - GitHub-live (cached): tree, blob, meta+langs, real commits page.
 - Local-only (browser): `localEdits, localCommits, uiRenames, tmpFs, term history` (localStorage `vscode-local-v1`). `github_cache` never polluted.
