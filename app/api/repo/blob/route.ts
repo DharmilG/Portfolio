@@ -50,7 +50,8 @@ export async function GET(request: NextRequest) {
       repo,
       file_sha: sha,
     });
-    if (data.size > MAX_BLOB_BYTES) {
+    const size = data.size ?? 0;
+    if (size > MAX_BLOB_BYTES) {
       return error(413, "file too large", { truncated: true });
     }
     const content = Buffer.from(data.content, "base64")
@@ -63,7 +64,7 @@ export async function GET(request: NextRequest) {
         sha,
         content,
         language: langFor(path),
-        size: data.size,
+        size,
         truncated: false,
         binary: false,
       },
