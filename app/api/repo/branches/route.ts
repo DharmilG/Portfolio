@@ -64,6 +64,7 @@ export async function GET(request: NextRequest) {
       {
         full_name: `${project.repo_owner}/${project.repo_name}`,
         default_branch: repoInfo.data.default_branch || "main",
+        description: repoInfo.data.description ?? null,
         branches: all.map((b) => ({ name: b.name, sha: b.commit.sha })),
         truncated: all.length >= PER_PAGE * 2,
         fetched_at: new Date().toISOString(),
