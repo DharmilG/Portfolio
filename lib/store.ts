@@ -15,9 +15,12 @@ import {
   mergeCommits,
   resolveContent,
 } from "./localGit";
+import { isMarkdownPath } from "./langs";
 import type { TerminalShell } from "./terminal/parser";
 
 export type TabKind = "code" | "markdown" | "browser";
+
+export type MarkdownViewMode = "preview" | "source";
 
 // Activity views (ActivityBar icons) — the page, palette and commands share
 // this union (ActivityBar re-exports it for its props).
@@ -263,14 +266,12 @@ type State = {
   focusBrowserUrl: () => void;
   clearBrowserHistory: () => void;
 
-  // Markdown side preview (session-only): the source path bound to the
-  // preview group, and its dragged width (0 = auto 50% on first open).
-  mdPreviewPath: string | null;
-  mdPreviewWidth: number;
-  openMdPreview: (path: string) => void;
-  closeMdPreview: () => void;
-  toggleMdPreview: (path: string) => void;
-  setMdPreviewWidth: (w: number) => void;
+  // Markdown view mode (session-only, keyed by tab path). Markdown opens in
+  // preview; Ctrl+Shift+V / the tab action toggles the same editor surface
+  // between preview and source.
+  mdViewMode: Record<string, MarkdownViewMode>;
+  setMdViewMode: (path: string, mode: MarkdownViewMode) => void;
+  toggleMdView: (path: string) => void;
 
   mode: "dark" | "light";
   setMode: (m: "dark" | "light") => void;
@@ -363,27 +364,47 @@ export const useStore = create<State>()(
           // autoReveal: opening a file reveals + selects it in the Explorer
           // (browser previews hold URLs — nothing to reveal).
           const reveal = t.kind === "browser" ? {} : revealed(s, t.path);
+          // First open of a Markdown source starts in preview mode; a mode the
+          // visitor explicitly chose for an already-open tab is preserved.
+          const mdViewMode =
+            t.kind === "code" &&
+            isMarkdownPath(t.path) &&
+            s.mdViewMode[t.path] === undefined
+              ? { ...s.mdViewMode, [t.path]: "preview" as const }
+              : s.mdViewMode;
           if (s.tabs.some((x) => x.id === id)) {
-            return { activeTabId: id, ...reveal };
+            return { activeTabId: id, mdViewMode, ...reveal };
           }
-          return { tabs: [...s.tabs, tab], activeTabId: id, ...reveal };
+          return {
+            tabs: [...s.tabs, tab],
+            activeTabId: id,
+            mdViewMode,
+            ...reveal,
+          };
         }),
       closeTab: (id) =>
         set((s) => {
+          const closed = s.tabs.find((x) => x.id === id);
           const tabs = s.tabs.filter((x) => x.id !== id);
           const activeTabId =
             s.activeTabId === id
               ? (tabs[tabs.length - 1]?.id ?? null)
               : s.activeTabId;
-          // A preview cannot outlive its source file.
-          const mdPreviewPath =
-            s.mdPreviewPath && tabs.some((t) => t.path === s.mdPreviewPath)
-              ? s.mdPreviewPath
-              : null;
+          // Drop the per-tab view mode once the last tab for that path is
+          // gone, so reopening a Markdown file starts from preview again.
+          let mdViewMode = s.mdViewMode;
+          if (
+            closed?.kind === "code" &&
+            isMarkdownPath(closed.path) &&
+            !tabs.some((t) => t.path === closed.path)
+          ) {
+            mdViewMode = { ...s.mdViewMode };
+            delete mdViewMode[closed.path];
+          }
           // A browser instance dies with its tab (history stays persisted).
           const browser = { ...s.browser };
           delete browser[id];
-          return { tabs, activeTabId, mdPreviewPath, browser };
+          return { tabs, activeTabId, mdViewMode, browser };
         }),
       setActiveTab: (activeTabId) =>
         set((s) => {
@@ -780,15 +801,21 @@ export const useStore = create<State>()(
         set((s) => ({ browserFocusNonce: s.browserFocusNonce + 1 })),
       clearBrowserHistory: () => set({ browserHistory: [] }),
 
-      mdPreviewPath: null,
-      mdPreviewWidth: 0,
-      openMdPreview: (mdPreviewPath) => set({ mdPreviewPath }),
-      closeMdPreview: () => set({ mdPreviewPath: null }),
-      toggleMdPreview: (path) =>
+      mdViewMode: {},
+      setMdViewMode: (path, mode) =>
         set((s) => ({
-          mdPreviewPath: s.mdPreviewPath === path ? null : path,
+          mdViewMode: { ...s.mdViewMode, [path]: mode },
         })),
-      setMdPreviewWidth: (mdPreviewWidth) => set({ mdPreviewWidth }),
+      toggleMdView: (path) =>
+        set((s) => {
+          const current = s.mdViewMode[path] ?? "preview";
+          return {
+            mdViewMode: {
+              ...s.mdViewMode,
+              [path]: current === "preview" ? "source" : "preview",
+            },
+          };
+        }),
 
       mode: "dark",
       setMode: (mode) => set({ mode }),
