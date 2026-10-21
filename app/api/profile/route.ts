@@ -19,7 +19,7 @@ export async function GET() {
       supabase
         .from("experiences")
         .select(
-          "id,company,role,period,summary,highlights,kind,tags,url,location,orders",
+          "id,company,role,period,summary,highlights,phases,kind,tags,url,location,orders",
         )
         .eq("visible", true)
         .order("orders"),
