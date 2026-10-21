@@ -4,8 +4,9 @@
   "pushed_count": 418,
   "session": {
     "branch": "main",
-    "next_up": "DO NOT DEPLOY YET — the deployment gate is recorded in DOC/11. The code side of Wave R is done and `pnpm build` is green: /api/repo/branches, branch-aware tree/blob, /api/commits (16/page, parents[], hasMore via Link), the status-bar project + branch pickers, Source-Control-only history with the inline graph rail, README descriptions/auto-open, the cached tree/metadata snapshot and the protected cron + revalidate routes. Scrollbars are themed too (5321c5b): every scroller uses a 10px hover-only rounded thumb (--radius-scrollbar), the OS arrow buttons are gone and the gutter shrank 15px -> 10px. The activity-bar placeholders are live views now (Search filters the loaded trees and marks the term in the editor, Run starts the selected project, Extensions shows Prettier + ESLint) and the toast stack landed. The workspace now has real sections (About, Resume, Certificates, Experience, Projects, Skills, Contact) that open designed pages in the editor; the scratch folder is gone from the tree. Two hands-on steps remain for you: upload the resume PDF to the `resumes` bucket + point site_settings.resume.url at it, and fill in profiles.data (role, email, years, focus) + your own certificates. Next (human): link cloud Supabase + apply the 10 migrations, set the Vercel env, then deploy. Still optional: the iframe preview (needs public project URLs), Upstash hot cache (the DB snapshot works without it), blob SHA verification for non-default branches, and the V1 list in DOC/11. No pushes until the human says so.",
+    "next_up": "Resume content wave is in (22 commits, tip 2bd8f1b): migration 0012 + seed - 9 sections (Certificates hidden), the Composable E-Commerce Platform group (storefront-frontend + auth-svc) above 8 standalone repos, 8 skill groups, 3 experiences (Northstar work + 2 hackathons), 2 education rows, the real profile/phone. /api/profile now returns education + experience bullets/tags, /api/projects returns groups with description_override-first copy. About is rewritten from the resume and opens on first visit; Experience / Education / Hackathons have their own pages; Resume is download-only (public `resumes` bucket + ?download=) and scripts/upload-resume.mjs uploads the ignored PDF and writes site_settings.resume; the Explorer nests grouped repos one level under the platform folder. tsc + pnpm build green, CDP 1440/768/390 no overflow, console clean. Human next: link cloud Supabase + apply migrations 0001-0012 + seed, run the upload script against the cloud project, set the Vercel env, then deploy. No pushes until you say so.",
     "pending_verifications": [
+      "resume content (2026-10-21): db reset -> 8 visible sections + hidden certificates, 1 group, 10 projects, 8 skill groups, 3 experiences, 2 education rows, 2 socials; /api/projects -> groups + description_override precedence; /api/profile -> education; About auto-opens on first visit; Resume -> exactly one download link, 0 iframes/embeds, the URL answers 200 + content-disposition: attachment; quick open 'educt' -> Education page only; CDP 1440/768/390 -> no horizontal overflow (status strip 2x2 below xl), console clean; tsc + pnpm build green.",
       "portfolio pages (2026-10-21): 7 sections seeded (About first) + migration 0011 (certificates table, resumes bucket, tmp removed from the workspace); every section except Projects opens a designed page in the editor; the local scratchpad is hidden from the tree and the quick open; About shows the hero, status strip, stack chips, 6 project cards with README excerpts (after a cron sync) and the experience timeline; Resume/Certificates show their empty states until you upload the PDF + add rows; the activity-bar avatar follows the profile. tsc clean, pnpm build green, no console errors",
       "views + toasts (2026-10-21): Search -> 'store' gives 1 result (lib/store.ts), Enter/click opens it and the editor marks 7 occurrences (--color-vscode-find-match); Extensions -> Install raises the toast 'Installing Prettier... (demo)'; Ctrl+S -> 'Saved locally'; Run -> 'No preview URL for this project yet' (no project has a public URL yet); toasts are top-right cards, 4.5s auto-dismiss. tsc clean, pnpm build green, no console errors",
       "scrollbars (2026-10-21): one global layer in app/globals.css - 10px bar, transparent track/corner, ::-webkit-scrollbar-button hidden (no OS arrows), thumb = rounded pill (--radius-scrollbar 4px, 2px transparent border + background-clip: padding-box), transparent at rest and rgba(255,255,255,.22) on hover (.36 under the pointer), 120ms fade; Firefox via @supports not selector(::-webkit-scrollbar). CDP: sidebar gutter 15px -> 10px, thumbBg transparent -> rgba(255,255,255,.22) on hover, radius 4px, button display none; the xterm viewport follows the same layer; tsc clean, pnpm build green",
@@ -38,8 +39,30 @@
       "browser preview (PV-C-BROWSERPREVIEW): globe -> no browser tabs = opens an Integrated Browser tab; with tabs open = menu (New Integrated Browser Tab + a row per open tab, active marked); a fresh tab shows the welcome state (globe glyph, 'Browser', 'Enter a URL above to get started.') with the URL field focused + the picker open; navbar: back/forward/reload 28px (40% dimmed when unavailable, tooltips on hover), URL container #313131, 1px #3C3C3C, 6px radius, focus #0078D4, placeholder 'Search or enter URL'; typing 'localhost:3000' -> rows 'localhost:3000' + 'localhost:3000 - Bing Search' (go-to first), typing 'hello world' -> search row only, typing 'local' -> up to 6 History matches below; empty field -> top-3 'Recents' + other tabs under 'Open Tabs', group label right-aligned on the first row; 22px rows (focus #04395E/white, hover #2A2D2E); Enter/click navigates the current tab (label -> host, globe glyph); search rows open in THIS tab while it is still empty, else in a NEW browser tab; back/forward move the stack, reload remounts the frame; switching editor tabs keeps each page alive (hidden, not unloaded); ... menu: Copy URL / Open in External Browser / Reload / Suspend Tab (unmounts the frame -> 'Tab Suspended' card + Reload; menu becomes Resume Tab) / Clear Browser History (Recents empties); the two dimmed chat actions (codicon-comment 'Comment on Elements' + codicon-inspect 'Add Element to Chat' — CONFIRM these glyphs) sit right of the URL, no pointer cursor, tooltips still show; Ctrl+L focuses+selects the URL and reopens the picker (never while typing in another field/xterm; Esc closes the picker, a second Esc blurs); Recents/History survive reload (cap 200); terminal: 'open --preview localhost:3000' retargets the active/first browser tab (creates one when none; help lists a BROWSER section), 'reload' remounts it (dim note when no browser tab); palette: Browser: Open Integrated Browser / Focus URL Input (Ctrl+L chip) / Reload; Run > Open Integrated Browser; known web-clone limits: no title/favicon in the tab, in-page links do not move the address bar, Google/Bing/DDG refuse framing (escape hatch = Open in External Browser), Ctrl+L cannot be caught while focus is inside the framed page; welcome subtitle note: the real VS Code no-chat string is used ('Enter a URL above to get started.') — say the word if you want different copy",
       "markdown same-tab (2026-10-20): tmp/preview.md and repo AGENTS.md open straight into the preview inside the same editor tab; Ctrl+Shift+V and the tab action (Open Source / Open Preview) switch preview <-> source; no split pane, no sash, no second Preview tab; the preview renders the blob FileViewer already loaded (no second GitHub call) and updates 300ms after typing with the dirty strip; closing the tab clears the mode so a reopen starts in preview; the console is clean (the Shiki font-weight style error is gone)"
     ],
-    "tip": "c00dc50",
+    "tip": "2bd8f1b",
     "unpushed": [
+      "2bd8f1b",
+      "7e967df",
+      "a8435c2",
+      "b1f74f6",
+      "0161600",
+      "33f7336",
+      "1a5ddcc",
+      "7100e09",
+      "c6e1b85",
+      "5000160",
+      "d38a31d",
+      "e7a1b24",
+      "e4dee59",
+      "5f0ebce",
+      "c8590f2",
+      "fbd1e1c",
+      "d2bd7ff",
+      "442741b",
+      "f99ba2b",
+      "244f526",
+      "36ba849",
+      "fdb7ae1",
       "c00dc50",
       "2b649df",
       "8190ee9",
@@ -138,10 +161,10 @@
     "tokens": "app/globals.css @theme"
   },
   "summary": {
-    "total": 59,
-    "done": 44,
+    "done": 45,
     "in_progress": 12,
-    "backlog": 3
+    "backlog": 3,
+    "total": 60
   },
   "tasks": [
     {
@@ -434,6 +457,17 @@
       "finished": "2026-10-20",
       "verified": true,
       "log": "Refused-connect wave (565b951 shared net guards + e3773ac proxy refactor + 2201bd5 embedTargets + dd98331 embed-check route + ec9fef0 read-only /api/embed + a487b07 pane: per-origin verdict cache, blocked card with the probe reason + Read-Only View/Try Again/Open in External Browser, mapped iframe src for Google igu + YouTube embed, Bing search rows) - route probes: google/github/youtube-watch/duckduckgo blocked, bing/example/wikipedia/youtube-embed/igu allowed, localhost unknown (never probed); CDP smoke: card + reason + zero visible iframes, read-only iframe sandbox='', igu src, Bing row + SERP iframe, youtube embed src; awaiting click-test. Wave 1 (plan revised + built, 9 files, one commit each): store b0759bb (browser slice keyed by editor-tab id — url/hist/idx/reloadKey/suspended per instance, session-only; browserHistory persisted cap 200; openBrowser/navigateBrowser/browserBack/browserForward/reloadBrowser/suspendBrowser/focusBrowserUrl/clearBrowserHistory; old previewUrl/openPreview deleted; closeTab drops the instance) + Tab a9c4a38 (optional icon override) + Tabs c3dee4c (browser tabs label by host + globe glyph; more-menu Copy URL, disabled until a URL exists) + BrowserPreview 2897c65 (navbar 6/8/3 insets: 28px back/forward/reload dimmed-at-40%-when-disabled + URL container #313131/1px #3C3C3C/6px radius (focus #0078D4) placeholder 'Search or enter URL'; picker under the input: typing -> go-to row + '{q} - Google Search' (URL-like = go-to first) + up to 6 History rows, empty -> top-3 Recents + other Open Tabs with the group label right-aligned on the first row; 22px rows radius 3, focus #04395E/white, hover #2A2D2E; welcome = the real no-chat variant (40px globe, 'Browser', 'Enter a URL above to get started.'); blocked card 'Failed to Load Page' + URL + Try Again / Open in External Browser; suspend card 'Tab Suspended' + Reload; iframe sandbox allow-scripts/forms/same-origin/downloads/popups; the two chat actions render disabled 40% with tooltips — codicon-comment 'Comment on Elements' + codicon-inspect 'Add Element to Chat' (glyphs to confirm); ... menu: Copy URL / Open in External Browser / Reload / Suspend Tab / Clear Browser History) + page f186336 (one keep-alive pane per browser tab stacked via hidden-class, Ctrl+L handler with field/dialog guards, browser-tab: action routing) + commands a766f3c (Browser: Open Integrated Browser / Focus URL Input Ctrl+L / Reload) + TitleBar ee5101c (globe = open-or-list: no tabs -> open one, tabs -> menu listing them + New Integrated Browser Tab) + parser 031bf3d (open --preview <url> + reload + BROWSER help section) + TerminalPanel 151f07a (PREVIEW retargets the active/first browser tab or creates one; RELOAD_PREVIEW remounts, dim note when none). Decisions: multi-tab allowed (each instance = its own editor tab, ids browser:N from a module counter); manual suspend only (no auto-unload); search rows open in the current tab while it is the welcome state, else a new browser tab; AI toolbar buttons keep the disabled look, no pointer cursor. Verify: tsc 0 real errors (6 known validator stubs); dev 200/no overlay; CDP: globe -> 'Browser' tab + welcome + input + the two disabled chat buttons, typing 'localhost:3000' -> go-to + search rows, Enter -> iframe http://localhost:3000 + tab label 'localhost:3000', keep-alive across tab switches (iframe stays mounted while hidden), globe menu lists 'localhost:3000' (active) + New, new tab picker shows 'localhost:3000 | http://localhost:3000 | Recents' + 'localhost:3000 | Open Tabs', ... menu lists all five actions. remainder: user click-test (flags: the two chat-action glyphs; the welcome subtitle is VS Code's real no-chat string); then DOC/10 §4 rewrite + DOC/05 touch-ups as built. Responsive follow-up 4371c15 (chat actions hidden <640; iframe card scroll == client at 768/390) — refused-connect click-test: works (user, 2026-10-20). Docs c47fc50 (DOC/10 §4 as built) + 3bc3824 (DOC/05 §1.1 responsive + pane note). Closed after click-test (2026-10-20)."
+    },
+    {
+      "description": "Resume-driven content: migration 0012 (education + hackathons sections, project_groups, projects.group_slug/highlights, experiences kind/highlights/tags/url/location, certificates visible=false), the resume seed, download-only Resume page, Education + Hackathons pages, grouped project tree, upload-resume script",
+      "id": "PV-ENRICH-RESUME",
+      "status": "done",
+      "title": "Resume content + pages",
+      "owner": "agent",
+      "started": "2026-10-21",
+      "finished": "2026-10-21",
+      "verified": true,
+      "log": "fdb7ae1..2bd8f1b (22 one-file commits): migration 0012 + seed (9 sections, certificates hidden, e-commerce group + 10 projects, 8 skills, 3 experiences, 2 education, 2 socials, profile/phone); /api/profile 442741b + /api/projects d2bd7ff + store fbd1e1c + lib/resume c8590f2; Explorer group tree 5f0ebce (featured group opens, grouped contents indent, reveal opens the group), status-bar copy e4dee59; About d38a31d (hero, 4-tile strip, stack, selected work + group card, more repos, experience/education/hackathons previews, contact), Resume 5000160 (download only, no embed), Experience c6e1b85, Education 7100e09, Hackathons 1a5ddcc, Contact 33f7336, certificates grid 0161600, PageSurface b1f74f6 + PageShell e7a1b24, first-visit About a8435c2, docs 7e967df + 2bd8f1b. Verify: db reset clean (12 migrations + seed); upload-resume.mjs -> 200 + content-disposition attachment; CDP 1440/768/390 no overflow; quick open filters; console clean; tsc + pnpm build green."
     },
     {
       "description": "Root mount folds into catch-all page (app/page.tsx deleted 6b939de: / collides with /[[...file]])",
