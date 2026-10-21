@@ -39,6 +39,23 @@ export type ProfileContent = {
     role: string;
     period: string;
     summary: string | null;
+    highlights: string[];
+    kind: "work" | "hackathon";
+    tags: string[];
+    url: string | null;
+    location: string | null;
+    orders: number;
+  }[];
+  education: {
+    id: string;
+    institution: string;
+    degree: string;
+    field: string | null;
+    location: string | null;
+    period: string;
+    score: string | null;
+    summary: string | null;
+    url: string | null;
     orders: number;
   }[];
   skills: { id: string; category: string; items: string[]; orders: number }[];
@@ -95,6 +112,8 @@ export type Project = {
   title_override: string | null;
   description_override: string | null;
   description: string | null;
+  group_slug: string | null;
+  highlights: string[];
   tags: string[];
   stars: number;
   forks: number;
@@ -104,6 +123,18 @@ export type Project = {
   sha: string | null;
   preview_url: string | null;
   preview_embeddable: boolean;
+  orders: number;
+  featured: boolean;
+};
+
+// A platform folder above several repositories (Projects > group > repos).
+export type ProjectGroup = {
+  id: string;
+  slug: string;
+  title: string;
+  description: string | null;
+  highlights: string[];
+  icon: string;
   orders: number;
   featured: boolean;
 };
@@ -127,16 +158,20 @@ export function repoTreeKey(repo: string, branch?: string | null): string {
   return branch ? `${repo}@${branch}` : repo;
 }
 
-// The one-line project description: the README excerpt wins, the GitHub
-// repository description is the fallback.
+// The one-line project description: owner-written copy wins, then the README
+// excerpt, then the GitHub repository description.
 export function projectDescription(
   s: {
     readmes: Record<string, string>;
     repoMeta: Record<string, { description: string | null }>;
+    projects?: Project[];
   },
   repo: string,
 ): string {
-  return s.readmes[repo] ?? s.repoMeta[repo]?.description ?? "";
+  const override = s.projects?.find(
+    (p) => `${p.repo_owner}/${p.repo_name}` === repo,
+  )?.description_override;
+  return override || s.readmes[repo] || s.repoMeta[repo]?.description || "";
 }
 
 export type TerminalPane = "left" | "right";
@@ -236,10 +271,12 @@ function pushBrowserHistory(hist: string[], url: string): string[] {
 type State = {
   sections: Section[];
   projects: Project[];
+  projectGroups: ProjectGroup[];
   trees: Record<string, TreeEntry[]>;
   explorerLoading: boolean;
   setSections: (s: Section[]) => void;
   setProjects: (p: Project[]) => void;
+  setProjectGroups: (g: ProjectGroup[]) => void;
   setTree: (repo: string, branch: string, tree: TreeEntry[]) => void;
   setExplorerLoading: (b: boolean) => void;
 
@@ -415,7 +452,11 @@ function ancestorKeys(path: string): string[] {
 
 // One set() per action: merge ancestor expansion + selection + scroll nonce.
 function revealed(
-  s: { expanded: Record<string, boolean>; revealNonce: number },
+  s: {
+    expanded: Record<string, boolean>;
+    revealNonce: number;
+    projects?: Project[];
+  },
   path: string,
 ): {
   expanded: Record<string, boolean>;
@@ -424,6 +465,15 @@ function revealed(
 } {
   const expanded = { ...s.expanded };
   for (const k of ancestorKeys(path)) expanded[k] = true;
+  // Repositories inside a project group: open the group folder too.
+  const parts = path.split("/");
+  if (parts[0] === "Projects" && parts.length >= 3) {
+    const repo = `${parts[1]}/${parts[2]}`;
+    const group = s.projects?.find(
+      (p) => `${p.repo_owner}/${p.repo_name}` === repo,
+    )?.group_slug;
+    if (group) expanded[`Projects/${group}`] = true;
+  }
   return { expanded, selectedPath: path, revealNonce: s.revealNonce + 1 };
 }
 
@@ -432,6 +482,7 @@ export const useStore = create<State>()(
     (set) => ({
       sections: [],
       projects: [],
+      projectGroups: [],
       trees: {},
       explorerLoading: false,
       setSections: (sections) => set({ sections }),
@@ -446,6 +497,15 @@ export const useStore = create<State>()(
               ? `${projects[0].repo_owner}/${projects[0].repo_name}`
               : null),
         })),
+      // Featured groups start expanded so the platform's repos are visible.
+      setProjectGroups: (projectGroups) =>
+        set((s) => {
+          const expanded = { ...s.expanded };
+          for (const group of projectGroups) {
+            if (group.featured) expanded[`Projects/${group.slug}`] = true;
+          }
+          return { projectGroups, expanded };
+        }),
       setTree: (repo, branch, tree) =>
         set((s) => ({
           trees: { ...s.trees, [repoTreeKey(repo, branch)]: tree },
