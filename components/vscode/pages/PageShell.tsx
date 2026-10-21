@@ -53,10 +53,12 @@ export function PageShell({
 export function PageSection({
   title,
   hint,
+  action,
   children,
 }: {
   title: string;
   hint?: string;
+  action?: ReactNode;
   children: ReactNode;
 }) {
   return (
@@ -66,6 +68,7 @@ export function PageSection({
           {title}
         </h2>
         {hint ? <span className="text-[11px] text-vscode-dim">{hint}</span> : null}
+        {action ? <div className="ml-auto">{action}</div> : null}
       </div>
       <div className="mt-3">{children}</div>
     </section>
