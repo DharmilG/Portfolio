@@ -108,9 +108,15 @@
   --color-vscode-markdown-inline-code-bg: #ffffff14;
   --color-vscode-markdown-quote-border: #3c3c3c;
 
+  /* === Portfolio pages (About, Resume, Certificates, ...) === */
+  --color-vscode-page-card: #1a1b1c;
+  --color-vscode-page-card-hover: #202124;
+  --color-vscode-page-border: #2f3133;
+  --color-vscode-page-glow: rgba(0, 120, 212, 0.16);
+  --color-vscode-page-chip: #26282a;
+
   /* === Radii, Fonts & Elevation === */
-  --radius-control: 5px;
-  --radius-tab: 6px;
+  --radius-control: 5px;  --radius-tab: 6px;
   --radius-section: 8px;
   --radius-quick: 12px; /* quick-input widget (cornerRadius-xLarge) */
   --radius-quick-input: 6px; /* quick-input field (cornerRadius-medium) */
