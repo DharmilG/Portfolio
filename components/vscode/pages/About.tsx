@@ -30,7 +30,7 @@ function PageLink({
     <button
       type="button"
       onClick={onClick}
-      className="flex items-center gap-1 text-[11px] text-vscode-quick-match hover:underline"
+      className="flex items-center gap-1 text-page-micro text-vscode-quick-match hover:underline"
     >
       {children}
       <Codicon name="arrow-right" size={11} />
@@ -49,7 +49,7 @@ export default function AboutPage() {
   if (!content) {
     return (
       <PageShell icon="person" title="About">
-        <p className="text-[13px] text-vscode-dim">Loading your profile…</p>
+        <p className="text-page-body text-vscode-dim">Loading your profile…</p>
       </PageShell>
     );
   }
@@ -97,69 +97,71 @@ export default function AboutPage() {
       }
     >
       {/* Hero */}
-      <div className="flex flex-wrap items-start gap-5">
-        {profile?.avatar_url ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={profile.avatar_url}
-            alt={name}
-            className="h-20 w-20 rounded-full border border-vscode-page-border object-cover"
-          />
-        ) : (
-          <span className="flex h-20 w-20 items-center justify-center rounded-full border border-vscode-page-border bg-vscode-page-card text-2xl font-semibold text-vscode-fg">
-            {initials(name)}
-          </span>
-        )}
-        <div className="min-w-0 flex-1">
-          <h2 className="text-lg font-semibold text-vscode-fg-active">
-            {name}
-          </h2>
-          <p className="text-[13px] text-vscode-muted">{role}</p>
-          {profile?.bio ? (
-            <p className="mt-3 max-w-[64ch] text-[13px] leading-relaxed text-vscode-muted">
-              {profile.bio}
-            </p>
-          ) : null}
-          <div className="mt-4 flex flex-wrap items-center gap-2">
-            {email ? (
-              <a
-                href={`mailto:${email}`}
-                className="flex h-7 items-center gap-1.5 rounded-control bg-vscode-accent px-3 text-[12px] text-vscode-badge-fg hover:bg-vscode-accent-hover"
-              >
-                <Codicon name="mail" size={13} />
-                Email
-              </a>
+      <div className="@container">
+        <div className="flex flex-col gap-4 @lg:flex-row @lg:items-start @lg:gap-5">
+          {profile?.avatar_url ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={profile.avatar_url}
+              alt={name}
+              className="h-20 w-20 rounded-full border border-vscode-page-border object-cover"
+            />
+          ) : (
+            <span className="flex h-20 w-20 items-center justify-center rounded-full border border-vscode-page-border bg-vscode-page-card text-2xl font-semibold text-vscode-fg">
+              {initials(name)}
+            </span>
+          )}
+          <div className="min-w-0 flex-1">
+            <h2 className="text-page-title font-semibold text-vscode-fg-active">
+              {name}
+            </h2>
+            <p className="text-page-body text-vscode-muted">{role}</p>
+            {profile?.bio ? (
+              <p className="mt-3 max-w-[64ch] text-page-body leading-relaxed text-vscode-muted">
+                {profile.bio}
+              </p>
             ) : null}
-            {content.socials.map((social) => (
-              <a
-                key={social.id}
-                href={social.url}
-                target="_blank"
-                rel="noreferrer noopener"
-                className="flex h-7 items-center gap-1.5 rounded-control border border-vscode-page-border bg-vscode-page-card px-3 text-[12px] text-vscode-fg hover:border-vscode-accent/60 hover:bg-vscode-page-card-hover"
-              >
-                <Codicon name={social.icon} size={13} />
-                {social.label}
-              </a>
-            ))}
-            {resumeHref ? (
-              <a
-                href={resumeHref}
-                className="flex h-7 items-center gap-1.5 rounded-control border border-vscode-page-border bg-vscode-page-card px-3 text-[12px] text-vscode-fg hover:border-vscode-accent/60 hover:bg-vscode-page-card-hover"
-              >
-                <Codicon name="cloud-download" size={13} />
-                Resume
-              </a>
-            ) : (
-              <button
-                type="button"
-                onClick={() => openPage("resume")}
-                className="flex h-7 items-center gap-1.5 rounded-control border border-vscode-page-border bg-vscode-page-card px-3 text-[12px] text-vscode-fg hover:border-vscode-accent/60 hover:bg-vscode-page-card-hover"
-              >
-                <Codicon name="file-pdf" size={13} />
-                Resume
-              </button>
-            )}
+            <div className="mt-4 flex flex-wrap items-center gap-2">
+              {email ? (
+                <a
+                  href={`mailto:${email}`}
+                  className="flex h-7 items-center gap-1.5 rounded-control bg-vscode-accent px-3 text-page-meta text-vscode-badge-fg hover:bg-vscode-accent-hover"
+                >
+                  <Codicon name="mail" size={13} />
+                  Email
+                </a>
+              ) : null}
+              {content.socials.map((social) => (
+                <a
+                  key={social.id}
+                  href={social.url}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  className="flex h-7 items-center gap-1.5 rounded-control border border-vscode-page-border bg-vscode-page-card px-3 text-page-meta text-vscode-fg hover:border-vscode-accent/60 hover:bg-vscode-page-card-hover"
+                >
+                  <Codicon name={social.icon} size={13} />
+                  {social.label}
+                </a>
+              ))}
+              {resumeHref ? (
+                <a
+                  href={resumeHref}
+                  className="flex h-7 items-center gap-1.5 rounded-control border border-vscode-page-border bg-vscode-page-card px-3 text-page-meta text-vscode-fg hover:border-vscode-accent/60 hover:bg-vscode-page-card-hover"
+                >
+                  <Codicon name="cloud-download" size={13} />
+                  Resume
+                </a>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => openPage("resume")}
+                  className="flex h-7 items-center gap-1.5 rounded-control border border-vscode-page-border bg-vscode-page-card px-3 text-page-meta text-vscode-fg hover:border-vscode-accent/60 hover:bg-vscode-page-card-hover"
+                >
+                  <Codicon name="file-pdf" size={13} />
+                  Resume
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -193,11 +195,11 @@ export default function AboutPage() {
             key={stat.label}
             className="rounded-control border border-vscode-page-border bg-vscode-page-card px-4 py-3"
           >
-            <div className="flex items-center gap-1.5 text-[11px] text-vscode-dim">
+            <div className="flex items-center gap-1.5 text-page-micro text-vscode-dim">
               <Codicon name={stat.icon} size={12} />
               {stat.label}
             </div>
-            <div className="mt-1 truncate text-[13px] font-medium text-vscode-fg" title={stat.value}>
+            <div className="mt-1 text-page-body font-medium leading-snug text-vscode-fg" title={stat.value}>
               {stat.value}
             </div>
           </div>
@@ -206,7 +208,7 @@ export default function AboutPage() {
 
       {focus ? (
         <PageSection title="Currently">
-          <p className="text-[13px] leading-relaxed text-vscode-muted">
+          <p className="text-page-body leading-relaxed text-vscode-muted">
             {focus}
           </p>
         </PageSection>
@@ -225,7 +227,7 @@ export default function AboutPage() {
                 key={group.id}
                 className="rounded-control border border-vscode-page-border bg-vscode-page-card px-4 py-3"
               >
-                <div className="text-[11px] font-medium uppercase tracking-wide text-vscode-dim">
+                <div className="text-page-micro font-medium uppercase tracking-wide text-vscode-dim">
                   {group.category}
                 </div>
                 <div className="mt-2 flex flex-wrap gap-1.5">
@@ -264,15 +266,15 @@ export default function AboutPage() {
                       size={14}
                       className="text-vscode-dim"
                     />
-                    <span className="truncate text-[13px] font-medium text-vscode-fg">
+                    <span className="truncate text-page-body font-medium text-vscode-fg">
                       {group.title}
                     </span>
-                    <span className="ml-auto shrink-0 rounded-full bg-vscode-page-chip px-2 py-0.5 text-[10px] text-vscode-dim">
+                    <span className="ml-auto shrink-0 rounded-full bg-vscode-page-chip px-2 py-0.5 text-page-micro text-vscode-dim">
                       {children.length} repos
                     </span>
                   </div>
                   {group.description ? (
-                    <p className="mt-2 line-clamp-2 text-[12px] leading-relaxed text-vscode-muted">
+                    <p className="mt-2 line-clamp-2 text-page-meta leading-relaxed text-vscode-muted">
                       {group.description}
                     </p>
                   ) : null}
@@ -281,7 +283,7 @@ export default function AboutPage() {
                       {group.highlights.slice(0, 2).map((line) => (
                         <li
                           key={line}
-                          className="flex gap-1.5 text-[11px] leading-relaxed text-vscode-dim"
+                          className="flex gap-1.5 text-page-micro leading-relaxed text-vscode-dim"
                         >
                           <span className="mt-[6px] h-1 w-1 shrink-0 rounded-full bg-vscode-accent/60" />
                           <span className="line-clamp-2">{line}</span>
@@ -312,18 +314,18 @@ export default function AboutPage() {
                     size={14}
                     className="text-vscode-dim"
                   />
-                  <span className="truncate text-[13px] font-medium text-vscode-fg">
+                  <span className="truncate text-page-body font-medium text-vscode-fg">
                     {project.title_override ?? project.repo_name}
                   </span>
                   {project.stars > 0 ? (
-                    <span className="ml-auto flex items-center gap-1 text-[11px] text-vscode-dim">
+                    <span className="ml-auto flex items-center gap-1 text-page-micro text-vscode-dim">
                       <Codicon name="star-full" size={11} />
                       {project.stars}
                     </span>
                   ) : null}
                 </div>
                 {project.description ? (
-                  <p className="mt-2 line-clamp-2 text-[12px] leading-relaxed text-vscode-muted">
+                  <p className="mt-2 line-clamp-2 text-page-meta leading-relaxed text-vscode-muted">
                     {project.description}
                   </p>
                 ) : null}
@@ -332,7 +334,7 @@ export default function AboutPage() {
                     {project.highlights.slice(0, 2).map((line) => (
                       <li
                         key={line}
-                        className="flex gap-1.5 text-[11px] leading-relaxed text-vscode-dim"
+                        className="flex gap-1.5 text-page-micro leading-relaxed text-vscode-dim"
                       >
                         <span className="mt-[6px] h-1 w-1 shrink-0 rounded-full bg-vscode-accent/60" />
                         <span className="line-clamp-2">{line}</span>
@@ -344,7 +346,7 @@ export default function AboutPage() {
                   {project.tags.slice(0, 4).map((tag) => (
                     <PageChip key={tag}>{tag}</PageChip>
                   ))}
-                  <span className="ml-auto text-[11px] text-vscode-dim">
+                  <span className="ml-auto text-page-micro text-vscode-dim">
                     {project.branch}
                   </span>
                 </div>
@@ -372,23 +374,23 @@ export default function AboutPage() {
                   size={13}
                   className="shrink-0 text-vscode-dim"
                 />
-                <span className="truncate text-[12px] text-vscode-fg">
+                <span className="truncate text-page-meta text-vscode-fg">
                   {project.title_override ?? project.repo_name}
                 </span>
                 {project.description ? (
-                  <span className="hidden min-w-0 flex-1 truncate text-[11px] text-vscode-dim xl:block">
+                  <span className="hidden min-w-0 flex-1 truncate text-page-micro text-vscode-dim xl:block">
                     {project.description}
                   </span>
                 ) : (
                   <span className="flex-1" />
                 )}
                 {project.language ? (
-                  <span className="shrink-0 text-[11px] text-vscode-dim">
+                  <span className="shrink-0 text-page-micro text-vscode-dim">
                     {project.language}
                   </span>
                 ) : null}
                 {project.stars > 0 ? (
-                  <span className="flex shrink-0 items-center gap-1 text-[11px] text-vscode-dim">
+                  <span className="flex shrink-0 items-center gap-1 text-page-micro text-vscode-dim">
                     <Codicon name="star-full" size={10} />
                     {project.stars}
                   </span>
@@ -417,18 +419,18 @@ export default function AboutPage() {
                 className="border-l-2 border-vscode-accent/40 pl-4"
               >
                 <div className="flex flex-wrap items-baseline gap-2">
-                  <span className="text-[13px] font-medium text-vscode-fg">
+                  <span className="text-page-body font-medium text-vscode-fg">
                     {job.role}
                   </span>
-                  <span className="text-[12px] text-vscode-muted">
+                  <span className="text-page-meta text-vscode-muted">
                     {job.company}
                   </span>
-                  <span className="ml-auto text-[11px] text-vscode-dim">
+                  <span className="ml-auto text-page-micro text-vscode-dim">
                     {job.period}
                   </span>
                 </div>
                 {job.summary ? (
-                  <p className="mt-1 max-w-[70ch] text-[12px] leading-relaxed text-vscode-muted">
+                  <p className="mt-1 max-w-[70ch] text-page-meta leading-relaxed text-vscode-muted">
                     {job.summary}
                   </p>
                 ) : null}
@@ -456,17 +458,17 @@ export default function AboutPage() {
                 className="rounded-control border border-vscode-page-border bg-vscode-page-card px-4 py-3"
               >
                 <div className="flex flex-wrap items-baseline gap-2">
-                  <span className="text-[13px] font-medium text-vscode-fg">
+                  <span className="text-page-body font-medium text-vscode-fg">
                     {row.institution}
                   </span>
-                  <span className="text-[12px] text-vscode-muted">
+                  <span className="text-page-meta text-vscode-muted">
                     {row.degree}
                   </span>
-                  <span className="ml-auto text-[11px] text-vscode-dim">
+                  <span className="ml-auto text-page-micro text-vscode-dim">
                     {row.period}
                   </span>
                 </div>
-                <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-vscode-dim">
+                <div className="mt-1 flex flex-wrap items-center gap-2 text-page-micro text-vscode-dim">
                   {row.field ? <span>{row.field}</span> : null}
                   {row.location ? <span>· {row.location}</span> : null}
                   {row.score ? (
@@ -491,14 +493,14 @@ export default function AboutPage() {
             {hackathons.map((event) => (
               <PageCard key={event.id}>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-[13px] font-medium text-vscode-fg">
+                  <span className="text-page-body font-medium text-vscode-fg">
                     {event.role}
                   </span>
-                  <span className="ml-auto text-[11px] text-vscode-dim">
+                  <span className="ml-auto text-page-micro text-vscode-dim">
                     {event.period}
                   </span>
                 </div>
-                <div className="mt-0.5 text-[12px] text-vscode-muted">
+                <div className="mt-0.5 text-page-meta text-vscode-muted">
                   {event.company}
                 </div>
                 <div className="mt-2 flex flex-wrap gap-1">
@@ -518,19 +520,19 @@ export default function AboutPage() {
           {email ? (
             <a
               href={`mailto:${email}`}
-              className="rounded-control border border-vscode-page-border bg-vscode-page-card px-3 py-1.5 text-[12px] text-vscode-fg hover:border-vscode-accent/60"
+              className="rounded-control border border-vscode-page-border bg-vscode-page-card px-3 py-1.5 text-page-meta text-vscode-fg hover:border-vscode-accent/60"
             >
               {email}
             </a>
           ) : (
-            <span className="text-[12px] text-vscode-dim">
+            <span className="text-page-meta text-vscode-dim">
               Add your email to the profile to show it here.
             </span>
           )}
           {phone ? (
             <a
               href={`tel:${phone.replace(/\s+/g, "")}`}
-              className="rounded-control border border-vscode-page-border bg-vscode-page-card px-3 py-1.5 text-[12px] text-vscode-fg hover:border-vscode-accent/60"
+              className="rounded-control border border-vscode-page-border bg-vscode-page-card px-3 py-1.5 text-page-meta text-vscode-fg hover:border-vscode-accent/60"
             >
               {phone}
             </a>
@@ -541,7 +543,7 @@ export default function AboutPage() {
               href={social.url}
               target="_blank"
               rel="noreferrer noopener"
-              className="flex h-7 items-center gap-1.5 rounded-control border border-vscode-page-border bg-vscode-page-card px-3 text-[12px] text-vscode-fg hover:border-vscode-accent/60 hover:bg-vscode-page-card-hover"
+              className="flex h-7 items-center gap-1.5 rounded-control border border-vscode-page-border bg-vscode-page-card px-3 text-page-meta text-vscode-fg hover:border-vscode-accent/60 hover:bg-vscode-page-card-hover"
             >
               <Codicon name={social.icon} size={13} />
               {social.label}
