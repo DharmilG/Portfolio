@@ -1,8 +1,9 @@
-// GET /api/projects — visible project folders for the Explorer.
+// GET /api/projects — visible project folders + groups for the Explorer.
 // Public read only (RLS also enforces visible=true); owner/repo names stay
 // backend fields and are never rendered directly by the Explorer. The cached
-// GitHub snapshot (github_cache) joins in for the description, tags and
-// counters — no GitHub request on the hot path (DOC/09 §1).
+// GitHub snapshot (github_cache) joins in for tags and counters — no GitHub
+// request on the hot path (DOC/09 §1). A project's `description_override`
+// (owner-written, resume-grade copy) wins over the auto README excerpt.
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/db";
 
@@ -23,12 +24,21 @@ type CachedMetadata = {
 };
 
 export async function GET() {
-  const [{ data, error }, { data: cache }] = await Promise.all([
+  const [
+    { data, error },
+    { data: groups, error: groupsError },
+    { data: cache },
+  ] = await Promise.all([
     supabase
       .from("projects")
       .select(
-        "id,repo_owner,repo_name,title_override,description_override,tags,preview_url,preview_embeddable,orders,featured",
+        "id,repo_owner,repo_name,title_override,description_override,group_slug,highlights,tags,preview_url,preview_embeddable,orders,featured",
       )
+      .eq("visible", true)
+      .order("orders", { ascending: true }),
+    supabase
+      .from("project_groups")
+      .select("id,slug,title,description,highlights,icon,orders,featured")
       .eq("visible", true)
       .order("orders", { ascending: true }),
     supabase
@@ -36,7 +46,7 @@ export async function GET() {
       .select("repo_full_name,branch,sha,metadata,expires_at"),
   ]);
 
-  if (error) {
+  if (error || groupsError) {
     return NextResponse.json(
       { error: "projects unavailable" },
       { status: 502, headers: { "Cache-Control": "no-store" } },
@@ -57,13 +67,15 @@ export async function GET() {
     );
     return {
       ...project,
-      // The README excerpt wins, then the GitHub description, then the
-      // owner's override.
+      // Owner-written copy wins, then the README excerpt, then the GitHub
+      // repository description.
       description:
+        project.description_override ??
         (fresh ? metadata?.readme : null) ??
         (fresh ? metadata?.description : null) ??
-        project.description_override ??
         null,
+      highlights: project.highlights ?? [],
+      group_slug: project.group_slug ?? null,
       tags: (fresh ? metadata?.tags : null) ?? project.tags ?? [],
       stars: (fresh ? metadata?.stars : 0) ?? 0,
       forks: (fresh ? metadata?.forks : 0) ?? 0,
@@ -78,7 +90,7 @@ export async function GET() {
   });
 
   return NextResponse.json(
-    { projects },
+    { projects, groups: groups ?? [] },
     { headers: { "Cache-Control": "no-store" } },
   );
 }
