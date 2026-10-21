@@ -71,9 +71,12 @@ async function loadProjects() {
   try {
     const res = await fetch("/api/projects", { cache: "no-store" });
     if (!res.ok) throw new Error(`projects ${res.status}`);
-    const data: { projects?: unknown } = await res.json();
+    const data: { projects?: unknown; groups?: unknown } = await res.json();
     if (Array.isArray(data.projects)) {
       useStore.getState().setProjects(data.projects);
+    }
+    if (Array.isArray(data.groups)) {
+      useStore.getState().setProjectGroups(data.groups);
     }
   } catch (error) {
     console.error("Could not load projects:", error);
@@ -87,7 +90,12 @@ async function loadProfile() {
     const res = await fetch("/api/profile", { cache: "no-store" });
     if (!res.ok) throw new Error(`profile ${res.status}`);
     const data = await res.json();
-    useStore.getState().setProfile(data);
+    const st = useStore.getState();
+    st.setProfile(data);
+    // First visit: land on the About page, not an empty editor.
+    if (st.tabs.length === 0) {
+      st.openTab({ kind: "page", path: "about", sha: null });
+    }
   } catch (error) {
     console.error("Could not load profile:", error);
   }
