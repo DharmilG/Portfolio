@@ -1,7 +1,8 @@
 "use client";
 
-// Contact — the way to reach me (DOC/04 §1). The email is copied to the
-// clipboard on click; the links open in a new tab.
+// Contact — the way to reach me (DOC/04 §1). Email and phone are copied to
+// the clipboard on click; the social links open in a new tab. Availability and
+// location come from the profile, not from hardcoded copy.
 import { useState } from "react";
 import { useStore } from "@/lib/store";
 import Codicon from "../Codicon";
@@ -10,21 +11,26 @@ import { PageCard, PageShell } from "./PageShell";
 export default function ContactPage() {
   const content = useStore((s) => s.profile);
   const pushToast = useStore((s) => s.pushToast);
-  const [copied, setCopied] = useState(false);
+  const [copied, setCopied] = useState<"email" | "phone" | null>(null);
   const data = content?.profile?.data ?? {};
   const email = String(data.email ?? "");
+  const phone = String(data.phone ?? "");
+  const availability = String(data.availability ?? "");
   const socials = content?.socials ?? [];
   const location = content?.profile?.location ?? "";
 
-  const copy = async () => {
-    if (!email) return;
+  const copy = async (value: string, kind: "email" | "phone") => {
+    if (!value) return;
     try {
-      await navigator.clipboard.writeText(email);
-      setCopied(true);
-      pushToast("Email copied to the clipboard", "success");
-      window.setTimeout(() => setCopied(false), 2000);
+      await navigator.clipboard.writeText(value);
+      setCopied(kind);
+      pushToast(
+        `${kind === "email" ? "Email" : "Phone"} copied to the clipboard`,
+        "success",
+      );
+      window.setTimeout(() => setCopied(null), 2000);
     } catch {
-      pushToast("Could not copy the email", "warning");
+      pushToast(`Could not copy the ${kind}`, "warning");
     }
   };
 
@@ -32,10 +38,12 @@ export default function ContactPage() {
     <PageShell
       icon="mail"
       title="Contact"
-      subtitle="Open to work, collaborations and interesting problems."
+      subtitle={
+        availability || "Open to work, collaborations and interesting problems."
+      }
       footer="Prefer the terminal? `open --preview <url>` opens any link in the integrated browser."
     >
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="grid gap-3 lg:grid-cols-2">
         <PageCard>
           <div className="text-[12px] text-vscode-dim">Email</div>
           {email ? (
@@ -48,11 +56,14 @@ export default function ContactPage() {
               </a>
               <button
                 type="button"
-                onClick={copy}
+                onClick={() => copy(email, "email")}
                 className="ml-auto flex h-6 shrink-0 items-center gap-1 rounded-control border border-vscode-page-border bg-vscode-page-chip px-2 text-[11px] text-vscode-muted hover:border-vscode-accent/60 hover:text-vscode-fg"
               >
-                <Codicon name={copied ? "check" : "copy"} size={12} />
-                {copied ? "Copied" : "Copy"}
+                <Codicon
+                  name={copied === "email" ? "check" : "copy"}
+                  size={12}
+                />
+                {copied === "email" ? "Copied" : "Copy"}
               </button>
             </div>
           ) : (
@@ -61,6 +72,32 @@ export default function ContactPage() {
               it here.
             </p>
           )}
+
+          {phone ? (
+            <>
+              <div className="mt-4 text-[12px] text-vscode-dim">Phone</div>
+              <div className="mt-1.5 flex items-center gap-2">
+                <a
+                  href={`tel:${phone.replace(/\s+/g, "")}`}
+                  className="truncate text-[14px] text-vscode-fg hover:underline"
+                >
+                  {phone}
+                </a>
+                <button
+                  type="button"
+                  onClick={() => copy(phone, "phone")}
+                  className="ml-auto flex h-6 shrink-0 items-center gap-1 rounded-control border border-vscode-page-border bg-vscode-page-chip px-2 text-[11px] text-vscode-muted hover:border-vscode-accent/60 hover:text-vscode-fg"
+                >
+                  <Codicon
+                    name={copied === "phone" ? "check" : "copy"}
+                    size={12}
+                  />
+                  {copied === "phone" ? "Copied" : "Copy"}
+                </button>
+              </div>
+            </>
+          ) : null}
+
           {location ? (
             <>
               <div className="mt-4 text-[12px] text-vscode-dim">Location</div>
@@ -88,7 +125,11 @@ export default function ContactPage() {
                   rel="noreferrer noopener"
                   className="flex items-center gap-2 rounded-control px-1 py-1 text-[13px] text-vscode-fg hover:bg-vscode-page-card-hover"
                 >
-                  <Codicon name={social.icon} size={13} className="text-vscode-dim" />
+                  <Codicon
+                    name={social.icon}
+                    size={13}
+                    className="text-vscode-dim"
+                  />
                   <span className="truncate">{social.label}</span>
                   <Codicon
                     name="link-external"
@@ -99,6 +140,12 @@ export default function ContactPage() {
               ))}
             </div>
           )}
+          {availability ? (
+            <div className="mt-4 flex items-center gap-1.5 rounded-control bg-vscode-page-chip px-2.5 py-1.5 text-[11px] text-vscode-added">
+              <Codicon name="circle-filled" size={10} />
+              {availability}
+            </div>
+          ) : null}
         </PageCard>
       </div>
     </PageShell>
