@@ -12,27 +12,33 @@ export function PageShell({
   title,
   subtitle,
   footer,
+  width = "default",
   children,
 }: {
   icon: string;
   title: string;
   subtitle?: string;
   footer?: ReactNode;
+  width?: "default" | "wide";
   children: ReactNode;
 }) {
   return (
     <div className="min-h-0 flex-1 overflow-auto bg-vscode-editor">
-      <div className="mx-auto w-full max-w-[900px] px-8 py-10 sm:px-12">
+      <div
+        className={`mx-auto w-full px-8 py-10 sm:px-12 ${
+          width === "wide" ? "max-w-[1120px]" : "max-w-[900px]"
+        }`}
+      >
         <header className="flex items-start gap-3">
           <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-control bg-vscode-activity-active-bg text-vscode-fg">
             <Codicon name={icon} size={18} />
           </span>
           <div className="min-w-0">
-            <h1 className="text-xl font-semibold text-vscode-fg-active">
+            <h1 className="text-page-title font-semibold text-vscode-fg-active">
               {title}
             </h1>
             {subtitle ? (
-              <p className="mt-1 text-[13px] leading-relaxed text-vscode-muted">
+              <p className="mt-1 text-page-body text-vscode-muted">
                 {subtitle}
               </p>
             ) : null}
@@ -40,7 +46,7 @@ export function PageShell({
         </header>
         <div className="mt-8">{children}</div>
         {footer ? (
-          <p className="mt-12 border-t border-vscode-border pt-4 text-[11px] leading-relaxed text-vscode-dim">
+          <p className="mt-12 border-t border-vscode-border pt-4 text-page-micro leading-relaxed text-vscode-dim">
             {footer}
           </p>
         ) : null}
@@ -64,10 +70,12 @@ export function PageSection({
   return (
     <section className="mt-9 first:mt-0">
       <div className="flex items-baseline gap-3">
-        <h2 className="text-[13px] font-semibold uppercase tracking-wide text-vscode-emphasis">
+        <h2 className="text-page-meta font-semibold uppercase tracking-wide text-vscode-emphasis">
           {title}
         </h2>
-        {hint ? <span className="text-[11px] text-vscode-dim">{hint}</span> : null}
+        {hint ? (
+          <span className="text-page-micro text-vscode-dim">{hint}</span>
+        ) : null}
         {action ? <div className="ml-auto">{action}</div> : null}
       </div>
       <div className="mt-3">{children}</div>
@@ -91,7 +99,7 @@ export function PageChip({
         : "text-vscode-muted border-vscode-page-border";
   return (
     <span
-      className={`inline-flex items-center gap-1 rounded-full border bg-vscode-page-chip px-2.5 py-0.5 text-[11px] ${toneClass}`}
+      className={`inline-flex items-center gap-1 rounded-full border bg-vscode-page-chip px-2.5 py-0.5 text-page-micro ${toneClass}`}
     >
       {children}
     </span>
