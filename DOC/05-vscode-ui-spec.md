@@ -124,7 +124,21 @@ gone). The gutter shrinks from the OS default 15px to 10px.
   --font-vscode-ui: "Segoe WPC", "Segoe UI", system-ui, sans-serif;
   --font-vscode-code: "Cascadia Code", "JetBrains Mono", Consolas, monospace;
   --font-vscode-term: "Fira Code", "Cascadia Code", Consolas, monospace;
+  /* page content type scale — workbench chrome stays 11-13px */
+  --text-page-micro: 12px;
+  --text-page-micro--line-height: 1.45;
+  --text-page-meta: 13px;
+  --text-page-meta--line-height: 1.5;
+  --text-page-body: 15px;
+  --text-page-body--line-height: 1.65;
+  --text-page-lead: 17px;
+  --text-page-lead--line-height: 1.45;
+  --text-page-title: 24px;
+  --text-page-title--line-height: 1.25;
+  --text-page-display: 30px;
+  --text-page-display--line-height: 1.15;
   --shadow-vscode: 0 8px 24px rgb(0 0 0 / 0.45);
+  --shadow-page-glow: 0 0 0 1px rgb(0 120 212 / 0.3), 0 18px 52px -18px rgb(0 120 212 / 0.55);
 }
 /* Real faces ship with the app: @fontsource/cascadia-code (editor) +
    @fontsource/fira-code (terminal), imported in app/layout.tsx. */
@@ -134,6 +148,12 @@ gone). The gutter shrinks from the OS default 15px to 10px.
 /* Shell is flush (no backdrop). Separators: 1px solid var(--color-vscode-border). */
 /* Floating widgets only: border-radius var(--radius-control) + var(--shadow-vscode); the quick input uses var(--radius-quick) (12px). */
 ```
+
+Page content uses the `--text-page-*` utilities only (micro 12/1.45, meta
+13/1.5, body 15/1.65, lead 17/1.45, title 24/1.25, display 30/1.15); the
+workbench chrome keeps its own 11–13px sizes. `--shadow-page-glow` is the
+hover-only accent ring + soft glow on Experience cards; a faint radial sheen
+sits behind the card. No lift, scale or translate.
 
 Accent usage: active tab top-border 1px accent, Activity active icon = white + rounded pill bg `--color-vscode-activity-active-bg` (no left bar), focus outlines `1px solid var(--color-vscode-accent)`; the StatusBar is plain Dark Modern (`#181818` bg, `#CCCCCC` text, `#F1F1F133` item hover — accent stays reserved for debug/remote item kinds, like VS Code).
 
@@ -228,10 +248,12 @@ tree or the quick open. The first visit opens About once the profile arrives,
 so the site never lands on an empty editor.
 
 Shared chrome (`components/vscode/pages/PageShell.tsx`): a 900px column on the
-editor surface, a header (glyph in a rounded tile + title + subtitle), the
-body, and a quiet footer. Cards use `--color-vscode-page-card`, borders
+editor surface (1120px with `width="wide"`, used by Experience), a header
+(glyph in a rounded tile + title + subtitle), the body, and a quiet footer.
+Cards use `--color-vscode-page-card`, borders
 `--color-vscode-page-border`, chips `--color-vscode-page-chip`; only theme
-tokens, no hard-coded colors.
+tokens, no hard-coded colors. The header title is `text-page-title` (24px); the
+page type scale lives in §2.
 
 - **About** — hero (avatar or initials, name, role, bio, CTA row: email, social
   links, Resume → direct PDF download), a 4-tile status strip (availability,
@@ -241,7 +263,8 @@ tokens, no hard-coded colors.
   two resume bullets and language tags; clicking reveals it in the Explorer),
   "More repositories" compact rows, the work timeline, education rows, hackathon
   cards and the contact row. Section headers carry `Open →` links to the full
-  pages.
+  pages. The hero stacks below 512px of content width; the status strip is 2×2
+  below `xl` and the location tile wraps instead of truncating.
 - **Resume** — download only: a file card (label, `PDF`, updated date) with
   `Download resume` and `Open in a new tab`. The URL is the public `resumes`
   object plus `?download=<label>` (Content-Disposition: attachment). The PDF is
@@ -249,9 +272,17 @@ tokens, no hard-coded colors.
   `node scripts/upload-resume.mjs` instruction.
 - **Certificates** — one card per row (issuer, date, credential id, summary,
   verify link); an empty state until rows exist (section hidden by default).
-- **Experience** — a vertical rail with a dot per work role: company, period,
-  location, summary, resume bullets (`highlights`), stack chips; hackathons
-  appear as a compact preview linking to their page.
+- **Experience** — a wide two-column editorial page (`width="wide"`). The left
+  rail is sticky once the content is at least 672px: index, period, company,
+  role, location and a multi-select stack filter (dims non-matches in place,
+  scrolls the first match into view, and shows `N of M shown` + Clear). The
+  right column is the authored `phases` narrative — Part 01 / Part 02, each
+  with a 17px title, a summary, and achievement cards (bold 15px lead-in + 15px
+  body + tags). Hovering a card dims the siblings (Focus Spotlight), lights an
+  accent ring + glow (`--shadow-page-glow`) and a faint radial sheen; no lift,
+  scale or translate. Below 672px the rail stacks above the narrative. `highlights` is
+  the flat fallback when a row has no phases; hackathons stay a compact preview
+  that links to their page.
 - **Education** — a vertical rail: degree + institution + period, field,
   location, score badge (CGPA / percentile) and summary.
 - **Skills** — one block per category, chips.
