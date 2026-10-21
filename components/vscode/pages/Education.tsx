@@ -18,7 +18,7 @@ export default function EducationPage() {
       footer="Rows live in the `education` table."
     >
       {education.length === 0 ? (
-        <p className="text-[13px] text-vscode-dim">
+        <p className="text-page-body text-vscode-dim">
           No education rows yet.
         </p>
       ) : (
@@ -34,22 +34,22 @@ export default function EducationPage() {
                 className="absolute -left-[22px] top-1.5 h-2.5 w-2.5 rounded-full border-2 border-vscode-accent bg-vscode-editor"
               />
               <div className="flex flex-wrap items-baseline gap-2">
-                <span className="text-[14px] font-medium text-vscode-fg-active">
+                <span className="text-page-body font-medium text-vscode-fg-active">
                   {row.degree}
                 </span>
-                <span className="text-[13px] text-vscode-muted">
+                <span className="text-page-body text-vscode-muted">
                   {row.institution}
                 </span>
-                <span className="ml-auto text-[11px] text-vscode-dim">
+                <span className="ml-auto text-page-micro text-vscode-dim">
                   {row.period}
                 </span>
               </div>
               {row.field ? (
-                <div className="mt-1 text-[12px] text-vscode-muted">
+                <div className="mt-1 text-page-meta text-vscode-muted">
                   {row.field}
                 </div>
               ) : null}
-              <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px] text-vscode-dim">
+              <div className="mt-2 flex flex-wrap items-center gap-2 text-page-micro text-vscode-dim">
                 {row.location ? (
                   <span className="flex items-center gap-1">
                     <Codicon name="location" size={11} />
@@ -63,7 +63,7 @@ export default function EducationPage() {
                 ) : null}
               </div>
               {row.summary ? (
-                <p className="mt-2 max-w-[70ch] text-[12px] leading-relaxed text-vscode-muted">
+                <p className="mt-2 max-w-[70ch] text-page-meta leading-relaxed text-vscode-muted">
                   {row.summary}
                 </p>
               ) : null}
@@ -72,7 +72,7 @@ export default function EducationPage() {
                   href={row.url}
                   target="_blank"
                   rel="noreferrer noopener"
-                  className="mt-3 inline-flex items-center gap-1 text-[11px] text-vscode-quick-match hover:underline"
+                  className="mt-3 inline-flex items-center gap-1 text-page-micro text-vscode-quick-match hover:underline"
                 >
                   <Codicon name="link-external" size={11} />
                   Visit
