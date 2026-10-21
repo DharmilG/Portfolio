@@ -49,7 +49,17 @@ type CommandRow = {
   indices: number[];
 };
 
-type Row = FileRow | CommandRow;
+// Portfolio pages (About, Resume, ...) open as `page` tabs.
+type PageRow = {
+  kind: "page";
+  slug: string;
+  name: string;
+  icon: string;
+  score: number;
+  indices: number[];
+};
+
+type Row = FileRow | CommandRow | PageRow;
 
 // Bold #2AAAFF (list.highlightForeground) on matched chars. Guard: indices
 // are computed on the lower-cased text — skip if a case fold changed length.
@@ -128,6 +138,28 @@ function FileLine({ row, selected }: { row: FileRow; selected: boolean }) {
   );
 }
 
+function PageLine({ row, selected }: { row: PageRow; selected: boolean }) {
+  return (
+    <>
+      <span className="flex h-full w-[22px] shrink-0 items-center justify-center pr-[6px] text-vscode-dim">
+        <Codicon name={row.icon} />
+      </span>
+      <span className="ml-[5px] flex min-w-0 flex-1 items-center">
+        <span className="truncate">
+          <Highlight text={row.name} indices={row.indices} />
+        </span>
+        <span
+          className={`ml-1.5 truncate text-vscode-muted ${
+            selected ? "opacity-100" : "opacity-70"
+          }`}
+        >
+          page
+        </span>
+      </span>
+    </>
+  );
+}
+
 function CommandLine({ row, selected }: { row: CommandRow; selected: boolean }) {
   const { cmd } = row;
   return (
@@ -151,6 +183,7 @@ export default function CommandPalette() {
   const tmpFs = useStore((s) => s.tmpFs);
   const trees = useStore((s) => s.trees);
   const projects = useStore((s) => s.projects);
+  const sections = useStore((s) => s.sections);
   const branchByRepo = useStore((s) => s.branchByRepo);
   const treeBranch = useStore((s) => s.treeBranch);
   const setPaletteMode = useStore((s) => s.setPaletteMode);
@@ -274,12 +307,12 @@ export default function CommandPalette() {
         .filter((r): r is CommandRow => r !== null)
         .sort((a, b) => b.score - a.score);
     }
-    // Files: open tabs (tab order) + tmp scratch + loaded repo trees.
+    // Files: open tabs (tab order) + loaded repo trees. The portfolio pages
+    // ride along as their own rows; the local scratchpad stays hidden.
     const codeTabs = tabs.filter((t) => t.kind === "code");
     const tabOrder = new Map(codeTabs.map((t, i) => [t.path, i]));
     const paths = [
       ...codeTabs.map((t) => t.path),
-      ...Object.keys(tmpFs),
       ...projects.flatMap((p) => {
         const repo = `${p.repo_owner}/${p.repo_name}`;
         const branch = branchByRepo[repo] ?? treeBranch[repo];
@@ -305,18 +338,41 @@ export default function CommandPalette() {
         },
       ];
     });
+    // The portfolio pages are workspace items too — they open as page tabs.
+    const pageRows: PageRow[] = sections
+      .filter((section) => section.slug !== "projects")
+      .flatMap((section) => {
+        const m = fuzzyScore(query, section.title);
+        if (!m) return [];
+        return [
+          {
+            kind: "page" as const,
+            slug: section.slug,
+            name: section.title,
+            icon: section.icon,
+            score: m.score,
+            indices: m.indices,
+          },
+        ];
+      });
     if (query === "") {
       // Open tabs first (tab order), then everything else A–Z.
-      return scored.sort((a, b) => {
-        const ao = tabOrder.get(a.path) ?? Number.POSITIVE_INFINITY;
-        const bo = tabOrder.get(b.path) ?? Number.POSITIVE_INFINITY;
-        return ao !== bo ? ao - bo : a.path.localeCompare(b.path);
-      });
+      return [
+        ...scored.sort((a, b) => {
+          const ao = tabOrder.get(a.path) ?? Number.POSITIVE_INFINITY;
+          const bo = tabOrder.get(b.path) ?? Number.POSITIVE_INFINITY;
+          return ao !== bo ? ao - bo : a.path.localeCompare(b.path);
+        }),
+        ...pageRows,
+      ];
     }
-    return scored.sort(
-      (a, b) => b.score - a.score || a.path.localeCompare(b.path),
-    );
-  }, [open, mode, query, tabs, tmpFs, trees, projects, branchByRepo, treeBranch]);
+    return [
+      ...scored.sort(
+        (a, b) => b.score - a.score || a.path.localeCompare(b.path),
+      ),
+      ...pageRows,
+    ];
+  }, [open, mode, query, tabs, trees, projects, branchByRepo, treeBranch, sections]);
 
   // Keep the selection in range (filters can shrink the list).
   useEffect(() => {
@@ -337,6 +393,11 @@ export default function CommandPalette() {
 
   const run = (row: Row) => {
     const s = useStore.getState();
+    if (row.kind === "page") {
+      s.openTab({ kind: "page", path: row.slug, sha: null });
+      s.closePalette();
+      return;
+    }
     if (row.kind === "file") {
       if (row.open) {
         const tab = s.tabs.find((t) => t.kind === "code" && t.path === row.path);
@@ -439,7 +500,13 @@ export default function CommandPalette() {
                 const selected = i === index;
                 return (
                   <div
-                    key={row.kind === "file" ? `f:${row.path}` : `c:${row.cmd.id}`}
+                    key={
+                      row.kind === "file"
+                        ? `f:${row.path}`
+                        : row.kind === "page"
+                          ? `p:${row.slug}`
+                          : `c:${row.cmd.id}`
+                    }
                     id={`command-palette-row-${i}`}
                     role="option"
                     aria-selected={selected}
@@ -461,6 +528,8 @@ export default function CommandPalette() {
                   >
                     {row.kind === "file" ? (
                       <FileLine row={row} selected={selected} />
+                    ) : row.kind === "page" ? (
+                      <PageLine row={row} selected={selected} />
                     ) : (
                       <CommandLine row={row} selected={selected} />
                     )}
