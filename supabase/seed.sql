@@ -30,14 +30,77 @@ on conflict (slug) do update set
 
 -- === profile (the About hero + Contact) ===
 delete from profiles;
-insert into profiles (name, avatar_url, bio, location, website, data)
+insert into profiles (name, avatar_url, bio, location, website, data, about)
 values (
   'Dharmil Gajjar',
   null,
   'Final-year B.Tech ICT student at Adani University (2027) with internship experience in e-commerce development and QA testing. I build with JavaScript, TypeScript, Python, React, Next.js, Node.js and AWS — and I test what I ship.',
   'Ahmedabad, Gujarat, India',
   'https://github.com/DharmilG',
-  '{"role":"Full-stack & Backend Engineer","hireable":true,"availability":"Open to full-stack / backend roles","class_of":"2027","focus":"Building a composable e-commerce platform — Next.js storefront, NestJS microservices, AWS SQS","email":"dharmilgajjar0@gmail.com","phone":"+91 83206 33350","summary":"Final-year B.Tech ICT student at Adani University (2027) — full-stack and backend engineering.","stack":["Next.js","NestJS","PostgreSQL","AWS"]}'::jsonb
+  '{"role":"Full-stack & Backend Engineer","hireable":true,"availability":"Open to full-stack / backend roles","class_of":"2027","focus":"Building a composable e-commerce platform — Next.js storefront, NestJS microservices, AWS SQS","email":"dharmilgajjar0@gmail.com","phone":"+91 83206 33350","summary":"Final-year B.Tech ICT student at Adani University (2027) — full-stack and backend engineering.","stack":["Next.js","NestJS","PostgreSQL","AWS"]}'::jsonb,
+  $about${
+    "headline": "Full-stack engineer. Final-year ICT student. I test what I ship.",
+    "story": [
+      "I'm Dharmil — a full-stack engineer who likes the part where the database, the API, the interface and the device all have to agree.",
+      "I'm in my final year of B.Tech ICT at Adani University. At Northstar Innovations I built a custom Odoo 19 storefront for a perfume brand — the theme, the reusable editor components, and the admin controls that let the team change layouts without touching code. I also did QA on a React Native IoT app, tracing BLE and Wi-Fi signals across the app, the device and the backend.",
+      "That mix shaped how I work: model the data, build the API, make the interface feel obvious, then test the edges before someone else finds them. Right now I'm building a composable e-commerce platform with Next.js, NestJS, PostgreSQL and AWS SQS — and looking for a full-stack or backend team where I can own meaningful slices end to end."
+    ],
+    "quote": "I test what I ship — not because it's the last step, but because it's how I know it works.",
+    "principles": [
+      {
+        "title": "Own the path",
+        "body": "I'm most useful where frontend, backend and data meet. I'd rather trace a bug through the whole stack than hand it off at a boundary.",
+        "icon": "git-merge",
+        "note": "Odoo storefront · NestJS services · React Native QA"
+      },
+      {
+        "title": "Test what I ship",
+        "body": "QA taught me to verify the happy path, the retry, the edge case and the thing that only breaks on a real device.",
+        "icon": "beaker",
+        "note": "BLE/Wi-Fi · functional · integration"
+      },
+      {
+        "title": "Make it usable",
+        "body": "The best code removes the next support ticket. At Northstar, admins could change padding, spacing and imagery without waiting on a deploy.",
+        "icon": "layout",
+        "note": "Website editor controls · no-code layout"
+      }
+    ],
+    "now": [
+      {
+        "label": "Building",
+        "value": "A composable commerce platform",
+        "detail": "Next.js storefront + NestJS services on PostgreSQL, with AWS SQS between them."
+      },
+      {
+        "label": "Studying",
+        "value": "Final-year B.Tech ICT",
+        "detail": "Adani University · graduating 2027"
+      },
+      {
+        "label": "Looking for",
+        "value": "Full-stack / backend roles",
+        "detail": "A team where I can own a slice end to end and test what ships."
+      }
+    ],
+    "beyond": [
+      {
+        "title": "Event-driven systems",
+        "body": "Queues, retries and the quiet choreography between services. The commerce platform is where I'm learning it properly.",
+        "icon": "symbol-event"
+      },
+      {
+        "title": "Devices at the edge",
+        "body": "BLE and Wi-Fi testing taught me that the real world — a dropped signal, a slow device — is the hardest environment.",
+        "icon": "radio-tower"
+      },
+      {
+        "title": "Applied ML",
+        "body": "Classification, SHAP and the moment a model's output becomes a decision. I built a NIFTY 50 direction predictor to learn it honestly.",
+        "icon": "graph"
+      }
+    ]
+  }$about$::jsonb
 );
 
 -- === skills (grouped chips: the resume's technical skills) ===
