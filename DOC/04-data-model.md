@@ -88,8 +88,14 @@ create table if not exists profiles (
   location text null,
   website text null,
   data jsonb not null default '{}'::jsonb,
+  about jsonb not null default '{}'::jsonb, -- authored About story (0014)
   updated_at timestamptz not null default now()
 );
+
+-- 0014: about = { headline, story[], quote, principles[], now[], beyond[] }.
+-- The About page falls back to bio when story is empty; its timeline, selected
+-- work and toolbox stay derived from education, experiences, projects and
+-- skills. The column is constrained to a JSON object.
 
 -- ============ experiences (work + hackathons) ============
 create table if not exists experiences (
@@ -110,10 +116,10 @@ create table if not exists experiences (
 );
 create index if not exists idx_experiences_orders on experiences (orders) where visible = true;
 -- 0013: phases = [{ label, title, summary, tags, achievements: [{ lead, body, tags }] }]
--- `highlights` stays the flat list used by About and the hackathon cards; the
--- Experience page falls back to it when a row has no phases.
+-- `highlights` stays the flat list used by the hackathon cards and as the
+-- Experience fallback; the About page uses only the row summaries in its Path.
 
--- ============ education (-> Education page + About strip) ============
+-- ============ education (-> Education page + About path) ============
 create table if not exists education (
   id uuid primary key default gen_random_uuid(),
   institution text not null,
@@ -328,7 +334,7 @@ cloud SQL editor.
 ## 5. Access patterns (how code uses tables)
 
 - Explorer: `select * from sections where visible order by orders` + `select * from project_groups where visible order by orders` + `select * from projects where visible order by orders`. Repos with a `group_slug` render under their group row (`Projects > Composable E-Commerce Platform > Storefront Frontend / Auth Service`); the rest render flat under Projects.
-- Portfolio pages: `GET /api/profile` reads `profiles` (1 row), `experiences` (both kinds, with bullets/tags/phases), `education`, `skills`, `social_links`, `certificates` and `site_settings` in one public request; the store keeps it for the session.
+- Portfolio pages: `GET /api/profile` reads `profiles` (1 row, including the authored `about` object), `experiences` (both kinds, with bullets/tags/phases), `education`, `skills`, `social_links`, `certificates` and `site_settings` in one public request; the store keeps it for the session.
 - `GET /api/projects` reads `projects` + `project_groups` + the `github_cache` snapshot and returns `{projects, groups}`. Project copy precedence: `description_override` → live README excerpt (fresh cache) → GitHub description.
 - Project cards/tooltips prefer `description_override` too; tags fall back to GitHub languages.
 - Resume: `site_settings.resume` → `lib/resume.ts` → public `resumes` object URL + `?download=<label>` (download-only page).
