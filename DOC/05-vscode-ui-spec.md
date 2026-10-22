@@ -248,23 +248,27 @@ tree or the quick open. The first visit opens About once the profile arrives,
 so the site never lands on an empty editor.
 
 Shared chrome (`components/vscode/pages/PageShell.tsx`): a 900px column on the
-editor surface (1120px with `width="wide"`, used by Experience), a header
-(glyph in a rounded tile + title + subtitle), the body, and a quiet footer.
+editor surface (1120px with `width="wide"`, used by Experience and About), a
+header (glyph in a rounded tile + title + subtitle), the body, and a quiet footer.
 Cards use `--color-vscode-page-card`, borders
 `--color-vscode-page-border`, chips `--color-vscode-page-chip`; only theme
 tokens, no hard-coded colors. The header title is `text-page-title` (24px); the
 page type scale lives in §2.
 
-- **About** — hero (avatar or initials, name, role, bio, CTA row: email, social
-  links, Resume → direct PDF download), a 4-tile status strip (availability,
-  education `B.Tech · 2027`, repositories, location), "Currently" (focus), the
-  full stack in grouped chips (6 per group + `+N`), selected work (the featured
-  project group card + the featured repositories, each with description, up to
-  two resume bullets and language tags; clicking reveals it in the Explorer),
-  "More repositories" compact rows, the work timeline, education rows, hackathon
-  cards and the contact row. Section headers carry `Open →` links to the full
-  pages. The hero stacks below 512px of content width; the status strip is 2×2
-  below `xl` and the location tile wraps instead of truncating.
+- **About** — a wide two-column editorial page (`width="wide"`). The left rail
+  is sticky once the content is at least 672px: monogram or avatar with a status
+  dot, name, role, availability, location, email/social icon buttons, a direct
+  Resume download and a jump-to list that tracks the section in view. The right
+  column is the story: Story (lead + paragraphs + pull quote from
+  `profiles.about`), Now rows, How I work cards, a Path timeline (education →
+  hackathon → work, each linking to its page), Selected work (the featured group
+  card + two featured repositories with description, one highlight and three
+  language tags; clicking reveals it in the Explorer), Toolbox (grouped chips,
+  five per group + `+N`), Beyond the editor, and an email/resume CTA. Authored
+  copy comes from `profiles.about`; timeline, work and toolbox stay derived from
+  `education`, `experiences`, `projects` and `skills`. The page falls back to
+  `bio` when the story is empty. The rail is 240px at ≥672px, 280px at ≥896px,
+  and stacks above the narrative below 672px.
 - **Resume** — download only: a file card (label, `PDF`, updated date) with
   `Download resume` and `Open in a new tab`. The URL is the public `resumes`
   object plus `?download=<label>` (Content-Disposition: attachment). The PDF is
@@ -292,6 +296,7 @@ page type scale lives in §2.
   location, availability and the social links.
 
 The pages read `GET /api/profile` once per session (the store keeps it); About's
-selected work reads `GET /api/projects` (projects + groups) and the Resume page
-resolves `site_settings.resume` through `lib/resume.ts`. The Explorer rows, the
+authored story is `profiles.about`, its selected work reads `GET /api/projects`
+(projects + groups), and the Resume page resolves `site_settings.resume` through
+`lib/resume.ts`. The Explorer rows, the
 quick open and the tab strip all use the section title and its glyph.
