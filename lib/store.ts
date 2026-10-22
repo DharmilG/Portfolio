@@ -61,6 +61,7 @@ export type ProfileContent = {
     location: string | null;
     website: string | null;
     data: Record<string, unknown>;
+    about: Record<string, unknown>;
   } | null;
   experiences: Experience[];
   education: {
