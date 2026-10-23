@@ -520,3 +520,36 @@ body {
   border-top: 1px solid var(--color-vscode-border);
   margin: 0;
 }
+
+/* === Work in Progress Notification Animations === */
+@keyframes vscode-slide-in-right {
+  from {
+    transform: translateX(calc(100% + 32px));
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes vscode-slide-out-right {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(calc(100% + 32px));
+    opacity: 0;
+  }
+}
+
+.animate-vscode-slide-in {
+  animation: vscode-slide-in-right 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-vscode-slide-out {
+  animation: vscode-slide-out-right 0.25s cubic-bezier(0.7, 0, 0.84, 0) forwards;
+}
+
+
