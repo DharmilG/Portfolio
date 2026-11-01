@@ -158,8 +158,8 @@ export default function ContactPage() {
           )}
 
           {availability ? (
-            <div className="mt-4 flex items-center gap-2 rounded-control border border-emerald-600/30 bg-emerald-500/10 px-3.5 py-2.5 text-page-micro font-medium text-emerald-800 dark:border-emerald-900/40 dark:bg-emerald-950/20 dark:text-emerald-400">
-              <span className="h-2 w-2 shrink-0 rounded-full bg-emerald-600 dark:bg-emerald-400" />
+            <div className="mt-4 flex items-center gap-2 rounded-control border border-vscode-badge-avail-border bg-vscode-badge-avail-bg px-3.5 py-2.5 text-page-micro font-medium text-vscode-badge-avail-fg">
+              <span className="h-2 w-2 shrink-0 rounded-full bg-vscode-badge-avail-dot" />
               <span>{availability}</span>
             </div>
           ) : null}
