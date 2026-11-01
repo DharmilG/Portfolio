@@ -1,9 +1,7 @@
-// TreeRow — 28px list row shared by Explorer-style trees (and future views
-// like Search results). Presentational like Tab: callers own state. Focus
-// decides the selection tone — active blue while the tree is focused,
-// inactive gray otherwise (VS Code list.active/inactiveSelection).
+// TreeRow — list row shared by Explorer-style trees.
+// Features 38px height (+10px from 28px default), 5px top/bottom spacing,
+// 14px font size, and optional active indicator bar.
 // data-path feeds autoReveal scroll (lib/store ancestorKeys + revealNonce).
-// See DOC/05 §5.
 import type { ReactNode } from "react";
 
 type TreeRowProps = {
@@ -14,6 +12,7 @@ type TreeRowProps = {
   focused?: boolean;
   activeIndicator?: boolean;
   title?: string;
+  className?: string;
   onClick?: () => void;
   onDoubleClick?: () => void;
   children: ReactNode;
@@ -27,6 +26,7 @@ export default function TreeRow({
   focused = false,
   activeIndicator = false,
   title,
+  className = "",
   onClick,
   onDoubleClick,
   children,
@@ -47,7 +47,7 @@ export default function TreeRow({
       title={title}
       onClick={onClick}
       onDoubleClick={onDoubleClick}
-      className={`group relative flex h-7 cursor-pointer items-center gap-1 transition-all duration-150 ${indent} ${right} ${state}`}
+      className={`group relative flex h-[38px] cursor-pointer items-center gap-2 py-[5px] text-[14px] transition-all duration-150 ${indent} ${right} ${state} ${className}`}
     >
       {activeIndicator ? (
         <span

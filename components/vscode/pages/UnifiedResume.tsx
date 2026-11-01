@@ -17,7 +17,15 @@ import {
 import Codicon from "../Codicon";
 import SkillIcon from "../SkillIcon";
 
-const SECTIONS = [
+type SectionItem = {
+  id: string;
+  slug: string;
+  title: string;
+  icon: string;
+  iconColor: string;
+};
+
+const SECTIONS: SectionItem[] = [
   { id: "sec-about", slug: "about", title: "About", icon: "person", iconColor: "text-[#38bdf8]" },
   { id: "sec-resume", slug: "resume", title: "Resume", icon: "file-pdf", iconColor: "text-white" },
   { id: "sec-experience", slug: "experience", title: "Experience", icon: "briefcase", iconColor: "text-white" },
@@ -25,7 +33,7 @@ const SECTIONS = [
   { id: "sec-skills", slug: "skills", title: "Skills", icon: "code", iconColor: "text-white" },
   { id: "sec-hackathons", slug: "hackathons", title: "Hackathons", icon: "flame", iconColor: "text-white" },
   { id: "sec-contact", slug: "contact", title: "Contact", icon: "mail", iconColor: "text-[#facc15]" },
-] as const;
+];
 
 export default function UnifiedResume() {
   const content = useStore((s) => s.profile);
