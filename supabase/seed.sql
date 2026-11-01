@@ -11,6 +11,7 @@ values
   ('projects', 'Projects', 'repo', 60, true, 'projects'),
   ('skills', 'Skills', 'code', 70, true, 'static'),
   ('hackathons', 'Hackathons', 'flame', 80, true, 'static'),
+  ('books', 'Books', 'book', 85, true, 'static'),
   ('contact', 'Contact', 'mail', 90, true, 'static')
 on conflict (slug) do update set
   title = excluded.title,
