@@ -103,7 +103,7 @@ export default function HackathonsPage() {
                     {event.tags.map((tag) => (
                       <div
                         key={tag}
-                        className="flex items-center gap-1.5 rounded-control border border-vscode-page-border bg-[#141516] px-2.5 py-1 text-page-micro text-vscode-fg"
+                        className="flex items-center gap-1.5 rounded-control border border-vscode-page-border bg-vscode-page-chip px-2.5 py-1 text-page-micro text-vscode-fg"
                       >
                         <SkillIcon name={tag} size={14} />
                         <span>{tag}</span>

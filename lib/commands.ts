@@ -246,12 +246,23 @@ export const COMMANDS: Command[] = [
     },
   },
 
-  // Land with their features (disabled + hint, like the menus) — run no-ops.
+  // Preferences / Color Themes
   {
     id: "toggle-theme",
-    label: "Toggle Theme",
-    disabled: true,
-    hint: "Available when Appearance lands",
-    run: () => undefined,
+    label: "Preferences: Toggle Light / Dark Theme",
+    run: () => {
+      const st = useStore.getState();
+      st.setMode(st.mode === "dark" ? "light" : "dark");
+    },
+  },
+  {
+    id: "theme-dark",
+    label: "Preferences: Color Theme — Dark Modern",
+    run: () => useStore.getState().setMode("dark"),
+  },
+  {
+    id: "theme-light",
+    label: "Preferences: Color Theme — Light Modern",
+    run: () => useStore.getState().setMode("light"),
   },
 ];

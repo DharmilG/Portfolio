@@ -68,7 +68,7 @@ export default function SkillIcon({
     return <SiReact size={size} className="shrink-0 text-[#61dafb]" aria-hidden="true" />;
   }
   if (norm === "next.js" || norm === "nextjs" || norm === "next") {
-    return <SiNextdotjs size={size} className="shrink-0 text-white" aria-hidden="true" />;
+    return <SiNextdotjs size={size} className="shrink-0 text-vscode-fg-active" aria-hidden="true" />;
   }
   if (norm === "tailwind css" || norm === "tailwind") {
     return <SiTailwindcss size={size} className="shrink-0 text-[#06b6d4]" aria-hidden="true" />;
@@ -79,7 +79,7 @@ export default function SkillIcon({
     return <SiNodedotjs size={size} className="shrink-0 text-[#5fa04e]" aria-hidden="true" />;
   }
   if (norm === "express.js" || norm === "express") {
-    return <SiExpress size={size} className="shrink-0 text-white" aria-hidden="true" />;
+    return <SiExpress size={size} className="shrink-0 text-vscode-fg-active" aria-hidden="true" />;
   }
   if (norm === "nestjs" || norm === "nest") {
     return <SiNestjs size={size} className="shrink-0 text-[#ea2845]" aria-hidden="true" />;
@@ -97,7 +97,7 @@ export default function SkillIcon({
     return <Codicon name="link" size={size} className="shrink-0 text-[#38bdf8]" />;
   }
   if (norm === "socket.io" || norm === "socketio" || norm === "socket") {
-    return <SiSocketdotio size={size} className="shrink-0 text-white" aria-hidden="true" />;
+    return <SiSocketdotio size={size} className="shrink-0 text-vscode-fg-active" aria-hidden="true" />;
   }
   if (norm === "firebase") {
     return <SiFirebase size={size} className="shrink-0 text-[#ffca28]" aria-hidden="true" />;
@@ -134,7 +134,7 @@ export default function SkillIcon({
     return <SiGit size={size} className="shrink-0 text-[#f05032]" aria-hidden="true" />;
   }
   if (norm === "github") {
-    return <FaGithub size={size} className="shrink-0 text-white" aria-hidden="true" />;
+    return <FaGithub size={size} className="shrink-0 text-vscode-fg-active" aria-hidden="true" />;
   }
   if (norm === "github actions") {
     return <SiGithubactions size={size} className="shrink-0 text-[#2088ff]" aria-hidden="true" />;
