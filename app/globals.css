@@ -366,7 +366,7 @@
   /* SCM editor + Commit button (scm.css / button.css) */
   --radius-scrollbar: 4px;
   /* scrollbar thumb (rounded pill) */
-  --font-vscode-ui: "Segoe WPC", "Segoe UI", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-vscode-ui: "Manrope", "Segoe WPC", "Segoe UI", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   --font-vscode-code: "Cascadia Code", "JetBrains Mono", Consolas, "Courier New", monospace;
   --font-vscode-term: "Fira Code", "Cascadia Code", Consolas, "Courier New", monospace;
 

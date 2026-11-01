@@ -51,8 +51,8 @@ export default function AboutPage() {
       width="wide"
       headerRight={
         availability ? (
-          <div className="inline-flex items-center gap-2 rounded-full border border-emerald-900/60 bg-emerald-950/40 px-3.5 py-1 text-page-micro font-medium text-emerald-400">
-            <span className="h-2 w-2 rounded-full bg-emerald-400" />
+          <div className="inline-flex items-center gap-2 rounded-full border border-emerald-600/30 bg-emerald-500/10 px-3.5 py-1 text-page-micro font-medium text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-400">
+            <span className="h-2 w-2 rounded-full bg-emerald-600 dark:bg-emerald-400" />
             <span>{availability}</span>
           </div>
         ) : null
