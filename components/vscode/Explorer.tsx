@@ -46,7 +46,6 @@ type ViewAction = {
 // Root-row view actions (VS Code tooltips; behavior owned by the page).
 const UNIFIED_SECTIONS = new Set([
   "about",
-  "resume",
   "experience",
   "education",
   "skills",
@@ -56,7 +55,6 @@ const UNIFIED_SECTIONS = new Set([
 
 const SECTION_ORDER = [
   "about",
-  "resume",
   "experience",
   "education",
   "skills",
@@ -556,7 +554,12 @@ export default function Explorer({
               </p>
             ) : (
               [...sections]
-                .filter((sec) => sec.slug !== "tmp")
+                .filter(
+                  (sec) =>
+                    sec.slug !== "tmp" &&
+                    sec.slug !== "resume" &&
+                    sec.slug !== "certificates",
+                )
                 .sort((a, b) => {
                   const iA = SECTION_ORDER.indexOf(a.slug);
                   const iB = SECTION_ORDER.indexOf(b.slug);
@@ -576,7 +579,6 @@ export default function Explorer({
 
                   const isUnifiedTabActive =
                     activeTabId === "page:about" ||
-                    activeTabId === "page:resume" ||
                     activeTabId === "page:experience" ||
                     activeTabId === "page:education" ||
                     activeTabId === "page:skills" ||
@@ -663,7 +665,10 @@ export default function Explorer({
                             const gname = resolveName(gkey, renames, group.title);
                             const gopen = expanded[gkey] ?? false;
                             const children = projects.filter(
-                              (p) => p.group_slug === group.slug,
+                              (p) =>
+                                p.group_slug === group.slug &&
+                                p.repo_name.toLowerCase() !== "books" &&
+                                (p.title_override ?? "").toLowerCase() !== "books",
                             );
                             const matching = children.filter((p) => {
                               const name = resolveName(
@@ -728,7 +733,12 @@ export default function Explorer({
                             );
                           })}
                           {projects
-                            .filter((p) => !p.group_slug)
+                            .filter(
+                              (p) =>
+                                !p.group_slug &&
+                                p.repo_name.toLowerCase() !== "books" &&
+                                (p.title_override ?? "").toLowerCase() !== "books",
+                            )
                             .map((p) => projectRow(p, "pl-9", 0))}
                         </div>
                       ) : null}
