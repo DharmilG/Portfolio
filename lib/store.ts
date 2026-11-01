@@ -16,7 +16,6 @@ import {
   resolveContent,
 } from "./localGit";
 import { isMarkdownPath } from "./langs";
-import type { AboutTerminalEntry } from "./about-terminal";
 import type { TerminalShell } from "./terminal/parser";
 
 export type TabKind = "code" | "markdown" | "browser" | "page";
@@ -303,16 +302,6 @@ type State = {
   profile: ProfileContent | null;
   setProfile: (p: ProfileContent) => void;
 
-  // About terminal transcript (session-only). PageSurface mounts only the
-  // active page, so the terminal keeps its transcript here while the visitor
-  // opens Experience, Projects, etc. and comes back. Never persisted.
-  aboutTerminalEntries: AboutTerminalEntry[];
-  aboutTerminalHistory: string[];
-  aboutTerminalSeeded: boolean;
-  appendAboutTerminal: (entry: AboutTerminalEntry) => void;
-  pushAboutTerminalHistory: (command: string) => void;
-  markAboutTerminalSeeded: () => void;
-  clearAboutTerminal: () => void;
 
   // Repo selection (session-only): the project the workbench points at, the
   // branch picked per project, the cached branch list, and the branch each
@@ -541,23 +530,6 @@ export const useStore = create<State>()(
       profile: null,
       setProfile: (profile) => set({ profile }),
 
-      // About terminal — session-only (absent from partialize below).
-      aboutTerminalEntries: [],
-      aboutTerminalHistory: [],
-      aboutTerminalSeeded: false,
-      appendAboutTerminal: (entry) =>
-        set((s) => ({
-          aboutTerminalEntries: [...s.aboutTerminalEntries, entry].slice(-60),
-        })),
-      pushAboutTerminalHistory: (command) => {
-        const line = command.trim();
-        if (!line) return;
-        set((s) => ({
-          aboutTerminalHistory: [...s.aboutTerminalHistory, line].slice(-50),
-        }));
-      },
-      markAboutTerminalSeeded: () => set({ aboutTerminalSeeded: true }),
-      clearAboutTerminal: () => set({ aboutTerminalEntries: [] }),
 
       // Repo selection — session-only (never persisted).
       activeRepo: null,

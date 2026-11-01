@@ -1,10 +1,7 @@
 "use client";
 
-// About — visual profile hero, core capability pillars, quick navigation,
-// and embedded interactive terminal (Dark Modern aesthetic).
+// About — visual profile hero, core capability pillars, and quick navigation.
 // Exclusively consumes global font tokens (--text-page-*).
-import { useMemo } from "react";
-import { buildAboutTerminalData } from "@/lib/about-terminal";
 import { resumeDownloadUrl } from "@/lib/resume";
 import { useStore } from "@/lib/store";
 import Codicon from "../Codicon";
@@ -12,36 +9,34 @@ import { PageShell } from "./PageShell";
 
 export default function AboutPage() {
   const content = useStore((s) => s.profile);
-  const projects = useStore((s) => s.projects);
-  const projectGroups = useStore((s) => s.projectGroups);
   const openTab = useStore((s) => s.openTab);
   const showView = useStore((s) => s.showView);
   const revealPath = useStore((s) => s.revealPath);
 
   const resumeHref = resumeDownloadUrl(content?.settings?.resume);
 
-  const data = useMemo(
-    () => buildAboutTerminalData(content, projects, projectGroups, resumeHref),
-    [content, projects, projectGroups, resumeHref],
-  );
-
-  if (!content || !data) {
+  if (!content) {
     return (
       <PageShell icon="person" iconClassName="text-[#38bdf8]" title="About">
-        <p className="text-page-body text-vscode-dim">Loading your profile…</p>
+        <p className="text-page-body text-vscode-dim">Loading profile…</p>
       </PageShell>
     );
   }
 
-  const initials = data.name
-    ? data.name
-        .split(" ")
-        .map((w) => w[0])
-        .filter(Boolean)
-        .slice(0, 2)
-        .join("")
-        .toUpperCase()
-    : "DG";
+  const profile = content.profile;
+  const name = profile?.name || "Dharmil Gajjar";
+  const role = profile?.bio || "Full-Stack & Backend Engineer";
+  const location = profile?.location || "Ahmedabad, Gujarat, India";
+  const profileData = profile?.data ?? {};
+  const availability = String(profileData.availability ?? "Open to full-stack / backend roles");
+
+  const initials = name
+    .split(" ")
+    .map((w) => w[0])
+    .filter(Boolean)
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
 
   const handleOpenPreviews = () => {
     showView("explorer");
@@ -55,10 +50,10 @@ export default function AboutPage() {
       title="About"
       width="wide"
       headerRight={
-        data.availability ? (
+        availability ? (
           <div className="inline-flex items-center gap-2 rounded-full border border-emerald-900/60 bg-emerald-950/40 px-3.5 py-1 text-page-micro font-medium text-emerald-400">
             <span className="h-2 w-2 rounded-full bg-emerald-400" />
-            <span>{data.availability}</span>
+            <span>{availability}</span>
           </div>
         ) : null
       }
@@ -77,11 +72,10 @@ export default function AboutPage() {
               </div>
               <div>
                 <h2 className="text-page-title font-bold tracking-tight text-vscode-fg-active">
-                  {data.name || "Dharmil Gajjar"}
+                  {name}
                 </h2>
                 <p className="mt-0.5 text-page-meta text-vscode-muted">
-                  {data.role || "Full-Stack & Backend Engineer"}
-                  {data.location ? ` · ${data.location}` : ""}
+                  {role} : {location}
                 </p>
               </div>
             </div>
@@ -290,8 +284,6 @@ export default function AboutPage() {
             </div>
           </button>
         </div>
-
-
       </div>
     </PageShell>
   );
