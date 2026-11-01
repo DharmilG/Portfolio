@@ -179,7 +179,7 @@ function Role({ job, index }: { job: Experience; index: number }) {
                     onClick={() => toggle(tag)}
                     className={`flex h-7 items-center gap-1 rounded-control border px-2.5 text-page-micro transition-colors focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-vscode-accent ${
                       on
-                        ? "border-vscode-quick-match/50 bg-vscode-quick-match/10 text-vscode-fg-active"
+                        ? "border-vscode-filter-active-border bg-vscode-filter-active-bg text-vscode-filter-active-fg font-semibold shadow-xs"
                         : "border-vscode-page-border bg-vscode-page-chip/60 text-vscode-muted hover:border-vscode-accent/50 hover:text-vscode-fg"
                     }`}
                   >

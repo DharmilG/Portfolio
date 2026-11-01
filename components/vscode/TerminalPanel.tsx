@@ -76,6 +76,31 @@ const TERM_THEME = {
   brightWhite: "#e5e5e5",
 } as const;
 
+// Light Modern terminal palette — official VS Code Light colors.
+const TERM_THEME_LIGHT = {
+  background: "#f8f8f8",
+  foreground: "#000000",
+  cursor: "#000000",
+  cursorAccent: "#ffffff",
+  selectionBackground: "#add6ff",
+  black: "#000000",
+  red: "#cd3131",
+  green: "#00bc00",
+  yellow: "#949800",
+  blue: "#0078d4",
+  magenta: "#bc05bc",
+  cyan: "#0598bc",
+  white: "#555555",
+  brightBlack: "#666666",
+  brightRed: "#cd3131",
+  brightGreen: "#14ce14",
+  brightYellow: "#b5ba00",
+  brightBlue: "#0078d4",
+  brightMagenta: "#bc05bc",
+  brightCyan: "#0598bc",
+  brightWhite: "#a5a5a5",
+} as const;
+
 const WELCOME =
   "\x1b[2mType \x1b[0m\x1b[94mhelp\x1b[0m\x1b[2m for commands.\x1b[0m";
 
@@ -530,6 +555,7 @@ function PanelAction({
   compact = false,
   align = "center",
   disabled = false,
+  position = "bottom",
 }: {
   icon: string;
   label: string;
@@ -537,9 +563,10 @@ function PanelAction({
   compact?: boolean;
   align?: "center" | "start" | "end";
   disabled?: boolean;
+  position?: "top" | "bottom" | "left" | "right";
 }) {
   return (
-    <Tooltip text={label} position="top" align={align}>
+    <Tooltip text={label} position={position} align={align}>
       <button
         type="button"
         onClick={onClick}
@@ -578,6 +605,7 @@ export default function TerminalPanel() {
   const clearTerminal = useStore((s) => s.clearTerminal);
   const initTerminal = useStore((s) => s.initTerminal);
   const clearNonce = useStore((s) => s.termClearNonce);
+  const mode = useStore((s) => s.mode);
 
   const leftHostRef = useRef<HTMLDivElement>(null);
   const rightHostRef = useRef<HTMLDivElement>(null);
@@ -607,6 +635,14 @@ export default function TerminalPanel() {
   useEffect(() => {
     initTerminal();
   }, [initTerminal]);
+
+  // Synchronize live xterm session themes with active light / dark theme
+  useEffect(() => {
+    const activeTheme = mode === "light" ? TERM_THEME_LIGHT : TERM_THEME;
+    for (const [, h] of handles.current) {
+      h.term.options.theme = activeTheme;
+    }
+  }, [mode]);
 
   // xterm is client-only: dynamic import keeps SSR clean (Next 16 docs).
   useEffect(() => {
@@ -658,7 +694,7 @@ export default function TerminalPanel() {
       left.appendChild(el);
 
       const term = new libs.Terminal({
-        theme: TERM_THEME,
+        theme: mode === "light" ? TERM_THEME_LIGHT : TERM_THEME,
         fontFamily: '"Fira Code", "Cascadia Code", Consolas, "Courier New", monospace',
         fontSize: 13,
         lineHeight: 1,
@@ -1163,7 +1199,7 @@ export default function TerminalPanel() {
             compact
             align="end"
           />
-          <Tooltip text="Select Default Profile" position="top" align="end">
+          <Tooltip text="Select Default Profile" position="bottom" align="end">
             <button
               type="button"
               aria-label="Select Default Profile"
@@ -1202,7 +1238,7 @@ export default function TerminalPanel() {
             align="end"
             disabled={!focusedSessionId}
           />
-          <Tooltip text="More Actions..." position="top" align="end">
+          <Tooltip text="More Actions..." position="bottom" align="end">
             <button
               type="button"
               aria-label="More Actions..."

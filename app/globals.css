@@ -6,140 +6,360 @@
 @source not "../DOC";
 @source not "../state-for-agents";
 
-@theme {
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *, .dark, .dark *));
+
+:root,
+[data-theme="dark"],
+.dark {
   /* === Core Surfaces & Chrome (VS Code Dark Modern) === */
-  --color-vscode-bg: #1e1e1e;
-  --color-vscode-editor: #121314;
-  /* opened-file surface (active tab merges into it) */
-  --color-vscode-side: #181818;
-  --color-vscode-titlebar: #191a1b;
-  --color-vscode-tab: #181818;
-  --color-vscode-tab-hover: #1f1f1f;
-  --color-vscode-tab-active: #121314;
-  /* = --color-vscode-editor so the active tab merges */
-  --color-vscode-border: #2b2b2b;
-  --color-vscode-statusbar: #181818;
-  /* statusBar.background (Dark Modern) */
-  --color-vscode-statusbar-hover: #f1f1f133;
-  /* statusBarItem.hoverBackground */
+  --vscode-bg: #1e1e1e;
+  --vscode-editor: #121314;
+  --vscode-side: #181818;
+  --vscode-titlebar: #191a1b;
+  --vscode-tab: #181818;
+  --vscode-tab-hover: #1f1f1f;
+  --vscode-tab-active: #121314;
+  --vscode-border: #2b2b2b;
+  --vscode-statusbar: #181818;
+  --vscode-statusbar-hover: #f1f1f133;
 
   /* === Typography & Hierarchy === */
-  --color-vscode-fg: #cccccc;
-  --color-vscode-fg-active: #ffffff;
-  --color-vscode-dim: #858585;
-  --color-vscode-muted: #9d9d9d;
-  --color-vscode-emphasis: #bfbfbf;
-  /* sidebar header + static root folder */
+  --vscode-fg: #cccccc;
+  --vscode-fg-active: #ffffff;
+  --vscode-dim: #858585;
+  --vscode-muted: #9d9d9d;
+  --vscode-emphasis: #bfbfbf;
 
   /* === Brand Accent & Interactive States === */
-  --color-vscode-accent: #0078d4;
-  --color-vscode-accent-hover: #026ec1;
+  --vscode-accent: #0078d4;
+  --vscode-accent-hover: #026ec1;
 
   /* === Git, Status & Diagnostics === */
-  --color-vscode-dot: #e2c08d;
-  --color-vscode-modified: #e5ba7d;
-  /* M badge, edited names, dirty dots */
-  --color-vscode-added: #73c991;
-  --color-vscode-error: #f14c4c;
-  --color-vscode-warning: #cca700;
-  --color-vscode-gutter-added: #2ea043;
-  --color-vscode-gutter-modified: #0078d4;
+  --vscode-dot: #e2c08d;
+  --vscode-modified: #e5ba7d;
+  --vscode-added: #73c991;
+  --vscode-error: #f14c4c;
+  --vscode-warning: #cca700;
+  --vscode-gutter-added: #2ea043;
+  --vscode-gutter-modified: #0078d4;
 
   /* === Lists, Inputs, Command Center & Widgets === */
-  --color-vscode-list-hover: #2a2d2e;
-  --color-vscode-list-active: #04395e;
-  --color-vscode-list-inactive: #37373d;
-  /* tree selection while unfocused */
-  --color-vscode-input-bg: #3c3c3c;
-  --color-vscode-command-bg: #242424;
-  --color-vscode-widget-bg: #252526;
-  --color-vscode-widget-border: #454545;
+  --vscode-list-hover: #2a2d2e;
+  --vscode-list-active: #04395e;
+  --vscode-list-inactive: #37373d;
+  --vscode-input-bg: #3c3c3c;
+  --vscode-input-border: #3c3c3c;
+  --vscode-command-bg: #242424;
+  --vscode-widget-bg: #252526;
+  --vscode-widget-border: #454545;
 
-  /* === Quick Input / Command Palette (quickInput.css, dark_modern.json) === */
-  --color-vscode-quick-bg: #222222;
-  /* quickInput.background */
-  --color-vscode-quick-border: #313131;
-  /* widget.border (widget 1px frame) */
-  --color-vscode-quick-input-bg: #313131;
-  /* input.background */
-  --color-vscode-quick-input-border: #3c3c3c;
-  /* input.border (static — no focus ring) */
-  --color-vscode-quick-placeholder: #989898;
-  /* input.placeholderForeground */
-  --color-vscode-quick-match: #2AAAFF;
-  /* list.highlightForeground (bold match) */
+  /* === Quick Input / Command Palette === */
+  --vscode-quick-bg: #222222;
+  --vscode-quick-border: #313131;
+  --vscode-quick-input-bg: #313131;
+  --vscode-quick-input-border: #3c3c3c;
+  --vscode-quick-placeholder: #989898;
+  --vscode-quick-match: #2aaaff;
 
-  /* === Keybinding chips (keybindingLabel defaults, dark) === */
-  --color-vscode-keybinding-bg: #8080802b;
-  /* keybindingLabel.background, rgba(128,128,128,.17) */
-  --color-vscode-keybinding-border: #33333399;
-  /* keybindingLabel.border, rgba(51,51,51,.6) */
-  --color-vscode-keybinding-border-bottom: #44444499;
-  /* keybindingLabel.bottomBorder, rgba(68,68,68,.6) */
+  /* === Keybinding chips === */
+  --vscode-keybinding-bg: #8080802b;
+  --vscode-keybinding-border: #33333399;
+  --vscode-keybinding-border-bottom: #44444499;
 
   /* === Editor Selection, Line Highlight & Scrollbars === */
-  --color-vscode-selection: #264f78;
-  --color-vscode-line-highlight: #282828;
-  /* Find-match highlight (search term occurrences in the editor) */
-  --color-vscode-find-match: rgba(234, 92, 0, 0.33);
-  /* Scrollbar thumb — slightly transparent white, revealed on hover. */
-  --color-vscode-scroll: rgba(255, 255, 255, 0.22);
-  --color-vscode-scroll-hover: rgba(255, 255, 255, 0.36);
+  --vscode-selection: #264f78;
+  --vscode-line-highlight: #282828;
+  --vscode-find-match: rgba(234, 92, 0, 0.33);
+  --vscode-scroll: rgba(255, 255, 255, 0.22);
+  --vscode-scroll-hover: rgba(255, 255, 255, 0.36);
 
-  /* === Badges & Integrated Terminal === */
-  --color-vscode-badge-bg: #0078d4;
-  --color-vscode-badge-fg: #ffffff;
-  /* SCM group count badge — badge.background/foreground (Dark Modern) */
-  --color-vscode-count-bg: #616161;
-  --color-vscode-count-fg: #f8f8f8;
-  /* SCM commit editor — input.background/border/placeholderForeground */
-  --color-vscode-scm-input-bg: #313131;
-  --color-vscode-scm-input-border: #3c3c3c;
-  --color-vscode-scm-placeholder: #989898;
-  /* SCM input validation — inputValidation.error* (inputColors.ts) */
-  --color-vscode-validation-error-bg: #5a1d1d;
-  --color-vscode-validation-error-border: #be1100;
-  --color-vscode-term-green: #23d18b;
-  --color-vscode-term-blue: #3b8eea;
+  /* === Badges & SCM === */
+  --vscode-badge-bg: #0078d4;
+  --vscode-badge-fg: #ffffff;
+  --vscode-count-bg: #616161;
+  --vscode-count-fg: #f8f8f8;
+  --vscode-scm-input-bg: #313131;
+  --vscode-scm-input-border: #3c3c3c;
+  --vscode-scm-placeholder: #989898;
+  --vscode-validation-error-bg: #5a1d1d;
+  --vscode-validation-error-border: #be1100;
+  --vscode-term-green: #23d18b;
+  --vscode-term-blue: #3b8eea;
 
-  /* === Bottom Panel / Integrated Terminal (panelPart.css, terminal.css,
-     terminalColorRegistry.ts, Dark Modern) === */
-  --color-vscode-panel-bg: #181818;
-  /* panel.background + terminal.background */
-  --color-vscode-panel-fg: #cccccc;
-  /* terminal.foreground */
-  --color-vscode-panel-tab-active: #cccccc;
-  /* panelTitle.activeForeground */
-  --color-vscode-panel-tab-inactive: #9d9d9d;
-  /* panelTitle.inactiveForeground */
-  --color-vscode-panel-tab-border: #2b2b2b;
-  /* panelTitle.border (title hairline) */
-  --color-vscode-toolbar-hover: #5a5d5e50;
-  /* toolbar.hoverBackground */
-  --color-vscode-terminal-tab-border: #0078d4;
-  /* terminal.tab.activeBorder */
-  --color-vscode-terminal-cursor: #cccccc;
-  /* terminalCursor.foreground */
-  --color-vscode-terminal-selection: #264f78;
-  /* terminal.selectionBackground */
+  /* === Bottom Panel & Terminal === */
+  --vscode-panel-bg: #181818;
+  --vscode-panel-fg: #cccccc;
+  --vscode-panel-tab-active: #cccccc;
+  --vscode-panel-tab-inactive: #9d9d9d;
+  --vscode-panel-tab-border: #2b2b2b;
+  --vscode-toolbar-hover: #5a5d5e50;
+  --vscode-terminal-tab-border: #0078d4;
+  --vscode-terminal-cursor: #cccccc;
+  --vscode-terminal-selection: #264f78;
 
-  /* === Activity Bar states (2025 refresh: pill, no left bar) === */
-  --color-vscode-activity-active-bg: #ffffff1a;
-  --color-vscode-activity-hover-bg: #ffffff0d;
+  /* === Activity Bar === */
+  --vscode-activity-active-bg: #ffffff1a;
+  --vscode-activity-hover-bg: #ffffff0d;
 
-  /* === Markdown preview (DOC/10 §5) === */
-  --color-vscode-markdown-link: #4daafc;
-  /* textLink.foreground */
-  --color-vscode-markdown-code-bg: #1e1e1e;
-  --color-vscode-markdown-inline-code-bg: #ffffff14;
-  --color-vscode-markdown-quote-border: #3c3c3c;
+  /* === Markdown preview === */
+  --vscode-markdown-link: #4daafc;
+  --vscode-markdown-code-bg: #1e1e1e;
+  --vscode-markdown-inline-code-bg: #ffffff14;
+  --vscode-markdown-quote-border: #3c3c3c;
 
-  /* === Portfolio pages (About, Resume, Certificates, ...) === */
-  --color-vscode-page-card: #1a1b1c;
-  --color-vscode-page-card-hover: #202124;
-  --color-vscode-page-border: #2f3133;
-  --color-vscode-page-glow: rgba(0, 120, 212, 0.16);
-  --color-vscode-page-chip: #26282a;
+  /* === Portfolio pages (About, Resume, ...) === */
+  --vscode-page-card: #1a1b1c;
+  --vscode-page-card-hover: #202124;
+  --vscode-page-border: #2f3133;
+  --vscode-page-glow: rgba(0, 120, 212, 0.16);
+  --vscode-page-chip: #141516;
+  --vscode-page-divider: #232323;
+
+  /* === Availability status badge === */
+  --vscode-badge-avail-bg: rgba(6, 78, 59, 0.4);
+  --vscode-badge-avail-border: rgba(6, 95, 70, 0.6);
+  --vscode-badge-avail-fg: #34d399;
+  --vscode-badge-avail-dot: #34d399;
+
+  /* === Filter pill active === */
+  --vscode-filter-active-bg: rgba(0, 120, 212, 0.2);
+  --vscode-filter-active-border: #0078d4;
+  --vscode-filter-active-fg: #ffffff;
+}
+
+[data-theme="light"],
+.light {
+  /* === Core Surfaces & Chrome (VS Code Light Modern) === */
+  --vscode-bg: #f3f3f3;
+  --vscode-editor: #ffffff;
+  --vscode-side: #f8f8f8;
+  --vscode-titlebar: #f8f8f8;
+  --vscode-tab: #f8f8f8;
+  --vscode-tab-hover: #f2f2f2;
+  --vscode-tab-active: #ffffff;
+  --vscode-border: #e5e5e5;
+  --vscode-statusbar: #f8f8f8;
+  --vscode-statusbar-hover: rgba(0, 0, 0, 0.06);
+
+  /* === Typography & Hierarchy (Light Modern) === */
+  --vscode-fg: #000000;
+  --vscode-fg-active: #000000;
+  --vscode-dim: #555555;
+  --vscode-muted: #333333;
+  --vscode-emphasis: #000000;
+
+  /* === Brand Accent & Interactive States === */
+  --vscode-accent: #0078d4;
+  --vscode-accent-hover: #026ec1;
+
+  /* === Git, Status & Diagnostics === */
+  --vscode-dot: #b8860b;
+  --vscode-modified: #895503;
+  --vscode-added: #2e8b57;
+  --vscode-error: #e51400;
+  --vscode-warning: #bf8803;
+  --vscode-gutter-added: #2ea043;
+  --vscode-gutter-modified: #0078d4;
+
+  /* === Lists, Inputs, Command Center & Widgets === */
+  --vscode-list-hover: #e8e8e8;
+  --vscode-list-active: #e8e8e8;
+  --vscode-list-inactive: #f2f2f2;
+  --vscode-input-bg: #ffffff;
+  --vscode-input-border: #cecece;
+  --vscode-command-bg: #ffffff;
+  --vscode-widget-bg: #ffffff;
+  --vscode-widget-border: #e5e5e5;
+
+  /* === Quick Input / Command Palette === */
+  --vscode-quick-bg: #ffffff;
+  --vscode-quick-border: #e5e5e5;
+  --vscode-quick-input-bg: #ffffff;
+  --vscode-quick-input-border: #cecece;
+  --vscode-quick-placeholder: #767676;
+  --vscode-quick-match: #0078d4;
+
+  /* === Keybinding chips === */
+  --vscode-keybinding-bg: #dddddd80;
+  --vscode-keybinding-border: #cccccc99;
+  --vscode-keybinding-border-bottom: #bbbbbb99;
+
+  /* === Editor Selection, Line Highlight & Scrollbars === */
+  --vscode-selection: #add6ff;
+  --vscode-line-highlight: #f8f8f8;
+  --vscode-find-match: rgba(234, 92, 0, 0.22);
+  --vscode-scroll: rgba(0, 0, 0, 0.2);
+  --vscode-scroll-hover: rgba(0, 0, 0, 0.35);
+
+  /* === Badges & SCM === */
+  --vscode-badge-bg: #0078d4;
+  --vscode-badge-fg: #ffffff;
+  --vscode-count-bg: #e5e5e5;
+  --vscode-count-fg: #000000;
+  --vscode-scm-input-bg: #ffffff;
+  --vscode-scm-input-border: #cecece;
+  --vscode-scm-placeholder: #767676;
+  --vscode-validation-error-bg: #ffe6e6;
+  --vscode-validation-error-border: #e51400;
+  --vscode-term-green: #00bc00;
+  --vscode-term-blue: #0078d4;
+
+  /* === Bottom Panel & Terminal === */
+  --vscode-panel-bg: #f8f8f8;
+  --vscode-panel-fg: #000000;
+  --vscode-panel-tab-active: #000000;
+  --vscode-panel-tab-inactive: #444444;
+  --vscode-panel-tab-border: #e5e5e5;
+  --vscode-toolbar-hover: rgba(0, 0, 0, 0.08);
+  --vscode-terminal-tab-border: #0078d4;
+  --vscode-terminal-cursor: #000000;
+  --vscode-terminal-selection: #add6ff;
+
+  /* === Activity Bar === */
+  --vscode-activity-active-bg: rgba(0, 0, 0, 0.08);
+  --vscode-activity-hover-bg: rgba(0, 0, 0, 0.04);
+
+  /* === Markdown preview === */
+  --vscode-markdown-link: #0078d4;
+  --vscode-markdown-code-bg: #f8f8f8;
+  --vscode-markdown-inline-code-bg: rgba(0, 0, 0, 0.06);
+  --vscode-markdown-quote-border: #cecece;
+
+  /* === Portfolio pages (About, Resume, ...) === */
+  --vscode-page-card: #ffffff;
+  --vscode-page-card-hover: #f7f7f7;
+  --vscode-page-border: #e5e5e5;
+  --vscode-page-glow: rgba(0, 120, 212, 0.16);
+  --vscode-page-chip: #f3f3f3;
+  --vscode-page-divider: #e5e5e5;
+
+  /* === Availability status badge (Light) === */
+  --vscode-badge-avail-bg: #ecfdf5;
+  --vscode-badge-avail-border: #a7f3d0;
+  --vscode-badge-avail-fg: #10b981;
+  --vscode-badge-avail-dot: #10b981;
+
+  /* === Filter pill active (Light) === */
+  --vscode-filter-active-bg: rgba(0, 120, 212, 0.1);
+  --vscode-filter-active-border: #0078d4;
+  --vscode-filter-active-fg: #0078d4;
+}
+
+@theme {
+  /* === Core Surfaces & Chrome === */
+  --color-vscode-bg: var(--vscode-bg);
+  --color-vscode-editor: var(--vscode-editor);
+  --color-vscode-side: var(--vscode-side);
+  --color-vscode-titlebar: var(--vscode-titlebar);
+  --color-vscode-tab: var(--vscode-tab);
+  --color-vscode-tab-hover: var(--vscode-tab-hover);
+  --color-vscode-tab-active: var(--vscode-tab-active);
+  --color-vscode-border: var(--vscode-border);
+  --color-vscode-statusbar: var(--vscode-statusbar);
+  --color-vscode-statusbar-hover: var(--vscode-statusbar-hover);
+
+  /* === Typography & Hierarchy === */
+  --color-vscode-fg: var(--vscode-fg);
+  --color-vscode-fg-active: var(--vscode-fg-active);
+  --color-vscode-dim: var(--vscode-dim);
+  --color-vscode-muted: var(--vscode-muted);
+  --color-vscode-emphasis: var(--vscode-emphasis);
+
+  /* === Brand Accent & Interactive States === */
+  --color-vscode-accent: var(--vscode-accent);
+  --color-vscode-accent-hover: var(--vscode-accent-hover);
+
+  /* === Git, Status & Diagnostics === */
+  --color-vscode-dot: var(--vscode-dot);
+  --color-vscode-modified: var(--vscode-modified);
+  --color-vscode-added: var(--vscode-added);
+  --color-vscode-error: var(--vscode-error);
+  --color-vscode-warning: var(--vscode-warning);
+  --color-vscode-gutter-added: var(--vscode-gutter-added);
+  --color-vscode-gutter-modified: var(--vscode-gutter-modified);
+
+  /* === Lists, Inputs, Command Center & Widgets === */
+  --color-vscode-list-hover: var(--vscode-list-hover);
+  --color-vscode-list-active: var(--vscode-list-active);
+  --color-vscode-list-inactive: var(--vscode-list-inactive);
+  --color-vscode-input-bg: var(--vscode-input-bg);
+  --color-vscode-input-border: var(--vscode-input-border);
+  --color-vscode-command-bg: var(--vscode-command-bg);
+  --color-vscode-widget-bg: var(--vscode-widget-bg);
+  --color-vscode-widget-border: var(--vscode-widget-border);
+
+  /* === Quick Input / Command Palette === */
+  --color-vscode-quick-bg: var(--vscode-quick-bg);
+  --color-vscode-quick-border: var(--vscode-quick-border);
+  --color-vscode-quick-input-bg: var(--vscode-quick-input-bg);
+  --color-vscode-quick-input-border: var(--vscode-quick-input-border);
+  --color-vscode-quick-placeholder: var(--vscode-quick-placeholder);
+  --color-vscode-quick-match: var(--vscode-quick-match);
+
+  /* === Keybinding chips === */
+  --color-vscode-keybinding-bg: var(--vscode-keybinding-bg);
+  --color-vscode-keybinding-border: var(--vscode-keybinding-border);
+  --color-vscode-keybinding-border-bottom: var(--vscode-keybinding-border-bottom);
+
+  /* === Editor Selection, Line Highlight & Scrollbars === */
+  --color-vscode-selection: var(--vscode-selection);
+  --color-vscode-line-highlight: var(--vscode-line-highlight);
+  --color-vscode-find-match: var(--vscode-find-match);
+  --color-vscode-scroll: var(--vscode-scroll);
+  --color-vscode-scroll-hover: var(--vscode-scroll-hover);
+
+  /* === Badges & SCM === */
+  --color-vscode-badge-bg: var(--vscode-badge-bg);
+  --color-vscode-badge-fg: var(--vscode-badge-fg);
+  --color-vscode-count-bg: var(--vscode-count-bg);
+  --color-vscode-count-fg: var(--vscode-count-fg);
+  --color-vscode-scm-input-bg: var(--vscode-scm-input-bg);
+  --color-vscode-scm-input-border: var(--vscode-scm-input-border);
+  --color-vscode-scm-placeholder: var(--vscode-scm-placeholder);
+  --color-vscode-validation-error-bg: var(--vscode-validation-error-bg);
+  --color-vscode-validation-error-border: var(--vscode-validation-error-border);
+  --color-vscode-term-green: var(--vscode-term-green);
+  --color-vscode-term-blue: var(--vscode-term-blue);
+
+  /* === Bottom Panel & Terminal === */
+  --color-vscode-panel-bg: var(--vscode-panel-bg);
+  --color-vscode-panel-fg: var(--vscode-panel-fg);
+  --color-vscode-panel-tab-active: var(--vscode-panel-tab-active);
+  --color-vscode-panel-tab-inactive: var(--vscode-panel-tab-inactive);
+  --color-vscode-panel-tab-border: var(--vscode-panel-tab-border);
+  --color-vscode-toolbar-hover: var(--vscode-toolbar-hover);
+  --color-vscode-terminal-tab-border: var(--vscode-terminal-tab-border);
+  --color-vscode-terminal-cursor: var(--vscode-terminal-cursor);
+  --color-vscode-terminal-selection: var(--vscode-terminal-selection);
+
+  /* === Activity Bar === */
+  --color-vscode-activity-active-bg: var(--vscode-activity-active-bg);
+  --color-vscode-activity-hover-bg: var(--vscode-activity-hover-bg);
+
+  /* === Markdown preview === */
+  --color-vscode-markdown-link: var(--vscode-markdown-link);
+  --color-vscode-markdown-code-bg: var(--vscode-markdown-code-bg);
+  --color-vscode-markdown-inline-code-bg: var(--vscode-markdown-inline-code-bg);
+  --color-vscode-markdown-quote-border: var(--vscode-markdown-quote-border);
+
+  /* === Portfolio pages === */
+  --color-vscode-page-card: var(--vscode-page-card);
+  --color-vscode-page-card-hover: var(--vscode-page-card-hover);
+  --color-vscode-page-border: var(--vscode-page-border);
+  --color-vscode-page-glow: var(--vscode-page-glow);
+  --color-vscode-page-chip: var(--vscode-page-chip);
+  --color-vscode-page-divider: var(--vscode-page-divider);
+
+  /* === Availability status badge === */
+  --color-vscode-badge-avail-bg: var(--vscode-badge-avail-bg);
+  --color-vscode-badge-avail-border: var(--vscode-badge-avail-border);
+  --color-vscode-badge-avail-fg: var(--vscode-badge-avail-fg);
+  --color-vscode-badge-avail-dot: var(--vscode-badge-avail-dot);
+
+  /* === Filter pill active === */
+  --color-vscode-filter-active-bg: var(--vscode-filter-active-bg);
+  --color-vscode-filter-active-border: var(--vscode-filter-active-border);
+  --color-vscode-filter-active-fg: var(--vscode-filter-active-fg);
 
   /* === Icon & Tech Identity Colors === */
   --color-icon-ts: #3178c6;
@@ -181,7 +401,7 @@
   /* SCM editor + Commit button (scm.css / button.css) */
   --radius-scrollbar: 4px;
   /* scrollbar thumb (rounded pill) */
-  --font-vscode-ui: "Segoe WPC", "Segoe UI", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-vscode-ui: "Manrope", "Segoe WPC", "Segoe UI", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   --font-vscode-code: "Cascadia Code", "JetBrains Mono", Consolas, "Courier New", monospace;
   --font-vscode-term: "Fira Code", "Cascadia Code", Consolas, "Courier New", monospace;
 

@@ -130,7 +130,7 @@ export default function ProjectsPage() {
                               {p.tags.map((tag) => (
                                 <span
                                   key={tag}
-                                  className="inline-flex items-center gap-1 rounded-control border border-vscode-page-border bg-[#141516] px-2 py-0.5 text-page-micro font-medium text-vscode-muted"
+                                  className="inline-flex items-center gap-1 rounded-control border border-vscode-page-border bg-vscode-page-chip px-2 py-0.5 text-page-micro font-medium text-vscode-muted"
                                 >
                                   <SkillIcon name={tag} size={12} />
                                   <span>{tag}</span>
@@ -217,7 +217,7 @@ export default function ProjectsPage() {
                             {p.tags.map((tag) => (
                               <span
                                 key={tag}
-                                className="inline-flex items-center gap-1 rounded-control border border-vscode-page-border bg-[#141516] px-2 py-0.5 text-page-micro font-medium text-vscode-muted"
+                                className="inline-flex items-center gap-1 rounded-control border border-vscode-page-border bg-vscode-page-chip px-2 py-0.5 text-page-micro font-medium text-vscode-muted"
                               >
                                 <SkillIcon name={tag} size={12} />
                                 <span>{tag}</span>
