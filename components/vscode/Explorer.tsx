@@ -585,6 +585,10 @@ export default function Explorer({
                     activeTabId === "page:hackathons" ||
                     activeTabId === "page:contact";
 
+                  const isSelected = isUnified && isUnifiedTabActive
+                    ? activeSection === sec.slug
+                    : selectedPath === key;
+
                   const isActiveIndicator = isUnified
                     ? isUnifiedTabActive && activeSection === sec.slug
                     : activeTabId === `page:${sec.slug}`;
@@ -597,7 +601,7 @@ export default function Explorer({
                       <TreeRow
                         path={key}
                         indent="pl-5"
-                        selected={selectedPath === key}
+                        selected={isSelected}
                         focused={focused}
                         activeIndicator={isActiveIndicator}
                         onClick={() => {

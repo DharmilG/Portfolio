@@ -120,60 +120,6 @@ export default function AboutPage() {
               playing and watching football.
             </p>
           </div>
-
-          {/* 3 Core Capability Cards with Distinct Colored Icons */}
-          <div className="mt-7 grid gap-3.5 sm:grid-cols-2 lg:grid-cols-3">
-            <div className="rounded-control border border-vscode-page-border bg-[#141516] p-4.5 transition-colors hover:border-vscode-border">
-              <div className="flex items-center gap-2.5">
-                <Codicon
-                  name="server-process"
-                  size={18}
-                  className="text-[#38bdf8]"
-                />
-                <h3 className="text-page-body font-semibold text-vscode-fg-active">
-                  Backend & Distributed Systems
-                </h3>
-              </div>
-              <p className="mt-2 text-page-meta leading-relaxed text-vscode-muted">
-                Building high-throughput services in Go & Node.js with
-                PostgreSQL, Redis caching, and AWS queues.
-              </p>
-            </div>
-
-            <div className="rounded-control border border-vscode-page-border bg-[#141516] p-4.5 transition-colors hover:border-vscode-border">
-              <div className="flex items-center gap-2.5">
-                <Codicon
-                  name="verified"
-                  size={18}
-                  className="text-[#4ade80]"
-                />
-                <h3 className="text-page-body font-semibold text-vscode-fg-active">
-                  I Test What I Ship
-                </h3>
-              </div>
-              <p className="mt-2 text-page-meta leading-relaxed text-vscode-muted">
-                End-to-end ownership across functional, integration, and
-                hardware-level BLE/Wi-Fi verification.
-              </p>
-            </div>
-
-            <div className="rounded-control border border-vscode-page-border bg-[#141516] p-4.5 transition-colors hover:border-vscode-border sm:col-span-2 lg:col-span-1">
-              <div className="flex items-center gap-2.5">
-                <Codicon
-                  name="zap"
-                  size={18}
-                  className="text-[#fb923c]"
-                />
-                <h3 className="text-page-body font-semibold text-vscode-fg-active">
-                  Product-Minded Full-Stack
-                </h3>
-              </div>
-              <p className="mt-2 text-page-meta leading-relaxed text-vscode-muted">
-                Turning complex admin & storefront workflows into clean
-                Next.js, React, and Odoo 19 interfaces.
-              </p>
-            </div>
-          </div>
         </section>
 
         {/* 2. 4 Quick Navigation Cards */}
