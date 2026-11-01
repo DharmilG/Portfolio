@@ -18,7 +18,7 @@ export default function HackathonsPage() {
   return (
     <PageShell
       icon="flame"
-      iconClassName="text-white"
+      iconClassName="text-[#fb923c]"
       title="Hackathons"
       width="wide"
     >

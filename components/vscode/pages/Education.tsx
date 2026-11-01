@@ -14,7 +14,7 @@ export default function EducationPage() {
   return (
     <PageShell
       icon="mortar-board"
-      iconClassName="text-white"
+      iconClassName="text-[#c084fc]"
       title="Education"
     >
       {education.length === 0 ? (
