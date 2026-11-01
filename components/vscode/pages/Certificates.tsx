@@ -13,6 +13,7 @@ export default function CertificatesPage() {
   return (
     <PageShell
       icon="verified"
+      iconClassName="text-white"
       title="Certificates"
       subtitle="Credentials I hold and where you can verify them."
       footer="Rows live in the `certificates` table — add them in Supabase Studio."

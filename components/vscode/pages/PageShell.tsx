@@ -9,15 +9,19 @@ import Codicon from "../Codicon";
 
 export function PageShell({
   icon,
+  iconClassName,
   title,
   subtitle,
+  headerRight,
   footer,
   width = "default",
   children,
 }: {
   icon: string;
+  iconClassName?: string;
   title: string;
   subtitle?: string;
+  headerRight?: ReactNode;
   footer?: ReactNode;
   width?: "default" | "wide";
   children: ReactNode;
@@ -29,20 +33,27 @@ export function PageShell({
           width === "wide" ? "max-w-[1120px]" : "max-w-[900px]"
         }`}
       >
-        <header className="flex items-start gap-3">
-          <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-control bg-vscode-activity-active-bg text-vscode-fg">
-            <Codicon name={icon} size={18} />
-          </span>
-          <div className="min-w-0">
-            <h1 className="text-page-title font-semibold text-vscode-fg-active">
-              {title}
-            </h1>
-            {subtitle ? (
-              <p className="mt-1 text-page-body text-vscode-muted">
-                {subtitle}
-              </p>
-            ) : null}
+        <header className="flex items-start justify-between gap-4">
+          <div className="flex items-start gap-3">
+            <span
+              className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-control bg-vscode-activity-active-bg ${
+                iconClassName ?? "text-vscode-fg"
+              }`}
+            >
+              <Codicon name={icon} size={18} />
+            </span>
+            <div className="min-w-0">
+              <h1 className="text-page-title font-semibold text-vscode-fg-active">
+                {title}
+              </h1>
+              {subtitle ? (
+                <p className="mt-1 text-page-body text-vscode-muted">
+                  {subtitle}
+                </p>
+              ) : null}
+            </div>
           </div>
+          {headerRight ? <div className="shrink-0">{headerRight}</div> : null}
         </header>
         <div className="mt-8">{children}</div>
         {footer ? (

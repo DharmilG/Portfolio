@@ -121,6 +121,7 @@ export type AboutTerminalData = {
 // The command strip is deliberately short; `help` reveals the rest.
 export const ABOUT_TERMINAL_HINTS = [
   "about",
+  "books",
   "experience",
   "projects",
   "skills",
@@ -133,6 +134,7 @@ export const ABOUT_COMMAND_NAMES = [
   "help",
   "whoami",
   "about",
+  "books",
   "story",
   "now",
   "principles",
@@ -564,6 +566,51 @@ function storyCommand(data: AboutTerminalData): AboutTerminalResult {
   };
 }
 
+function booksCommand(): AboutTerminalResult {
+  return {
+    lines: [
+      { text: "Books I've Read & Recommend:", tone: "name" },
+      blank(),
+      {
+        text: "1. Designing Data-Intensive Applications — Martin Kleppmann [Distributed Systems]",
+        tone: "accent",
+      },
+      {
+        text: "   Shaped how I think about replication, indexing, idempotency, and consistency in Go backends.",
+        tone: "dim",
+      },
+      {
+        text: "2. Let Us Go / Concurrency in Go — Katherine Cox-Buday [Backend & Go]",
+        tone: "accent",
+      },
+      {
+        text: "   Taught me clean goroutine lifecycles, worker pools, and backpressure patterns without race conditions.",
+        tone: "dim",
+      },
+      {
+        text: "3. The Pragmatic Programmer — Andrew Hunt & David Thomas [Engineering Craft]",
+        tone: "accent",
+      },
+      {
+        text: "   Where my habit of 'testing what I ship' and owning end-to-end reliability comes from.",
+        tone: "dim",
+      },
+      {
+        text: "4. Atomic Habits — James Clear [Mindset]",
+        tone: "accent",
+      },
+      {
+        text: "   Small daily compounding: writing one clean module, fixing one edge case, and shipping consistently.",
+        tone: "dim",
+      },
+    ],
+    actions: [
+      pageAction("open experience", "experience"),
+      pageAction("open skills", "skills"),
+    ],
+  };
+}
+
 function nowCommand(data: AboutTerminalData): AboutTerminalResult {
   const items = nowItems(data);
   if (!items.length) {
@@ -899,6 +946,10 @@ export function runAboutCommand(
       return whoamiCommand(data);
     case "about":
       return aboutCommand(data);
+    case "books":
+    case "book":
+    case "bookshelf":
+      return booksCommand();
     case "story":
       return storyCommand(data);
     case "now":

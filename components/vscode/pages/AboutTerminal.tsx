@@ -153,7 +153,13 @@ function Entry({
   );
 }
 
-export default function AboutTerminal({ data }: { data: AboutTerminalData }) {
+export default function AboutTerminal({
+  data,
+  className = "",
+}: {
+  data: AboutTerminalData;
+  className?: string;
+}) {
   const entries = useStore((s) => s.aboutTerminalEntries);
   const history = useStore((s) => s.aboutTerminalHistory);
   const seededInStore = useStore((s) => s.aboutTerminalSeeded);
@@ -331,28 +337,33 @@ export default function AboutTerminal({ data }: { data: AboutTerminalData }) {
     <section
       aria-label="About terminal"
       onClick={focusFromSurface}
-      className="flex h-[min(62vh,560px)] min-h-[360px] flex-col overflow-hidden rounded-section border border-vscode-border bg-vscode-panel-bg"
+      className={`flex h-[360px] min-h-[300px] flex-col overflow-hidden rounded-section border border-vscode-border bg-vscode-panel-bg ${className}`}
     >
       <p id="about-terminal-shortcuts" className="sr-only">
         Type a command and press Enter. Use Up and Down to recall history, Tab
         to complete, and Control L to clear the transcript.
       </p>
 
-      <div className="flex h-[35px] shrink-0 items-center justify-between border-b border-vscode-panel-tab-border bg-vscode-panel-bg pl-1 pr-1">
+      <div className="flex h-[35px] shrink-0 items-center justify-between border-b border-vscode-panel-tab-border bg-vscode-panel-bg pl-1 pr-2">
         <div className="relative flex h-full items-center gap-2 px-3 text-[11px] uppercase tracking-[0.01em] text-vscode-panel-tab-active">
           <Codicon name="terminal" size={16} />
-          <span>About — interactive</span>
+          <span>About — interactive terminal</span>
           <span className="absolute inset-x-[2px] bottom-0 h-px bg-vscode-accent" />
         </div>
-        <button
-          type="button"
-          aria-label="Clear terminal transcript"
-          title="Clear (Ctrl+L)"
-          onClick={clearSession}
-          className="flex h-[26px] w-[26px] cursor-pointer items-center justify-center rounded-control text-vscode-muted transition-colors hover:bg-vscode-toolbar-hover hover:text-vscode-fg focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-vscode-accent"
-        >
-          <Codicon name="clear-all" size={16} />
-        </button>
+        <div className="flex items-center gap-2">
+          <span className="hidden text-[11px] text-vscode-dim sm:inline">
+            Click any command below or type directly
+          </span>
+          <button
+            type="button"
+            aria-label="Clear terminal transcript"
+            title="Clear (Ctrl+L)"
+            onClick={clearSession}
+            className="flex h-[26px] w-[26px] cursor-pointer items-center justify-center rounded-control text-vscode-muted transition-colors hover:bg-vscode-toolbar-hover hover:text-vscode-fg focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-vscode-accent"
+          >
+            <Codicon name="clear-all" size={16} />
+          </button>
+        </div>
       </div>
 
       <div
