@@ -44,6 +44,28 @@ type ViewAction = {
 };
 
 // Root-row view actions (VS Code tooltips; behavior owned by the page).
+const UNIFIED_SECTIONS = new Set([
+  "about",
+  "resume",
+  "experience",
+  "education",
+  "skills",
+  "hackathons",
+  "contact",
+]);
+
+const SECTION_ORDER = [
+  "about",
+  "resume",
+  "experience",
+  "education",
+  "skills",
+  "hackathons",
+  "contact",
+  "books",
+  "projects",
+];
+
 const EXPLORER_ACTIONS: ViewAction[] = [
   { id: "new-file", icon: "new-file", label: "New File..." },
   { id: "new-folder", icon: "new-folder", label: "New Folder..." },
@@ -159,6 +181,10 @@ export default function Explorer({
   const repoMeta = useStore((s) => s.repoMeta);
   const branchByRepo = useStore((s) => s.branchByRepo);
   const treeBranch = useStore((s) => s.treeBranch);
+  const activeTabId = useStore((s) => s.activeTabId);
+  const activeSection = useStore((s) => s.activeSection);
+  const setActiveSection = useStore((s) => s.setActiveSection);
+  const setScrollTargetSection = useStore((s) => s.setScrollTargetSection);
   const [renaming, setRenaming] = useState<string | null>(null);
   const [focused, setFocused] = useState(false);
   const [treeLoading, setTreeLoading] = useState<Record<string, boolean>>({});
@@ -526,12 +552,38 @@ export default function Explorer({
                 No folders yet — add rows in Supabase Studio.
               </p>
             ) : (
-              sections.filter((sec) => sec.slug !== "tmp").map((sec) => {
+              [...sections]
+                .filter((sec) => sec.slug !== "tmp")
+                .sort((a, b) => {
+                  const iA = SECTION_ORDER.indexOf(a.slug);
+                  const iB = SECTION_ORDER.indexOf(b.slug);
+                  if (iA !== -1 && iB !== -1) return iA - iB;
+                  if (iA !== -1) return -1;
+                  if (iB !== -1) return 1;
+                  return (a.orders ?? 0) - (b.orders ?? 0);
+                })
+                .map((sec) => {
                 const key = sec.slug;
                 const open = expanded[key] ?? false;
                 const title = resolveName(key, renames, sec.title);
                 if (!match(title)) return null;
                 const isProjects = sec.slug === "projects";
+                const isBooks = sec.slug === "books";
+                const isUnified = UNIFIED_SECTIONS.has(sec.slug);
+
+                const isUnifiedTabActive =
+                  activeTabId === "page:about" ||
+                  activeTabId === "page:resume" ||
+                  activeTabId === "page:experience" ||
+                  activeTabId === "page:education" ||
+                  activeTabId === "page:skills" ||
+                  activeTabId === "page:hackathons" ||
+                  activeTabId === "page:contact";
+
+                const isActiveIndicator = isUnified
+                  ? isUnifiedTabActive && activeSection === sec.slug
+                  : activeTabId === `page:${sec.slug}`;
+
                 return (
                   <div key={sec.id}>
                     <TreeRow
@@ -539,13 +591,24 @@ export default function Explorer({
                       indent="pl-6"
                       selected={selectedPath === key}
                       focused={focused}
+                      activeIndicator={isActiveIndicator}
                       onClick={() => {
                         selectPath(key);
                         if (isProjects) {
                           toggleExpanded(key);
+                          openTab({ kind: "page", path: "projects", sha: null });
                           return;
                         }
-                        // Every other section opens its designed page.
+                        if (isBooks) {
+                          openTab({ kind: "page", path: "books", sha: null });
+                          return;
+                        }
+                        if (isUnified) {
+                          openTab({ kind: "page", path: "about", sha: null });
+                          setActiveSection(sec.slug);
+                          setScrollTargetSection(sec.slug);
+                          return;
+                        }
                         openTab({ kind: "page", path: key, sha: null });
                       }}
                       onDoubleClick={() => setRenaming(key)}
