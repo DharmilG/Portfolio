@@ -9,6 +9,7 @@ import {
   Children,
   isValidElement,
   useEffect,
+  useMemo,
   useState,
   type ReactNode,
 } from "react";
@@ -53,57 +54,92 @@ function mermaidCode(children: ReactNode): string | null {
   return textOf(props.children);
 }
 
-const COMPONENTS: Components = {
-  pre({ children }) {
-    const code = mermaidCode(children);
-    if (code !== null) return <MermaidBlock code={code} />;
-    return <pre>{children}</pre>;
-  },
-  a({ node: _node, href, children, ...props }) {
-    const internal = href?.startsWith("#") ?? false;
-    return (
-      <a
-        {...props}
-        href={href}
-        target={internal ? undefined : "_blank"}
-        rel={internal ? undefined : "noreferrer noopener"}
-        onClick={(e) => {
-          if (!internal || !href) return;
-          e.preventDefault();
-          const id = decodeURIComponent(href.slice(1));
-          document.getElementById(id)?.scrollIntoView({
-            behavior: "smooth",
-            block: "start",
-          });
-        }}
-      >
-        {children}
-      </a>
-    );
-  },
-  img({ node: _node, alt, ...props }) {
-    return (
-      <img
-        {...props}
-        alt={alt ?? ""}
-        loading="lazy"
-        decoding="async"
-        referrerPolicy="no-referrer"
-      />
-    );
-  },
-};
+// Resolve a README-relative URL against its repository location. Absolute
+// URLs, anchors, and protocol-relative URLs are already complete.
+function resolveUrl(
+  base: string | undefined,
+  value: string | undefined,
+): string | undefined {
+  if (!base || !value) return value;
+  if (
+    value.startsWith("#") ||
+    value.startsWith("//") ||
+    /^[a-z][a-z0-9+.-]*:/i.test(value)
+  ) {
+    return value;
+  }
+  try {
+    return new URL(value, base).toString();
+  } catch {
+    return value;
+  }
+}
+
+function makeComponents(
+  linkBase: string | undefined,
+  imageBase: string | undefined,
+): Components {
+  return {
+    pre({ children }) {
+      const code = mermaidCode(children);
+      if (code !== null) return <MermaidBlock code={code} />;
+      return <pre>{children}</pre>;
+    },
+    a({ node: _node, href, children, ...props }) {
+      const internal = href?.startsWith("#") ?? false;
+      return (
+        <a
+          {...props}
+          href={resolveUrl(linkBase, href)}
+          target={internal ? undefined : "_blank"}
+          rel={internal ? undefined : "noreferrer noopener"}
+          onClick={(e) => {
+            if (!internal || !href) return;
+            e.preventDefault();
+            const id = decodeURIComponent(href.slice(1));
+            document.getElementById(id)?.scrollIntoView({
+              behavior: "smooth",
+              block: "start",
+            });
+          }}
+        >
+          {children}
+        </a>
+      );
+    },
+    img({ node: _node, alt, src, ...props }) {
+      return (
+        <img
+          {...props}
+          src={typeof src === "string" ? resolveUrl(imageBase, src) : src}
+          alt={alt ?? ""}
+          loading="lazy"
+          decoding="async"
+          referrerPolicy="no-referrer"
+        />
+      );
+    },
+  };
+}
+
+const COMPONENTS = makeComponents(undefined, undefined);
 
 type MarkdownPreviewProps = {
   path: string;
   content: string | undefined;
   dirty: "unsaved" | "saved" | null;
+  /** Base for relative links (e.g. the repository blob directory). */
+  linkBaseUrl?: string;
+  /** Base for relative images (e.g. the repository raw directory). */
+  imageBaseUrl?: string;
 };
 
 export default function MarkdownPreview({
   path,
   content,
   dirty,
+  linkBaseUrl,
+  imageBaseUrl,
 }: MarkdownPreviewProps) {
   // 300ms debounce keeps typing responsive while diagrams are re-rendered.
   // startTransition is not needed: source and preview are separate trees.
@@ -119,6 +155,13 @@ export default function MarkdownPreview({
 
   const preview = display ?? content;
   const tooLarge = preview !== undefined && preview.length > PREVIEW_LIMIT;
+  const components = useMemo(
+    () =>
+      linkBaseUrl || imageBaseUrl
+        ? makeComponents(linkBaseUrl, imageBaseUrl)
+        : COMPONENTS,
+    [linkBaseUrl, imageBaseUrl],
+  );
 
   return (
     <div className="flex min-h-0 min-w-0 flex-1 flex-col bg-vscode-editor">
@@ -149,7 +192,7 @@ export default function MarkdownPreview({
             <ReactMarkdown
               remarkPlugins={REMARK_PLUGINS}
               rehypePlugins={REHYPE_PLUGINS}
-              components={COMPONENTS}
+              components={components}
             >
               {preview}
             </ReactMarkdown>
