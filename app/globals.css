@@ -68,6 +68,10 @@
 
   /* === Editor Selection, Line Highlight & Scrollbars === */
   --vscode-selection: #264f78;
+  /* Portfolio-wide text selection: the soft light blue from the single-page
+     sections, used by the global ::selection rule below. */
+  --vscode-selection-soft: #add6ff;
+  --vscode-selection-soft-fg: #0b1524;
   --vscode-line-highlight: #282828;
   --vscode-find-match: rgba(234, 92, 0, 0.33);
   --vscode-scroll: rgba(255, 255, 255, 0.22);
@@ -186,6 +190,8 @@
 
   /* === Editor Selection, Line Highlight & Scrollbars === */
   --vscode-selection: #add6ff;
+  --vscode-selection-soft: #add6ff;
+  --vscode-selection-soft-fg: #0b1524;
   --vscode-line-highlight: #f8f8f8;
   --vscode-find-match: rgba(234, 92, 0, 0.22);
   --vscode-scroll: rgba(0, 0, 0, 0.2);
@@ -303,6 +309,8 @@
 
   /* === Editor Selection, Line Highlight & Scrollbars === */
   --color-vscode-selection: var(--vscode-selection);
+  --color-vscode-selection-soft: var(--vscode-selection-soft);
+  --color-vscode-selection-soft-fg: var(--vscode-selection-soft-fg);
   --color-vscode-line-highlight: var(--vscode-line-highlight);
   --color-vscode-find-match: var(--vscode-find-match);
   --color-vscode-scroll: var(--vscode-scroll);
@@ -472,6 +480,15 @@ body {
 
 .terminal-xterm .xterm .xterm-viewport {
   background-color: transparent !important;
+}
+
+/* === Portfolio-wide text selection ===
+   Every selectable surface uses the same soft light-blue selection that the
+   single-page sections use. The editor textarea opts back out of the
+   foreground color (its text is transparent above the Shiki layer). */
+::selection {
+  background-color: var(--color-vscode-selection-soft);
+  color: var(--color-vscode-selection-soft-fg);
 }
 
 /* === Scrollbars (every scrollable surface) ===

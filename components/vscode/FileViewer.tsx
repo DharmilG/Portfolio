@@ -354,7 +354,7 @@ export default function FileViewer() {
         <>
           <div
             ref={scrollRef}
-            className="min-h-0 min-w-0 flex-1 overflow-auto font-code selection:bg-vscode-selection"
+            className="min-h-0 min-w-0 flex-1 overflow-auto font-code selection:bg-vscode-selection-soft"
           >
             {loadedForPath?.error ? (
               <p className="px-12 py-6 text-xs text-vscode-dim">
@@ -438,7 +438,7 @@ export default function FileViewer() {
                   }}
                   onSelect={syncCaret}
                   onClick={syncCaret}
-                  className="col-start-1 row-start-1 w-full resize-none overflow-hidden bg-transparent py-0 pl-12 pr-4 text-transparent caret-vscode-accent selection:bg-vscode-selection focus:outline-none"
+                  className="col-start-1 row-start-1 w-full resize-none overflow-hidden bg-transparent py-0 pl-12 pr-4 text-transparent caret-vscode-accent selection:bg-vscode-selection-soft selection:text-transparent focus:outline-none"
                 />
               </div>
             )}
