@@ -6,8 +6,10 @@
 // read-only with the same Markdown surface as the editor preview. No file tree
 // or editable code surface is exposed to the public project flow.
 import dynamic from "next/dynamic";
+import GithubSlugger from "github-slugger";
 import {
   useEffect,
+  useMemo,
   useRef,
   useState,
   type KeyboardEvent as ReactKeyboardEvent,
@@ -51,18 +53,13 @@ type ReadmeState =
   | { status: "loading" }
   | { status: "error"; message: string };
 
+type ReadmeHeading = { id: string; text: string; level: number };
+
 const readmeCache = new Map<string, ReadmeResult>();
 
 const MarkdownPreview = dynamic(() => import("../MarkdownPreview"), {
   ssr: false,
-  loading: () => (
-    <ReadmeStatus
-      icon="loading"
-      spin
-      title="Loading README.md"
-      message="Preparing the Markdown preview…"
-    />
-  ),
+  loading: () => <ReadmeSkeleton />,
 });
 
 function repoSlug(project: Project): string {
@@ -171,6 +168,58 @@ function errorText(cause: unknown): string {
   return "Could not load README.md.";
 }
 
+// Build the same slugs rehype-slug generates so the TOC can jump directly to
+// headings rendered by MarkdownPreview. Fenced code blocks are skipped.
+function buildReadmeToc(markdown: string): ReadmeHeading[] {
+  const slugger = new GithubSlugger();
+  const headings: ReadmeHeading[] = [];
+  let inFence = false;
+
+  for (const line of markdown.split(/\r?\n/)) {
+    if (/^\s*(```|~~~)/.test(line)) {
+      inFence = !inFence;
+      continue;
+    }
+    if (inFence) continue;
+
+    const match = line.match(/^(#{1,6})\s+(.+?)\s*#*\s*$/);
+    if (!match) continue;
+
+    const text = match[2]
+      .replace(/!\[([^\]]*)\]\([^)]*\)/g, "$1")
+      .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
+      .replace(/<[^>]+>/g, "")
+      .replace(/[*_`~]/g, "")
+      .replace(/&amp;/g, "&")
+      .replace(/&lt;/g, "<")
+      .replace(/&gt;/g, ">")
+      .replace(/&quot;/g, '"')
+      .replace(/&#39;/g, "'")
+      .trim();
+    if (!text) continue;
+
+    headings.push({ id: slugger.slug(text), text, level: match[1].length });
+  }
+
+  return headings;
+}
+
+function ReadmeSkeleton() {
+  return (
+    <div className="min-h-0 flex-1 overflow-hidden bg-vscode-editor px-10 py-8">
+      <div className="mx-auto w-full max-w-[860px] animate-pulse space-y-4">
+        <div className="h-8 w-2/5 rounded-control bg-vscode-page-chip" />
+        <div className="h-3 w-full rounded-control bg-vscode-page-chip/70" />
+        <div className="h-3 w-11/12 rounded-control bg-vscode-page-chip/70" />
+        <div className="h-3 w-4/5 rounded-control bg-vscode-page-chip/70" />
+        <div className="h-6 w-1/4 rounded-control bg-vscode-page-chip" />
+        <div className="h-3 w-full rounded-control bg-vscode-page-chip/70" />
+        <div className="h-3 w-10/12 rounded-control bg-vscode-page-chip/70" />
+      </div>
+    </div>
+  );
+}
+
 function DetailSection({
   title,
   hint,
@@ -260,6 +309,19 @@ function ReadmeFallback({
 function ReadmePanel({ project }: { project: Project }) {
   const [state, setState] = useState<ReadmeState>({ status: "loading" });
   const [attempt, setAttempt] = useState(0);
+  const [copyState, setCopyState] = useState<"idle" | "copied" | "error">(
+    "idle",
+  );
+  const copyTimer = useRef<number | null>(null);
+  const markdown = state.status === "ready" ? state.content : "";
+  const headings = useMemo(() => buildReadmeToc(markdown), [markdown]);
+
+  useEffect(
+    () => () => {
+      if (copyTimer.current) window.clearTimeout(copyTimer.current);
+    },
+    [],
+  );
 
   useEffect(() => {
     const controller = new AbortController();
@@ -282,14 +344,7 @@ function ReadmePanel({ project }: { project: Project }) {
   }, [project, attempt]);
 
   if (state.status === "loading") {
-    return (
-      <ReadmeStatus
-        icon="loading"
-        spin
-        title="Loading README.md"
-        message="Fetching the project documentation from GitHub."
-      />
-    );
+    return <ReadmeSkeleton />;
   }
 
   if (state.status === "missing") {
@@ -351,6 +406,25 @@ function ReadmePanel({ project }: { project: Project }) {
   const imageBaseUrl = `https://raw.githubusercontent.com/${repoSlug(
     project,
   )}/${encodedBranch}/${dirSuffix}`;
+  const rawUrl = `https://raw.githubusercontent.com/${repoSlug(
+    project,
+  )}/${encodedBranch}/${state.path
+    .split("/")
+    .map(encodeURIComponent)
+    .join("/")}`;
+
+  const copyMarkdown = async () => {
+    try {
+      await navigator.clipboard.writeText(state.content);
+      setCopyState("copied");
+      if (copyTimer.current) window.clearTimeout(copyTimer.current);
+      copyTimer.current = window.setTimeout(() => setCopyState("idle"), 1800);
+    } catch {
+      setCopyState("error");
+      if (copyTimer.current) window.clearTimeout(copyTimer.current);
+      copyTimer.current = window.setTimeout(() => setCopyState("idle"), 2200);
+    }
+  };
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
@@ -362,15 +436,83 @@ function ReadmePanel({ project }: { project: Project }) {
         <span className="hidden text-[11px] text-vscode-dim sm:inline">
           · read-only preview
         </span>
-        <a
-          href={githubBlobUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="ml-auto inline-flex h-6 shrink-0 items-center gap-1 rounded-control px-1.5 text-[11px] text-vscode-dim transition-colors hover:bg-vscode-list-hover hover:text-vscode-fg"
-        >
-          <span className="hidden sm:inline">Open on GitHub</span>
-          <Codicon name="link-external" size={11} />
-        </a>
+
+        <div className="ml-auto flex shrink-0 items-center gap-1">
+          {headings.length > 0 ? (
+            <details className="relative">
+              <summary className="flex h-6 cursor-pointer list-none items-center gap-1 rounded-control px-1.5 text-[11px] text-vscode-dim transition-colors hover:bg-vscode-list-hover hover:text-vscode-fg [&::-webkit-details-marker]:hidden">
+                <Codicon name="list-tree" size={12} />
+                <span className="hidden sm:inline">On this page</span>
+                <Codicon name="chevron-down" size={10} />
+              </summary>
+              <div className="absolute right-0 top-full z-10 mt-1 max-h-64 w-64 overflow-auto rounded-control border border-vscode-widget-border bg-vscode-widget-bg py-1 text-page-micro shadow-vscode">
+                {headings.map((heading) => (
+                  <button
+                    key={`${heading.id}-${heading.level}`}
+                    type="button"
+                    onClick={() => {
+                      document
+                        .getElementById(heading.id)
+                        ?.scrollIntoView({ behavior: "smooth", block: "start" });
+                    }}
+                    className="block w-full truncate py-1.5 pr-3 text-left text-vscode-muted transition-colors hover:bg-vscode-list-hover hover:text-vscode-fg"
+                    style={{ paddingLeft: `${12 + (heading.level - 1) * 10}px` }}
+                    title={heading.text}
+                  >
+                    {heading.text}
+                  </button>
+                ))}
+              </div>
+            </details>
+          ) : null}
+
+          <button
+            type="button"
+            onClick={copyMarkdown}
+            aria-label="Copy README markdown"
+            className="inline-flex h-6 items-center gap-1 rounded-control px-1.5 text-[11px] text-vscode-dim transition-colors hover:bg-vscode-list-hover hover:text-vscode-fg"
+          >
+            <Codicon
+              name={copyState === "copied" ? "check" : "copy"}
+              size={12}
+            />
+            <span className="hidden sm:inline">
+              {copyState === "copied"
+                ? "Copied"
+                : copyState === "error"
+                  ? "Copy failed"
+                  : "Copy"}
+            </span>
+            <span className="sr-only" aria-live="polite">
+              {copyState === "copied"
+                ? "README copied to clipboard"
+                : copyState === "error"
+                  ? "Could not copy README"
+                  : ""}
+            </span>
+          </button>
+
+          <a
+            href={rawUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="View raw README on GitHub"
+            className="inline-flex h-6 items-center gap-1 rounded-control px-1.5 text-[11px] text-vscode-dim transition-colors hover:bg-vscode-list-hover hover:text-vscode-fg"
+          >
+            <Codicon name="file-code" size={12} />
+            <span className="hidden sm:inline">View Raw</span>
+          </a>
+
+          <a
+            href={githubBlobUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex h-6 items-center gap-1 rounded-control px-1.5 text-[11px] text-vscode-dim transition-colors hover:bg-vscode-list-hover hover:text-vscode-fg"
+          >
+            <span className="hidden sm:inline">Open on GitHub</span>
+            <Codicon name="link-external" size={11} />
+          </a>
+        </div>
       </div>
       <div className="flex min-h-0 flex-1">
         <MarkdownPreview
