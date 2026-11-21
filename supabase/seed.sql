@@ -310,7 +310,7 @@ values
       'Real-time GitHub API integration: branch switching, directory navigation, and commit log with visual graph rail.',
       'Built-in terminal shell supporting custom navigation commands, cat, grep, and curl.'
     ]::text[],
-    null,
+    'https://info-dharmil-gajjar.vercel.app/',
     true,
     'projects',
     10,
@@ -496,7 +496,7 @@ on conflict (repo_owner, repo_name) do update set
 -- Site Settings
 insert into site_settings (key, value)
 values
-  ('resume', '{"path":null,"label":"Dharmil_Gajjar_Resume.pdf","updated_at":null}'::jsonb),
+  ('resume', '{"path":"Dharmil_Gajjar_Resume.pdf","label":"Dharmil_Gajjar_Resume.pdf","updated_at":"2026-11-01"}'::jsonb),
   ('theme', '{"mode":"dark","accent":"#0078d4"}'::jsonb)
 on conflict (key) do update set value = excluded.value;
 
