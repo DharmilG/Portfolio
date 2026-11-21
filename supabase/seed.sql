@@ -496,6 +496,7 @@ on conflict (repo_owner, repo_name) do update set
 -- Site Settings
 insert into site_settings (key, value)
 values
+  ('books', '{"sections":[{"category":"Distributed Systems & Systems Craft","books":[{"title":"Designing Data-Intensive Applications","coverUrl":"https://covers.openlibrary.org/b/isbn/9781449373320-L.jpg"},{"title":"Concurrency in Go","coverUrl":"https://covers.openlibrary.org/b/isbn/9781491941195-L.jpg"},{"title":"The Pragmatic Programmer","coverUrl":"https://covers.openlibrary.org/b/isbn/9780135957059-L.jpg"}]},{"category":"Architecture & Engineering Habits","books":[{"title":"Clean Code","coverUrl":"https://covers.openlibrary.org/b/isbn/9780132350884-L.jpg"},{"title":"System Design Interview","coverUrl":"https://covers.openlibrary.org/b/isbn/9798664653403-L.jpg"},{"title":"Atomic Habits","coverUrl":"https://covers.openlibrary.org/b/isbn/9780735211292-L.jpg"}]}]}'::jsonb),
   ('resume', '{"path":"Dharmil_Gajjar_Resume.pdf","label":"Dharmil_Gajjar_Resume.pdf","updated_at":"2026-11-01"}'::jsonb),
   ('theme', '{"mode":"dark","accent":"#0078d4"}'::jsonb)
 on conflict (key) do update set value = excluded.value;

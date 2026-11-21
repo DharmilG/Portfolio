@@ -12,9 +12,83 @@ import "@fontsource/fira-code/400.css";
 import "./globals.css";
 import { ThemeProvider } from "@/components/vscode/ThemeContext";
 
+const SITE_URL = "https://info-dharmil-gajjar.vercel.app";
+const SITE_NAME = "Dharmil Gajjar";
+const SITE_DESCRIPTION =
+  "Portfolio of Dharmil Gajjar — full-stack and backend engineer building with Go, Next.js, PostgreSQL and AWS. Projects, experience, skills and resume.";
+
 export const metadata: Metadata = {
-  title: "Portfolio — Visual Studio Code",
-  description: "A portfolio that looks and behaves exactly like VS Code.",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: `${SITE_NAME} — Full-stack & Backend Engineer`,
+    template: `%s — ${SITE_NAME}`,
+  },
+  description: SITE_DESCRIPTION,
+  applicationName: `${SITE_NAME} Portfolio`,
+  keywords: [
+    "Dharmil Gajjar",
+    "full-stack engineer",
+    "backend engineer",
+    "Go developer",
+    "Next.js developer",
+    "PostgreSQL",
+    "AWS",
+    "portfolio",
+  ],
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: SITE_URL,
+    siteName: `${SITE_NAME} Portfolio`,
+    title: `${SITE_NAME} — Full-stack & Backend Engineer`,
+    description: SITE_DESCRIPTION,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `${SITE_NAME} — Full-stack & Backend Engineer`,
+    description: SITE_DESCRIPTION,
+  },
+  robots: { index: true, follow: true },
+  category: "technology",
+};
+
+const structuredData = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Person",
+      "@id": `${SITE_URL}/#person`,
+      name: SITE_NAME,
+      url: SITE_URL,
+      jobTitle: "Full-stack & Backend Engineer",
+      description: SITE_DESCRIPTION,
+      sameAs: ["https://github.com/DharmilG", SITE_URL],
+      knowsAbout: [
+        "Go",
+        "TypeScript",
+        "Next.js",
+        "PostgreSQL",
+        "AWS",
+        "Backend engineering",
+      ],
+    },
+    {
+      "@type": "ProfilePage",
+      "@id": `${SITE_URL}/#webpage`,
+      url: SITE_URL,
+      name: `${SITE_NAME} — Full-stack & Backend Engineer`,
+      isPartOf: { "@id": `${SITE_URL}/#website` },
+      mainEntity: { "@id": `${SITE_URL}/#person` },
+    },
+    {
+      "@type": "WebSite",
+      "@id": `${SITE_URL}/#website`,
+      url: SITE_URL,
+      name: `${SITE_NAME} Portfolio`,
+      publisher: { "@id": `${SITE_URL}/#person` },
+    },
+  ],
 };
 
 export const viewport: Viewport = {
@@ -54,6 +128,10 @@ export default function RootLayout({
               } catch (e) {}
             `,
           }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
         />
       </head>
       <body className="bg-vscode-bg font-vscode-ui text-vscode-fg antialiased">
