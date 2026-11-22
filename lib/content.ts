@@ -163,7 +163,7 @@ export const getProfileContentCached = unstable_cache(
   getProfileContent,
   ["profile-content"],
   {
-    tags: ["profile", "site-settings", "books"],
+    tags: ["profile-content", "profile", "site-settings", "books"],
     revalidate: 300,
   },
 );
@@ -172,7 +172,7 @@ export const getProjectsContentCached = unstable_cache(
   getProjectsContent,
   ["projects-content"],
   {
-    tags: ["projects", "github-cache"],
+    tags: ["projects-content", "projects", "github-cache"],
     revalidate: 300,
   },
 );
