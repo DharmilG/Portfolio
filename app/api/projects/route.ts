@@ -5,16 +5,18 @@
 // request on the hot path (DOC/09 §1). A project's `description_override`
 // (owner-written, resume-grade copy) wins over the auto README excerpt.
 import { NextResponse } from "next/server";
-import { getProjectsContent } from "@/lib/content";
+import { getProjectsContentCached } from "@/lib/content";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    const content = await getProjectsContent();
+    const content = await getProjectsContentCached();
     return NextResponse.json(content, {
-      headers: { "Cache-Control": "no-store" },
+      headers: {
+        "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
+      },
     });
   } catch {
     return NextResponse.json(

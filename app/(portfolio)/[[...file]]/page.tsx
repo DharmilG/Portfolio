@@ -4,10 +4,14 @@
 // can be unique per page.
 import type { Metadata } from "next";
 import PortfolioShell from "@/components/vscode/PortfolioShell";
-import { getProfileContent, getProjectsContent } from "@/lib/content";
+import {
+  getProfileContentCached,
+  getProjectsContentCached,
+} from "@/lib/content";
 
 export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
+export const dynamicParams = true;
 
 const PAGE_SLUGS = new Set([
   "about",
@@ -21,6 +25,13 @@ const PAGE_SLUGS = new Set([
   "projects",
   "certificates",
 ]);
+
+export function generateStaticParams() {
+  return [
+    { file: [] },
+    ...Array.from(PAGE_SLUGS, (slug) => ({ file: [slug] })),
+  ];
+}
 
 const PAGE_TITLES: Record<string, string> = {
   about: "About",
@@ -79,8 +90,8 @@ export default async function PortfolioPage({
   const initialPage = pageFromParams(file);
 
   const [profile, projects] = await Promise.all([
-    getProfileContent().catch(() => null),
-    getProjectsContent().catch(() => null),
+    getProfileContentCached().catch(() => null),
+    getProjectsContentCached().catch(() => null),
   ]);
 
   return (

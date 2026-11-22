@@ -3,16 +3,18 @@
 // anon tables; the browser never needs a service key and no GitHub request is
 // spent (DOC/04 §5).
 import { NextResponse } from "next/server";
-import { getProfileContent } from "@/lib/content";
+import { getProfileContentCached } from "@/lib/content";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    const content = await getProfileContent();
+    const content = await getProfileContentCached();
     return NextResponse.json(content, {
-      headers: { "Cache-Control": "no-store" },
+      headers: {
+        "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
+      },
     });
   } catch {
     return NextResponse.json(

@@ -2,6 +2,7 @@
 // (DOC/09 §6). Protected by CRON_SECRET; Vercel calls it on the schedule in
 // vercel.json. It writes only server-side snapshots (github_cache + the
 // project's last_synced_at) — never anything a visitor typed (rule 03).
+import { revalidateTag } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/db";
 import { getOctokit, githubStatus } from "@/lib/github";
@@ -160,6 +161,13 @@ export async function GET(request: NextRequest) {
         error: cause instanceof Error ? cause.message : "sync failed",
       });
     }
+  }
+
+  // Nightly sync changes github_cache and project metadata; drop the cached
+  // server loaders so the next page/API request observes the new snapshot.
+  if (synced.length > 0) {
+    revalidateTag("github-cache", "max");
+    revalidateTag("projects-content", "max");
   }
 
   return NextResponse.json(

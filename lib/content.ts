@@ -1,6 +1,7 @@
 // lib/content.ts — server-side content loaders shared by the public Route
 // Handlers and the server-rendered portfolio shell. Both use the anon Supabase
 // client so RLS stays the single source of truth for `visible` rows.
+import { unstable_cache } from "next/cache";
 import { supabase } from "@/lib/db";
 
 export type CachedMetadata = {
@@ -150,3 +151,24 @@ export async function getProjectsContent() {
 
   return { projects, groups: groups ?? [] };
 }
+
+// Public portfolio content changes rarely. These cached variants back the
+// server page and public API routes; the raw loaders remain available to admin
+// and sync code that must always read fresh data.
+export const getProfileContentCached = unstable_cache(
+  getProfileContent,
+  ["profile-content"],
+  {
+    tags: ["profile", "site-settings", "books"],
+    revalidate: 300,
+  },
+);
+
+export const getProjectsContentCached = unstable_cache(
+  getProjectsContent,
+  ["projects-content"],
+  {
+    tags: ["projects", "github-cache"],
+    revalidate: 300,
+  },
+);

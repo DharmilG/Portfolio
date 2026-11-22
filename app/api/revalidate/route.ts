@@ -22,7 +22,33 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const repo = new URL(request.url).searchParams.get("repo") ?? "";
+  const params = new URL(request.url).searchParams;
+  const tagParam = params.get("tag");
+
+  if (tagParam) {
+    const allowedTags = [
+      "profile",
+      "site-settings",
+      "books",
+      "profile-content",
+      "projects",
+      "github-cache",
+      "projects-content",
+    ];
+    if (!allowedTags.includes(tagParam)) {
+      return NextResponse.json(
+        { error: "invalid tag" },
+        { status: 400, headers: { "Cache-Control": "no-store" } },
+      );
+    }
+    revalidateTag(tagParam, "max");
+    return NextResponse.json(
+      { revalidated: tagParam, at: new Date().toISOString() },
+      { headers: { "Cache-Control": "no-store" } },
+    );
+  }
+
+  const repo = params.get("repo") ?? "";
   if (!/^[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+$/.test(repo)) {
     return NextResponse.json(
       { error: "invalid repo" },
