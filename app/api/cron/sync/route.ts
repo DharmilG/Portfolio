@@ -98,11 +98,17 @@ export async function GET(request: NextRequest) {
       }
       const filtered = filterTree(entries);
 
-      // The README is the description surface (DOC/05 §5).
+      // The README is the description surface (DOC/05 §5). Prefer the
+      // shallowest README (root README.md wins) and ignore dependency folders
+      // via filterTree above.
       let readme: string | null = null;
-      const readmeEntry = filtered.entries.find(
-        (e) => e.type === "blob" && isReadme(e.path),
-      );
+      const readmeEntry = filtered.entries
+        .filter((e) => e.type === "blob" && isReadme(e.path))
+        .sort((a, b) => {
+          const depth =
+            a.path.split("/").length - b.path.split("/").length;
+          return depth !== 0 ? depth : a.path.localeCompare(b.path);
+        })[0];
       if (readmeEntry) {
         try {
           const blob = await octokit.git.getBlob({
@@ -122,6 +128,8 @@ export async function GET(request: NextRequest) {
       const metadata = {
         description: repoInfo.data.description ?? null,
         readme,
+        readme_path: readmeEntry?.path ?? null,
+        readme_sha: readmeEntry?.sha ?? null,
         stars: repoInfo.data.stargazers_count ?? 0,
         forks: repoInfo.data.forks_count ?? 0,
         language: repoInfo.data.language ?? null,

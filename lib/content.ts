@@ -7,6 +7,8 @@ import { supabase } from "@/lib/db";
 export type CachedMetadata = {
   description?: string | null;
   readme?: string | null;
+  readme_path?: string | null;
+  readme_sha?: string | null;
   stars?: number;
   forks?: number;
   language?: string | null;
@@ -134,6 +136,8 @@ export async function getProjectsContent() {
         (fresh ? metadata?.readme : null) ??
         (fresh ? metadata?.description : null) ??
         null,
+      readme_path: metadata?.readme_path ?? null,
+      readme_sha: fresh ? (metadata?.readme_sha ?? null) : null,
       highlights: project.highlights ?? [],
       group_slug: project.group_slug ?? null,
       tags: (fresh ? metadata?.tags : null) ?? project.tags ?? [],

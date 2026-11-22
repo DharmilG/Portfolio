@@ -89,6 +89,54 @@ async function fetchProjectReadme(
   const cached = readmeCache.get(key);
   if (cached) return cached;
 
+  const fetchBlob = async (path: string, sha: string) => {
+    const query = new URLSearchParams({
+      owner: project.repo_owner,
+      repo: project.repo_name,
+      branch: project.branch,
+      sha,
+      path,
+    });
+    const response = await fetch(`/api/repo/blob?${query.toString()}`, {
+      signal,
+    });
+    const data = (await response.json().catch(() => null)) as {
+      content?: unknown;
+      error?: unknown;
+    } | null;
+    if (!response.ok) {
+      throw new Error(
+        response.status === 413
+          ? "This README.md is too large to preview (max 512 KB)."
+          : responseError(data, "Could not load README.md."),
+      );
+    }
+    return typeof data?.content === "string" ? data.content : "";
+  };
+
+  const toResult = (path: string, content: string): ReadmeResult =>
+    content.trim().length === 0
+      ? { status: "empty", path }
+      : { status: "ready", path, content };
+
+  // The sync job stores the canonical README path + SHA. Use it directly when
+  // available so opening a README costs one request instead of tree + blob.
+  if (project.readme_path && project.readme_sha) {
+    try {
+      const content = await fetchBlob(project.readme_path, project.readme_sha);
+      const result = toResult(project.readme_path, content);
+      readmeCache.set(key, result);
+      return result;
+    } catch (cause) {
+      // A stale cached SHA (e.g. a force push) falls back to a fresh tree
+      // lookup below. A large file or abort must surface immediately.
+      if (signal.aborted) throw cause;
+      if (cause instanceof Error && cause.message.includes("too large")) {
+        throw cause;
+      }
+    }
+  }
+
   const treeQuery = new URLSearchParams({
     owner: project.repo_owner,
     repo: project.repo_name,
@@ -111,7 +159,6 @@ async function fetchProjectReadme(
   const entries = Array.isArray(treeData?.tree)
     ? (treeData.tree as RepoTreeEntry[])
     : [];
-  // Prefer the root README over nested documentation READMEs.
   const readme = entries
     .filter(
       (entry) =>
@@ -130,35 +177,8 @@ async function fetchProjectReadme(
     return missing;
   }
 
-  const blobQuery = new URLSearchParams({
-    owner: project.repo_owner,
-    repo: project.repo_name,
-    branch: project.branch,
-    sha: readme.sha,
-    path: readme.path,
-  });
-  const blobResponse = await fetch(`/api/repo/blob?${blobQuery.toString()}`, {
-    signal,
-  });
-  const blobData = (await blobResponse.json().catch(() => null)) as {
-    content?: unknown;
-    error?: unknown;
-  } | null;
-
-  if (!blobResponse.ok) {
-    throw new Error(
-      blobResponse.status === 413
-        ? "This README.md is too large to preview (max 512 KB)."
-        : responseError(blobData, "Could not load README.md."),
-    );
-  }
-
-  const content = typeof blobData?.content === "string" ? blobData.content : "";
-  const result: ReadmeResult =
-    content.trim().length === 0
-      ? { status: "empty", path: readme.path }
-      : { status: "ready", path: readme.path, content };
-
+  const content = await fetchBlob(readme.path, readme.sha);
+  const result = toResult(readme.path, content);
   readmeCache.set(key, result);
   return result;
 }

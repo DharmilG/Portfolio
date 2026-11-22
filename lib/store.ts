@@ -153,6 +153,8 @@ export type Project = {
   languages: Record<string, number>;
   branch: string;
   sha: string | null;
+  readme_path?: string | null;
+  readme_sha?: string | null;
   preview_url: string | null;
   preview_embeddable: boolean;
   orders: number;
