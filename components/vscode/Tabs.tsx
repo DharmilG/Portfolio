@@ -13,7 +13,12 @@
 // See DOC/05 §6.
 import { useEffect, useRef, useState } from "react";
 import { isMarkdownPath } from "@/lib/langs";
-import { browserTabLabel, hasChanges, useStore } from "@/lib/store";
+import {
+  browserTabLabel,
+  hasChanges,
+  useStore,
+  type EditorTab,
+} from "@/lib/store";
 import { resolveName } from "./Explorer";
 import Menu, { type MenuItem } from "./Menu";
 import Modal from "./Modal";
@@ -31,11 +36,19 @@ function rawUrlFor(path: string): string | null {
 type TabsProps = {
   // Reveal in Explorer — the page owns sidebar visibility + active view.
   onReveal?: (path: string) => void;
+  initialPage?: string;
 };
 
-export default function Tabs({ onReveal }: TabsProps) {
-  const tabs = useStore((s) => s.tabs);
-  const activeTabId = useStore((s) => s.activeTabId);
+export default function Tabs({ onReveal, initialPage }: TabsProps) {
+  const storeTabs = useStore((s) => s.tabs);
+  const storeActiveTabId = useStore((s) => s.activeTabId);
+  // Before the mount effect opens the initial tab, render the same chrome so
+  // hydration does not shift the editor content down.
+  const initialTabs: EditorTab[] = initialPage
+    ? [{ id: `page:${initialPage}`, kind: "page", path: initialPage, sha: null }]
+    : [];
+  const tabs = storeTabs.length > 0 ? storeTabs : initialTabs;
+  const activeTabId = storeActiveTabId ?? initialTabs[0]?.id ?? null;
   const edits = useStore((s) => s.edits);
   const renames = useStore((s) => s.renames);
   const drafts = useStore((s) => s.drafts);

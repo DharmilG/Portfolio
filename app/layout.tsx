@@ -103,6 +103,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        <link rel="preconnect" href="https://covers.openlibrary.org" />
         <script
           dangerouslySetInnerHTML={{
             __html: `

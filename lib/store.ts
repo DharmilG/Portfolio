@@ -18,6 +18,20 @@ import {
 import { isMarkdownPath } from "./langs";
 import type { TerminalShell } from "./terminal/parser";
 
+// Persist is a browser concern only. During SSR the store is seeded with
+// public content for the initial HTML; a no-op Storage keeps zustand from
+// trying to write to a non-existent localStorage in that environment.
+const noopStorage: Storage = {
+  getItem: () => null,
+  setItem: () => {},
+  removeItem: () => {},
+  clear: () => {},
+  key: () => null,
+  get length() {
+    return 0;
+  },
+};
+
 export type TabKind = "code" | "markdown" | "browser" | "page";
 
 export type MarkdownViewMode = "preview" | "source";
@@ -1075,7 +1089,9 @@ export const useStore = create<State>()(
     }),
     {
       name: "vscode-local-v1",
-      storage: createJSONStorage(() => localStorage),
+      storage: createJSONStorage(() =>
+        typeof window === "undefined" ? noopStorage : localStorage,
+      ),
       partialize: (s) => ({
         edits: s.edits,
         commits: s.commits,

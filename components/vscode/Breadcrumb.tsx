@@ -15,6 +15,7 @@ import { fileIcon } from "@/lib/fileIcons";
 import {
   repoTreeKey,
   useStore,
+  type EditorTab,
   type Project,
   type Section,
   type TreeEntry,
@@ -26,6 +27,7 @@ import Tooltip from "./Tooltip";
 
 type BreadcrumbProps = {
   onOpenFile?: (path: string) => void;
+  initialPage?: string;
 };
 
 type Crumb = {
@@ -287,9 +289,14 @@ const UNIFIED_SECTIONS_DATA = [
   { slug: "contact", title: "Contact", icon: "mail", color: "text-[#facc15]" },
 ];
 
-export default function Breadcrumb({ onOpenFile }: BreadcrumbProps) {
-  const tabs = useStore((s) => s.tabs);
-  const activeTabId = useStore((s) => s.activeTabId);
+export default function Breadcrumb({ onOpenFile, initialPage }: BreadcrumbProps) {
+  const storeTabs = useStore((s) => s.tabs);
+  const storeActiveTabId = useStore((s) => s.activeTabId);
+  const initialTabs: EditorTab[] = initialPage
+    ? [{ id: `page:${initialPage}`, kind: "page", path: initialPage, sha: null }]
+    : [];
+  const tabs = storeTabs.length > 0 ? storeTabs : initialTabs;
+  const activeTabId = storeActiveTabId ?? initialTabs[0]?.id ?? null;
   const sections = useStore((s) => s.sections);
   const projects = useStore((s) => s.projects);
   const trees = useStore((s) => s.trees);

@@ -7,7 +7,11 @@
 // Repository code and file-tree browsing stay out of the public project flow.
 import { useState } from "react";
 import { BrandIcon } from "@/lib/iconThemes";
-import { useStore, type Project } from "@/lib/store";
+import {
+  useStore,
+  type Project,
+  type ProjectGroup,
+} from "@/lib/store";
 import Codicon from "../Codicon";
 import SkillIcon from "../SkillIcon";
 import ProjectDetail, {
@@ -113,9 +117,28 @@ function ProjectCard({
   );
 }
 
-export default function ProjectsPage() {
-  const projects = useStore((s) => s.projects);
-  const projectGroups = useStore((s) => s.projectGroups);
+type ProjectsInitial = {
+  projects?: unknown;
+  groups?: unknown;
+};
+
+export default function ProjectsPage({
+  initialProjects,
+}: {
+  initialProjects?: ProjectsInitial | null;
+}) {
+  const storeProjects = useStore((s) => s.projects);
+  const storeGroups = useStore((s) => s.projectGroups);
+  const projects = (
+    Array.isArray(initialProjects?.projects)
+      ? initialProjects.projects
+      : storeProjects
+  ) as Project[];
+  const projectGroups = (
+    Array.isArray(initialProjects?.groups)
+      ? initialProjects.groups
+      : storeGroups
+  ) as ProjectGroup[];
   const [detail, setDetail] = useState<DetailState | null>(null);
 
   const openDetail = (project: Project, view: ProjectDetailView) => {

@@ -1,44 +1,36 @@
 "use client";
 
 // PageSurface — editor surface for portfolio pages.
-// Mounts UnifiedResume for the continuous single-page scroll resume (About through Contact),
-// BooksPage for the dedicated Books bookshelf, and ProjectsPage for the visual projects grid.
-// Page modules are loaded on demand; only the active tab's bundle is fetched.
-import dynamic from "next/dynamic";
-import { useStore } from "@/lib/store";
+// The active page receives the server-loaded content as props so its real
+// content is present in the initial HTML (LCP/SEO), while the store still
+// drives all client-side navigation afterward.
+import { useStore, type ProfileContent } from "@/lib/store";
+import BooksPage from "./pages/Books";
+import CertificatesPage from "./pages/Certificates";
+import ProjectsPage from "./pages/Projects";
+import UnifiedResume from "./pages/UnifiedResume";
 
-function PageLoading() {
-  return (
-    <div className="flex min-h-0 flex-1 items-center justify-center bg-vscode-editor text-xs text-vscode-dim">
-      Loading page…
-    </div>
-  );
-}
+type ProjectsPayload = { projects?: unknown; groups?: unknown };
 
-const UnifiedResume = dynamic(() => import("./pages/UnifiedResume"), {
-  ssr: false,
-  loading: PageLoading,
-});
-const BooksPage = dynamic(() => import("./pages/Books"), {
-  ssr: false,
-  loading: PageLoading,
-});
-const ProjectsPage = dynamic(() => import("./pages/Projects"), {
-  ssr: false,
-  loading: PageLoading,
-});
-const CertificatesPage = dynamic(() => import("./pages/Certificates"), {
-  ssr: false,
-  loading: PageLoading,
-});
+type PageSurfaceProps = {
+  initialPage?: string;
+  initialProfile?: ProfileContent | null;
+  initialProjects?: ProjectsPayload | null;
+};
 
-export default function PageSurface() {
+export default function PageSurface({
+  initialPage,
+  initialProfile,
+  initialProjects,
+}: PageSurfaceProps) {
   const tabs = useStore((s) => s.tabs);
   const activeTabId = useStore((s) => s.activeTabId);
   const tab = tabs.find((t) => t.id === activeTabId);
-  if (!tab || tab.kind !== "page") return null;
+  if (tab && tab.kind !== "page") return null;
+  const path = tab?.kind === "page" ? tab.path : initialPage;
+  if (!path) return null;
 
-  switch (tab.path) {
+  switch (path) {
     case "about":
     case "resume":
     case "experience":
@@ -46,13 +38,13 @@ export default function PageSurface() {
     case "skills":
     case "hackathons":
     case "contact":
-      return <UnifiedResume />;
+      return <UnifiedResume initialProfile={initialProfile} />;
     case "books":
-      return <BooksPage />;
+      return <BooksPage initialProfile={initialProfile} />;
     case "projects":
-      return <ProjectsPage />;
+      return <ProjectsPage initialProjects={initialProjects} />;
     case "certificates":
-      return <CertificatesPage />;
+      return <CertificatesPage initialProfile={initialProfile} />;
     default:
       return null;
   }

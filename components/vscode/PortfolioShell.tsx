@@ -122,7 +122,11 @@ async function loadProjects(initial?: ProjectsPayload) {
   }
 }
 
-async function loadProfile(initial?: ProfileContent, initialPage = "about") {
+async function loadProfile(
+  initial?: ProfileContent,
+  initialPage = "about",
+  openInitialTab = true,
+) {
   try {
     let data = initial;
     if (!data) {
@@ -132,6 +136,7 @@ async function loadProfile(initial?: ProfileContent, initialPage = "about") {
     }
     const st = useStore.getState();
     st.setProfile(data);
+    if (!openInitialTab) return;
     const page = initialPage || "about";
     const existing = st.tabs.find(
       (tab) => tab.kind === "page" && tab.path === page,
@@ -226,8 +231,8 @@ export default function PortfolioShell({
     loadSections();
     if (initialProjects) loadProjects(initialProjects);
     else void loadProjects();
-    if (initialProfile) loadProfile(initialProfile, initialPage);
-    else void loadProfile(undefined, initialPage);
+    if (initialProfile) loadProfile(initialProfile, initialPage, false);
+    else void loadProfile(undefined, initialPage, true);
     closeSidebarOnNarrow();
   }, []);
 
@@ -446,18 +451,22 @@ export default function PortfolioShell({
           <Section className="flex-1 bg-vscode-editor">
             <div className="flex min-h-0 min-w-0 flex-1">
               <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-                <Tabs onReveal={handleReveal} />
-                <Breadcrumb onOpenFile={openCodeTab} />
-                {hasTabs ? (
-                  <>
-                    <FileViewer />
-                    <PageSurface />
-                  </>
-                ) : (
+                <Tabs onReveal={handleReveal} initialPage={initialPage} />
+                <Breadcrumb
+                  onOpenFile={openCodeTab}
+                  initialPage={initialPage}
+                />
+                {hasTabs ? <FileViewer /> : null}
+                <PageSurface
+                  initialPage={initialPage}
+                  initialProfile={initialProfile}
+                  initialProjects={initialProjects}
+                />
+                {!hasTabs && !initialPage ? (
                   <div className="flex min-h-0 flex-1 items-center justify-center text-sm text-vscode-dim">
                     Open a file from the Explorer
                   </div>
-                )}
+                ) : null}
                 {/* One pane per browser tab, kept alive across tab switches
                     (display:none, not unmount) — VS Code keeps the page alive
                     until Suspend. */}

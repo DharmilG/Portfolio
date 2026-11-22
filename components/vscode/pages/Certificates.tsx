@@ -2,12 +2,17 @@
 
 // Certificates — the credentials table (DOC/04 §1). Each card carries the
 // issuer, the date, the credential id and a link to the issuer's page.
-import { useStore } from "@/lib/store";
+import { useStore, type ProfileContent } from "@/lib/store";
 import Codicon from "../Codicon";
 import { PageCard, PageShell } from "./PageShell";
 
-export default function CertificatesPage() {
-  const content = useStore((s) => s.profile);
+export default function CertificatesPage({
+  initialProfile,
+}: {
+  initialProfile?: ProfileContent | null;
+}) {
+  const storeContent = useStore((s) => s.profile);
+  const content = initialProfile ?? storeContent;
   const certificates = content?.certificates ?? [];
 
   return (

@@ -13,6 +13,7 @@ import {
   useStore,
   type ExperienceAchievement,
   type ExperiencePhase,
+  type ProfileContent,
 } from "@/lib/store";
 import Codicon from "../Codicon";
 import SkillIcon from "../SkillIcon";
@@ -35,8 +36,13 @@ const SECTIONS: SectionItem[] = [
   { id: "sec-contact", slug: "contact", title: "Contact", icon: "mail", iconColor: "text-[#facc15]" },
 ];
 
-export default function UnifiedResume() {
-  const content = useStore((s) => s.profile);
+export default function UnifiedResume({
+  initialProfile,
+}: {
+  initialProfile?: ProfileContent | null;
+}) {
+  const storeContent = useStore((s) => s.profile);
+  const content = initialProfile ?? storeContent;
   const openTab = useStore((s) => s.openTab);
   const activeSection = useStore((s) => s.activeSection);
   const setActiveSection = useStore((s) => s.setActiveSection);
