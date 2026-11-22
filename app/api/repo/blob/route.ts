@@ -5,10 +5,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { assertAllowlisted } from "@/lib/allowlist";
 import { supabase } from "@/lib/db";
-import { getOctokit, githubStatus } from "@/lib/github";
+import { BlobTooLargeError, getGithubBlob } from "@/lib/github-blob";
+import { githubStatus } from "@/lib/github";
 import { langFor } from "@/lib/langs";
 import { BlobQuery } from "@/lib/validators";
-import { isBinaryPath, MAX_BLOB_BYTES } from "@/lib/vfs";
+import { isBinaryPath } from "@/lib/vfs";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -18,6 +19,10 @@ function error(status: number, message: string, extra = {}) {
     { error: message, ...extra },
     { status, headers: { "Cache-Control": "no-store" } },
   );
+}
+
+function isReadmePath(path: string): boolean {
+  return /^readme(\.md)?$/i.test(path.split("/").pop() ?? "");
 }
 
 export async function GET(request: NextRequest) {
@@ -69,19 +74,13 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const octokit = getOctokit();
-    const { data } = await octokit.git.getBlob({
+    const { content, size } = await getGithubBlob(
       owner,
       repo,
-      file_sha: sha,
-    });
-    const size = data.size ?? 0;
-    if (size > MAX_BLOB_BYTES) {
-      return error(413, "file too large", { truncated: true });
-    }
-    const content = Buffer.from(data.content, "base64")
-      .toString("utf8")
-      .replace(/^\uFEFF/, "");
+      sha,
+      path,
+      isReadmePath(path),
+    );
     return NextResponse.json(
       {
         full_name: `${project.repo_owner}/${project.repo_name}`,
@@ -96,6 +95,9 @@ export async function GET(request: NextRequest) {
       { headers: { "Cache-Control": "no-store" } },
     );
   } catch (cause) {
+    if (cause instanceof BlobTooLargeError) {
+      return error(413, "file too large", { truncated: true });
+    }
     const status = githubStatus(cause);
     if (status === 404) return error(404, "file not found");
     if (status === 403 || status === 429) {
