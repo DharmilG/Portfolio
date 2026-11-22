@@ -9,8 +9,6 @@ export type AnalyticsEvent =
   | "project_overview_open"
   | "project_preview_open"
   | "readme_toc_jump"
-  | "readme_copy"
-  | "readme_raw_open"
   | "readme_tab_change"
   | "resume_download"
   | "theme_change"

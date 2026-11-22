@@ -437,7 +437,6 @@ function ReadmePanel({ project }: { project: Project }) {
   const copyMarkdown = async () => {
     try {
       await navigator.clipboard.writeText(state.content);
-      trackEvent("readme_copy", { repo: repoSlug(project) });
       setCopyState("copied");
       if (copyTimer.current) window.clearTimeout(copyTimer.current);
       copyTimer.current = window.setTimeout(() => setCopyState("idle"), 1800);
@@ -523,9 +522,6 @@ function ReadmePanel({ project }: { project: Project }) {
             target="_blank"
             rel="noopener noreferrer"
             aria-label="View raw README on GitHub"
-            onClick={() =>
-              trackEvent("readme_raw_open", { repo: repoSlug(project) })
-            }
             className="inline-flex h-6 items-center gap-1 rounded-control px-1.5 text-[11px] text-vscode-dim transition-colors hover:bg-vscode-list-hover hover:text-vscode-fg"
           >
             <Codicon name="file-code" size={12} />
