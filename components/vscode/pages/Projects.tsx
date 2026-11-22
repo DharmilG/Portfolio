@@ -6,6 +6,7 @@
 // repository link; the live-preview icon appears only when the DB has a URL.
 // Repository code and file-tree browsing stay out of the public project flow.
 import { useState } from "react";
+import { trackEvent } from "@/lib/analytics";
 import { BrandIcon } from "@/lib/iconThemes";
 import {
   useStore,
@@ -33,7 +34,8 @@ function ProjectCard({
 }) {
   const title = project.title_override ?? project.repo_name;
   const description = project.description_override ?? project.description;
-  const githubUrl = `https://github.com/${project.repo_owner}/${project.repo_name}`;
+  const repo = `${project.repo_owner}/${project.repo_name}`;
+  const githubUrl = `https://github.com/${repo}`;
 
   return (
     <article className="group flex h-full flex-col rounded-control border border-vscode-page-border bg-vscode-page-card p-5 transition-colors hover:border-vscode-accent/50">
@@ -65,6 +67,7 @@ function ProjectCard({
               rel="noopener noreferrer"
               title="Open live preview"
               aria-label={`Open ${title} live preview`}
+              onClick={() => trackEvent("project_preview_open", { repo })}
               className="flex h-7 w-7 items-center justify-center rounded-control border border-vscode-page-border bg-vscode-page-chip text-vscode-dim transition-colors hover:border-vscode-accent/60 hover:text-vscode-quick-match"
             >
               <Codicon name="link-external" size={13} />
@@ -97,7 +100,10 @@ function ProjectCard({
         <div className="flex items-center gap-2 border-t border-vscode-border/40 pt-3">
           <button
             type="button"
-            onClick={() => onOpen(project, "readme")}
+            onClick={() => {
+              trackEvent("project_readme_open", { repo });
+              onOpen(project, "readme");
+            }}
             className="inline-flex h-7 flex-1 items-center justify-center gap-1.5 rounded-control border border-vscode-page-border bg-vscode-page-chip px-2.5 text-page-micro font-medium text-vscode-muted transition-colors hover:border-vscode-accent/60 hover:text-vscode-fg-active focus-visible:outline focus-visible:outline-1 focus-visible:outline-vscode-accent"
           >
             <Codicon name="markdown" size={13} className="text-[#60a5fa]" />
@@ -105,7 +111,10 @@ function ProjectCard({
           </button>
           <button
             type="button"
-            onClick={() => onOpen(project, "overview")}
+            onClick={() => {
+              trackEvent("project_overview_open", { repo });
+              onOpen(project, "overview");
+            }}
             className="inline-flex h-7 flex-1 items-center justify-center gap-1.5 rounded-control bg-vscode-accent px-2.5 text-page-micro font-medium text-vscode-badge-fg transition-colors hover:bg-vscode-accent-hover focus-visible:outline focus-visible:outline-1 focus-visible:outline-vscode-accent"
           >
             <span className="whitespace-nowrap">View More</span>

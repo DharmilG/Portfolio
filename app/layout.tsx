@@ -1,4 +1,7 @@
+import { GoogleAnalytics } from "@next/third-parties/google";
 import type { Metadata, Viewport } from "next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
+import VercelAnalytics from "@/components/analytics/VercelAnalytics";
 import "@vscode/codicons/dist/codicon.css";
 import "@fontsource/manrope/latin-400.css";
 import "@fontsource/manrope/latin-500.css";
@@ -14,6 +17,9 @@ const SITE_URL = "https://info-dharmil-gajjar.vercel.app";
 const SITE_NAME = "Dharmil Gajjar";
 const SITE_DESCRIPTION =
   "Portfolio of Dharmil Gajjar — full-stack and backend engineer building with Go, Next.js, PostgreSQL and AWS. Projects, experience, skills and resume.";
+
+// Public GA4 measurement ID. No stream ID is required for gtag.js.
+const GA_MEASUREMENT_ID = "G-X3YG56P9SG";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -141,6 +147,11 @@ export default function RootLayout({
             {children}
           </div>
         </ThemeProvider>
+        <VercelAnalytics />
+        <SpeedInsights />
+        {process.env.NODE_ENV === "production" ? (
+          <GoogleAnalytics gaId={GA_MEASUREMENT_ID} />
+        ) : null}
       </body>
     </html>
   );

@@ -16,6 +16,7 @@ import Tabs from "@/components/vscode/Tabs";
 import TitleBar from "@/components/vscode/TitleBar";
 import Toast from "@/components/vscode/Toast";
 import WorkInProgressNotice from "@/components/vscode/WorkInProgressNotice";
+import { trackEvent } from "@/lib/analytics";
 import { COMMANDS, newTextFile, nextFreeKey } from "@/lib/commands";
 import { supabase } from "@/lib/db";
 import { isMarkdownPath } from "@/lib/langs";
@@ -402,7 +403,10 @@ export default function PortfolioShell({
     <div className="flex min-h-0 min-w-0 flex-1 flex-col">
       <TitleBar
         onMenuAction={handleAction}
-        onQuickOpen={() => openPalette("files")}
+        onQuickOpen={() => {
+          trackEvent("command_palette_open", { mode: "files" });
+          openPalette("files");
+        }}
       />
       <div
         ref={rowRef}

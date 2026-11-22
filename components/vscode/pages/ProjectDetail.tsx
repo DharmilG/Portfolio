@@ -15,6 +15,7 @@ import {
   type KeyboardEvent as ReactKeyboardEvent,
   type ReactNode,
 } from "react";
+import { trackEvent } from "@/lib/analytics";
 import { BrandIcon } from "@/lib/iconThemes";
 import type { Project } from "@/lib/store";
 import Codicon from "../Codicon";
@@ -436,6 +437,7 @@ function ReadmePanel({ project }: { project: Project }) {
   const copyMarkdown = async () => {
     try {
       await navigator.clipboard.writeText(state.content);
+      trackEvent("readme_copy", { repo: repoSlug(project) });
       setCopyState("copied");
       if (copyTimer.current) window.clearTimeout(copyTimer.current);
       copyTimer.current = window.setTimeout(() => setCopyState("idle"), 1800);
@@ -471,6 +473,10 @@ function ReadmePanel({ project }: { project: Project }) {
                     key={`${heading.id}-${heading.level}`}
                     type="button"
                     onClick={() => {
+                      trackEvent("readme_toc_jump", {
+                        repo: repoSlug(project),
+                        level: heading.level,
+                      });
                       document
                         .getElementById(heading.id)
                         ?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -517,6 +523,9 @@ function ReadmePanel({ project }: { project: Project }) {
             target="_blank"
             rel="noopener noreferrer"
             aria-label="View raw README on GitHub"
+            onClick={() =>
+              trackEvent("readme_raw_open", { repo: repoSlug(project) })
+            }
             className="inline-flex h-6 items-center gap-1 rounded-control px-1.5 text-[11px] text-vscode-dim transition-colors hover:bg-vscode-list-hover hover:text-vscode-fg"
           >
             <Codicon name="file-code" size={12} />
@@ -803,7 +812,13 @@ export default function ProjectDetail({
             id={overviewTabId}
             aria-selected={view === "overview"}
             aria-controls={panelId}
-            onClick={() => setView("overview")}
+            onClick={() => {
+              trackEvent("readme_tab_change", {
+                repo: repoSlug(project),
+                view: "overview",
+              });
+              setView("overview");
+            }}
             className={`-mb-px inline-flex h-9 items-center gap-1.5 border-b-2 px-3 text-page-micro font-medium transition-colors focus-visible:outline focus-visible:outline-1 focus-visible:outline-vscode-accent ${
               view === "overview"
                 ? "border-vscode-accent text-vscode-fg-active"
@@ -819,7 +834,13 @@ export default function ProjectDetail({
             id={readmeTabId}
             aria-selected={view === "readme"}
             aria-controls={panelId}
-            onClick={() => setView("readme")}
+            onClick={() => {
+              trackEvent("readme_tab_change", {
+                repo: repoSlug(project),
+                view: "readme",
+              });
+              setView("readme");
+            }}
             className={`-mb-px inline-flex h-9 items-center gap-1.5 border-b-2 px-3 text-page-micro font-medium transition-colors focus-visible:outline focus-visible:outline-1 focus-visible:outline-vscode-accent ${
               view === "readme"
                 ? "border-vscode-accent text-vscode-fg-active"

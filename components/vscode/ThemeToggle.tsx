@@ -4,6 +4,7 @@
 // Sits on the header/title bar to the left of Customize Layout.
 // Uses rounded-control (5px radius), VS Code accent blue for the active indicator,
 // seamless sliding transition, and debounced toggling.
+import { trackEvent } from "@/lib/analytics";
 import { useState } from "react";
 import { LuMoon, LuSun } from "react-icons/lu";
 import { useTheme } from "./ThemeContext";
@@ -16,6 +17,7 @@ export default function ThemeToggle() {
   const handleSelect = (mode: "light" | "dark") => {
     if (theme === mode || isDebouncing) return;
     setIsDebouncing(true);
+    trackEvent("theme_change", { mode });
     setTheme(mode);
     setTimeout(() => {
       setIsDebouncing(false);

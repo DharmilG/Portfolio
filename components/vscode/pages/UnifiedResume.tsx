@@ -6,6 +6,7 @@
 // space-y-16 with subtle #232323 horizontal dividers).
 // Synchronizes scroll-spy with the Explorer sidebar and handles smooth cubic easing.
 import { useEffect, useMemo, useRef, useState } from "react";
+import { trackEvent } from "@/lib/analytics";
 import { BrandIcon } from "@/lib/iconThemes";
 import { resumeDownloadUrl, resumeSetting, resumeUrl } from "@/lib/resume";
 import { smoothScrollTo } from "@/lib/scroll";
@@ -254,6 +255,9 @@ export default function UnifiedResume({
                   href={resumeHref || "/Dharmil_Gajjar_Resume.pdf"}
                   target="_blank"
                   rel="noopener noreferrer"
+                  onClick={() =>
+                    trackEvent("resume_download", { source: "hero" })
+                  }
                   className="inline-flex items-center gap-2 rounded-control bg-vscode-accent px-4 py-1.5 text-page-meta font-medium text-white transition-colors hover:bg-vscode-accent-hover"
                 >
                   <Codicon name="file-pdf" size={15} />
