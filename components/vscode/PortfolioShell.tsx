@@ -6,20 +6,13 @@
 import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
 import Breadcrumb from "@/components/vscode/Breadcrumb";
-import CommandPalette from "@/components/vscode/CommandPalette";
 import Explorer from "@/components/vscode/Explorer";
-import ExtensionsView from "@/components/vscode/ExtensionsView";
-import FileViewer from "@/components/vscode/FileViewer";
 import PageSurface from "@/components/vscode/PageSurface";
 import PrimarySideBar from "@/components/vscode/PrimarySideBar";
-import RunView from "@/components/vscode/RunView";
 import Sash from "@/components/vscode/Sash";
-import SearchView from "@/components/vscode/SearchView";
 import Section from "@/components/vscode/Section";
-import SourceControl from "@/components/vscode/SourceControl";
 import StatusBar from "@/components/vscode/StatusBar";
 import Tabs from "@/components/vscode/Tabs";
-import TerminalPanel from "@/components/vscode/TerminalPanel";
 import TitleBar from "@/components/vscode/TitleBar";
 import Toast from "@/components/vscode/Toast";
 import WorkInProgressNotice from "@/components/vscode/WorkInProgressNotice";
@@ -38,6 +31,49 @@ function PreviewLoading() {
     </div>
   );
 }
+
+function PaneLoading({ label }: { label: string }) {
+  return (
+    <div className="flex min-h-0 min-w-0 flex-1 items-center justify-center bg-vscode-side text-xs text-vscode-dim">
+      {label}
+    </div>
+  );
+}
+
+const EditorLoading = () => <PaneLoading label="Loading editor…" />;
+const TerminalLoading = () => <PaneLoading label="Loading terminal…" />;
+const SideViewLoading = () => <PaneLoading label="Loading view…" />;
+
+// Heavy, interaction-only panes are loaded on demand so their parser/editor
+// runtimes are not part of the first page's JavaScript payload.
+const FileViewer = dynamic(() => import("@/components/vscode/FileViewer"), {
+  ssr: false,
+  loading: EditorLoading,
+});
+const TerminalPanel = dynamic(
+  () => import("@/components/vscode/TerminalPanel"),
+  { ssr: false, loading: TerminalLoading },
+);
+const SourceControl = dynamic(
+  () => import("@/components/vscode/SourceControl"),
+  { ssr: false, loading: SideViewLoading },
+);
+const SearchView = dynamic(() => import("@/components/vscode/SearchView"), {
+  ssr: false,
+  loading: SideViewLoading,
+});
+const RunView = dynamic(() => import("@/components/vscode/RunView"), {
+  ssr: false,
+  loading: SideViewLoading,
+});
+const ExtensionsView = dynamic(
+  () => import("@/components/vscode/ExtensionsView"),
+  { ssr: false, loading: SideViewLoading },
+);
+const CommandPalette = dynamic(
+  () => import("@/components/vscode/CommandPalette"),
+  { ssr: false, loading: () => null },
+);
 
 // The integrated browser pane (iframe + picker) loads with the first browser
 // tab; one instance is mounted per browser tab and stays alive when hidden
