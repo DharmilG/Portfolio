@@ -3,6 +3,7 @@
 // ActivityBar — 48px icon rail (store-connected for badge only; rest via props).
 // 2025-refresh look: active item = white icon + rounded pill bg (no left bar).
 // Shared primitives: IconButton + Badge + Codicon. See DOC/05 §4.
+import Image from "next/image";
 import { dirtyCount, useStore, type ActivityId } from "@/lib/store";
 import Badge from "./Badge";
 import IconButton from "./IconButton";
@@ -96,8 +97,13 @@ export default function ActivityBar({
           className="flex h-7 w-7 items-center justify-center overflow-hidden rounded-full bg-vscode-accent text-xs font-semibold text-white hover:ring-2 hover:ring-vscode-accent-hover"
         >
           {avatarUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={avatarUrl} alt="Profile" className="h-full w-full object-cover" />
+            <Image
+              src={avatarUrl}
+              alt="Profile"
+              width={28}
+              height={28}
+              className="h-full w-full object-cover"
+            />
           ) : (
             userInitial
           )}

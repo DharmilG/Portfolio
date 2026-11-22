@@ -3,6 +3,7 @@
 // Books — personal bookshelf and reading recommendations. The sections live in
 // site_settings.books so the list can be edited in Supabase Studio without a
 // deploy; this page only renders whatever is stored there.
+import Image from "next/image";
 import { useStore } from "@/lib/store";
 import Codicon from "../Codicon";
 import { PageShell } from "./PageShell";
@@ -70,12 +71,12 @@ export default function BooksPage() {
                     className="group flex flex-col overflow-hidden rounded-control border border-vscode-page-border bg-vscode-page-card transition-all duration-200 hover:border-vscode-accent/50 hover:bg-vscode-page-card-hover"
                   >
                     <div className="relative aspect-[3/4] w-full overflow-hidden bg-vscode-editor">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
+                      <Image
                         src={book.coverUrl}
                         alt={book.title}
-                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                        loading="lazy"
+                        fill
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                        className="object-cover transition-transform duration-300 group-hover:scale-105"
                       />
                     </div>
                     <div className="flex min-h-[46px] items-center justify-center px-3 py-[5px] text-center">

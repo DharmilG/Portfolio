@@ -1,14 +1,12 @@
 import type { Metadata, Viewport } from "next";
 import "@vscode/codicons/dist/codicon.css";
-import "@fontsource/manrope/400.css";
-import "@fontsource/manrope/500.css";
-import "@fontsource/manrope/600.css";
-import "@fontsource/manrope/700.css";
-import "@fontsource/cascadia-code/400.css";
-import "@fontsource/cascadia-code/400-italic.css";
-import "@fontsource/cascadia-code/700.css";
-import "@fontsource/cascadia-code/700-italic.css";
-import "@fontsource/fira-code/400.css";
+import "@fontsource/manrope/latin-400.css";
+import "@fontsource/manrope/latin-500.css";
+import "@fontsource/manrope/latin-600.css";
+import "@fontsource/manrope/latin-700.css";
+import "@fontsource/cascadia-code/latin-400.css";
+import "@fontsource/cascadia-code/latin-700.css";
+import "@fontsource/fira-code/latin-400.css";
 import "./globals.css";
 import { ThemeProvider } from "@/components/vscode/ThemeContext";
 
