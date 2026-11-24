@@ -438,16 +438,21 @@ values
     'DharmilG',
     'querytohtml',
     'Query to HTML',
-    'Developer utility for converting structured queries and database records into HTML reports.',
+    'A local-first utility that turns one search query into ten saved web pages, organized in a fresh folder with an optional ZIP archive.',
     null,
-    array[]::text[],
-    null,
+    array[
+      'Runs on Node.js with no API keys or paid services.',
+      'Searches Google or DuckDuckGo, fetches the first ten useful pages, and saves real HTML with a stub for failed pages.',
+      'Offers a native folder picker with typed-path fallback, per-run folders, conflict handling, and a manifest.',
+      'Exports HTML files, a ZIP, or both so results can be archived and shared.'
+    ]::text[],
+    'https://querytohtml.onrender.com/',
     true,
     'projects',
     80,
     true,
     false,
-    array['Python']::text[]
+    array['JavaScript', 'Node.js', 'HTML']::text[]
   ),
   -- Composable E-Commerce Repos: Hidden in production
   (
