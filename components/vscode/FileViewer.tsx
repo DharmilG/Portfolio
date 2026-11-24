@@ -17,30 +17,17 @@
 import dynamic from "next/dynamic";
 import {
   useEffect,
-  useMemo,
   useRef,
   useState,
   type CSSProperties,
   type ReactNode,
 } from "react";
-import { createHighlighterCore, getTokenStyleObject } from "shiki/core";
-import { createJavaScriptRegexEngine } from "shiki/engine/javascript";
-import darkPlus from "shiki/themes/dark-plus.mjs";
-import lightPlus from "shiki/themes/light-plus.mjs";
-import ts from "shiki/langs/typescript.mjs";
-import tsx from "shiki/langs/tsx.mjs";
-import js from "shiki/langs/javascript.mjs";
-import jsx from "shiki/langs/jsx.mjs";
-import json from "shiki/langs/json.mjs";
-import md from "shiki/langs/markdown.mjs";
-import css from "shiki/langs/css.mjs";
-import scss from "shiki/langs/scss.mjs";
-import html from "shiki/langs/html.mjs";
-import yaml from "shiki/langs/yaml.mjs";
-import py from "shiki/langs/python.mjs";
-import sh from "shiki/langs/shellscript.mjs";
-import sql from "shiki/langs/sql.mjs";
-import dotenv from "shiki/langs/dotenv.mjs";
+import {
+  type HighlightRequest,
+  type HighlightResponse,
+  type WorkerTokenStyle,
+  type WorkerTokens,
+} from "@/lib/shiki-types";
 import { isMarkdownPath, langFor } from "@/lib/langs";
 import { useStore } from "@/lib/store";
 
@@ -53,15 +40,24 @@ const MarkdownPreview = dynamic(() => import("./MarkdownPreview"), {
   ),
 });
 
-type Highlighter = Awaited<ReturnType<typeof createHighlighterCore>>;
-
-// One highlighter for the tab lifetime; grammars/themes are static imports so
-// the bundler ships exactly this set (the full `shiki` entry would ship all).
-let highlighterPromise: Promise<Highlighter> | null = null;
-
 // Immutable blob content keyed by GitHub SHA. Session-only, like tab buffers;
 // switching tabs does not refetch a file the visitor already opened.
 const repoBlobCache = new Map<string, string>();
+
+// Tokenized output keyed by path + theme + content hash. Worker results are
+// reused when switching back to a tab that was already highlighted.
+const tokenCache = new Map<string, WorkerTokens>();
+
+let requestId = 0;
+
+function hashContent(content: string): string {
+  let hash = 2166136261;
+  for (let i = 0; i < content.length; i++) {
+    hash ^= content.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  return (hash >>> 0).toString(36);
+}
 
 type RepoBlob = {
   path: string;
@@ -69,29 +65,10 @@ type RepoBlob = {
   error?: string;
 };
 
-function getHighlighter(): Promise<Highlighter> {
-  highlighterPromise ??= createHighlighterCore({
-    themes: [darkPlus, lightPlus],
-    langs: [ts, tsx, js, jsx, json, md, css, scss, html, yaml, py, sh, sql, dotenv],
-    engine: createJavaScriptRegexEngine({ forgiving: true }),
-  });
-  return highlighterPromise;
-}
-
-// Shiki returns CSS-style keys ("font-weight", "background-color"). React's
-// style prop needs the camelCase equivalents; passing the raw object throws
-// at runtime for any token with bold/italic/underline/bg styling.
-function tokenStyle(
-  token: Parameters<typeof getTokenStyleObject>[0],
-): CSSProperties {
-  const styles = getTokenStyleObject(token);
-  return {
-    color: styles.color,
-    backgroundColor: styles["background-color"],
-    fontStyle: styles["font-style"] as CSSProperties["fontStyle"],
-    fontWeight: styles["font-weight"] as CSSProperties["fontWeight"],
-    textDecoration: styles["text-decoration"],
-  };
+// The worker converts Shiki's CSS-style keys already; the cast just satisfies
+// React's CSSProperties type without calling Shiki on the main thread.
+function tokenStyle(style: WorkerTokenStyle): CSSProperties {
+  return style as CSSProperties;
 }
 
 // Split a token's text around the search term so the occurrences can be
@@ -129,18 +106,40 @@ export default function FileViewer() {
   const searchQuery = useStore((s) => s.searchQuery);
   const mode = useStore((s) => s.mode);
 
-  const [highlighter, setHighlighter] = useState<Highlighter | null>(null);
+  const [tokens, setTokens] = useState<WorkerTokens | null>(null);
+  const workerRef = useRef<Worker | null>(null);
+  const latestRequest = useRef(0);
+  const pendingKey = useRef("");
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
-    let alive = true;
-    getHighlighter().then((hl) => {
-      if (alive) setHighlighter(hl);
-    });
-    return () => {
-      alive = false;
-    };
+    if (typeof Worker === "undefined") return;
+    try {
+      const worker = new Worker(
+        new URL("../../workers/shiki.worker.ts", import.meta.url),
+        { type: "module" },
+      );
+      workerRef.current = worker;
+      worker.onmessage = (event: MessageEvent<HighlightResponse>) => {
+        const data = event.data;
+        if (data.id !== latestRequest.current) return;
+        if (!data.ok) {
+          setTokens(null);
+          return;
+        }
+        const result: WorkerTokens = { fg: data.fg, lines: data.lines };
+        tokenCache.set(pendingKey.current, result);
+        setTokens(result);
+      };
+      return () => {
+        worker.terminate();
+        workerRef.current = null;
+      };
+    } catch {
+      // Worker unavailable: the editor still shows plain text.
+      return;
+    }
   }, []);
 
   const tab = tabs.find((t) => t.id === activeTabId);
@@ -239,15 +238,35 @@ export default function FileViewer() {
           ? "saved"
           : null;
 
-  const tokens = useMemo(() => {
-    if (!highlighter || path === null || content === undefined || previewing) {
-      return null;
+  useEffect(() => {
+    setTokens(null);
+    if (
+      !workerRef.current ||
+      path === null ||
+      content === undefined ||
+      previewing
+    ) {
+      return;
     }
-    return highlighter.codeToTokens(content, {
+
+    const key = `${path}|${mode}|${hashContent(content)}`;
+    const hit = tokenCache.get(key);
+    if (hit) {
+      setTokens(hit);
+      return;
+    }
+
+    const id = ++requestId;
+    latestRequest.current = id;
+    pendingKey.current = key;
+    const request: HighlightRequest = {
+      id,
+      content,
       lang: langFor(path),
       theme: mode === "light" ? "light-plus" : "dark-plus",
-    });
-  }, [highlighter, path, content, previewing, mode]);
+    };
+    workerRef.current.postMessage(request);
+  }, [content, path, previewing, mode]);
 
   const plainLines =
     tokens === null && content !== undefined ? content.split("\n") : null;
@@ -376,11 +395,11 @@ export default function FileViewer() {
                   style={{ color: tokens?.fg }}
                 >
                   {tokens
-                    ? tokens.tokens.map((line, i) =>
+                    ? tokens.lines.map((line, i) =>
                         lineRow(
                           i,
                           line.map((t, j) => (
-                            <span key={j} style={tokenStyle(t)}>
+                            <span key={j} style={tokenStyle(t.style)}>
                               {searchQuery ? (
                                 markSegments(t.content, searchQuery).map(
                                   (seg, k) =>
