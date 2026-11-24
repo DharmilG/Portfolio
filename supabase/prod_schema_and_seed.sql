@@ -11,7 +11,7 @@ create extension if not exists "pgcrypto";
 -- Sections (Explorer navigation folders)
 create table if not exists sections (
   id uuid primary key default gen_random_uuid(),
-  slug text unique not null check (slug in ('about','resume','certificates','education','experience','projects','skills','hackathons','contact')),
+  slug text unique not null check (slug in ('about','resume','certificates','education','experience','projects','skills','hackathons','books','contact')),
   title text not null,
   icon text not null default 'folder',
   orders int not null default 0,
@@ -248,7 +248,8 @@ values
   ('projects', 'Projects', 'repo', 60, true, 'projects'),
   ('skills', 'Skills', 'code', 70, true, 'static'),
   ('hackathons', 'Hackathons', 'flame', 80, true, 'static'),
-  ('contact', 'Contact', 'mail', 90, true, 'static')
+  ('contact', 'Contact', 'mail', 90, true, 'static'),
+  ('books', 'Books', 'book', 85, true, 'static')
 on conflict (slug) do update set
   title = excluded.title,
   icon = excluded.icon,
