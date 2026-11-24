@@ -1,32 +1,15 @@
 "use client";
 
-// Explorer — folder tree from store (sections + allowlisted projects).
-// Static workspace root ("Dharmil Gajjar") always on top; its row carries the
-// view actions right-aligned, hidden at rest and revealed whenever the
-// sidebar pane is hovered (group/pane lives on SideBar's aside — VS Code
-// `.pane:hover > .pane-header > .actions`, paneview.css).
-// Rows are shared TreeRows: selection follows autoReveal (openTab/setActiveTab
-// in lib/store), ancestors expand + the view scrolls to revealed rows via
-// revealNonce; selection renders blue only while the tree has focus.
-// File decorations follow git conventions: amber name + M badge once edits
-// are saved; new tmp files tint green (untracked). Rename/edits overlays are
-// local-only (rule 03-local-only).
-// See DOC/05 §5, skills vscode-tokens + local-git.
+// Explorer — portfolio sections only. Repository files are intentionally not
+// listed here; project cards open the documentation-first Projects page.
+// The static workspace root stays on top and carries the view actions, hidden
+// at rest and revealed on pane hover (VS Code paneview.css convention).
+// See DOC/05 §5, skills vscode-tokens.
 import { useEffect, useRef, useState } from "react";
-import { fileIcon } from "@/lib/fileIcons";
-import { getFileIconColor, getSectionIconColor } from "@/lib/iconThemes";
-import { readmeDescription } from "@/lib/readme";
-import {
-  isDirty,
-  repoTreeKey,
-  ROOT_NAME,
-  useStore,
-  type Project,
-  type TreeEntry,
-} from "@/lib/store";
+import { getSectionIconColor } from "@/lib/iconThemes";
+import { ROOT_NAME, useStore } from "@/lib/store";
 import Codicon from "./Codicon";
 import RenameInput from "./RenameInput";
-import Tooltip from "./Tooltip";
 import TreeRow from "./TreeRow";
 import ViewActionButton from "./ViewActionButton";
 
@@ -43,7 +26,6 @@ type ViewAction = {
   label: string;
 };
 
-// Root-row view actions (VS Code tooltips; behavior owned by the page).
 const UNIFIED_SECTIONS = new Set([
   "about",
   "experience",
@@ -71,81 +53,6 @@ const EXPLORER_ACTIONS: ViewAction[] = [
   { id: "collapse", icon: "collapse-all", label: "Collapse Folders in View" },
 ];
 
-// Nested repo folders are built from GitHub's recursive tree, so the Explorer
-// does not need one request per directory. Indents stay static Tailwind
-// classes (computed class names would not be emitted by the compiler).
-const REPO_INDENTS = [
-  "pl-14",
-  "pl-[4.5rem]",
-  "pl-[5.5rem]",
-  "pl-[6.5rem]",
-  "pl-[7.5rem]",
-  "pl-[8.5rem]",
-  "pl-[9.5rem]",
-];
-
-type VfsNode = {
-  name: string;
-  path: string;
-  type: "blob" | "tree";
-  sha: string;
-  size?: number;
-  children: VfsNode[];
-};
-
-function buildVfs(entries: TreeEntry[]): VfsNode[] {
-  const root: VfsNode[] = [];
-  const dirs = new Map<string, VfsNode>();
-
-  const ensureDir = (path: string): VfsNode => {
-    const existing = dirs.get(path);
-    if (existing) return existing;
-    const slash = path.lastIndexOf("/");
-    const node: VfsNode = {
-      name: slash < 0 ? path : path.slice(slash + 1),
-      path,
-      type: "tree",
-      sha: "",
-      children: [],
-    };
-    dirs.set(path, node);
-    if (slash < 0) root.push(node);
-    else ensureDir(path.slice(0, slash)).children.push(node);
-    return node;
-  };
-
-  for (const entry of entries) {
-    if (entry.type === "tree") {
-      ensureDir(entry.path).sha = entry.sha;
-      continue;
-    }
-    const slash = entry.path.lastIndexOf("/");
-    const node: VfsNode = {
-      name: slash < 0 ? entry.path : entry.path.slice(slash + 1),
-      path: entry.path,
-      type: "blob",
-      sha: entry.sha,
-      size: entry.size,
-      children: [],
-    };
-    const parent = slash < 0 ? null : ensureDir(entry.path.slice(0, slash));
-    (parent ? parent.children : root).push(node);
-  }
-
-  const sort = (nodes: VfsNode[]) => {
-    nodes.sort((a, b) =>
-      a.type === b.type
-        ? a.name.localeCompare(b.name)
-        : a.type === "tree"
-          ? -1
-          : 1,
-    );
-    nodes.forEach((node) => sort(node.children));
-  };
-  sort(root);
-  return root;
-}
-
 export function resolveName(
   fullPath: string,
   renames: Record<string, string>,
@@ -155,45 +62,26 @@ export function resolveName(
 }
 
 export default function Explorer({
-  onOpenFile,
   onRename,
   onAction,
   filter = "",
 }: ExplorerProps) {
   const sections = useStore((s) => s.sections);
-  const projects = useStore((s) => s.projects);
-  const projectGroups = useStore((s) => s.projectGroups);
-  const trees = useStore((s) => s.trees);
   const renames = useStore((s) => s.renames);
-  const edits = useStore((s) => s.edits);
   const expanded = useStore((s) => s.expanded);
   const toggleExpanded = useStore((s) => s.toggleExpanded);
   const selectedPath = useStore((s) => s.selectedPath);
   const revealNonce = useStore((s) => s.revealNonce);
   const selectPath = useStore((s) => s.selectPath);
   const openTab = useStore((s) => s.openTab);
-  const setTree = useStore((s) => s.setTree);
-  const setTreeBranch = useStore((s) => s.setTreeBranch);
-  const setReadme = useStore((s) => s.setReadme);
-  const readmes = useStore((s) => s.readmes);
-  const repoMeta = useStore((s) => s.repoMeta);
-  const branchByRepo = useStore((s) => s.branchByRepo);
-  const treeBranch = useStore((s) => s.treeBranch);
   const activeTabId = useStore((s) => s.activeTabId);
   const activeSection = useStore((s) => s.activeSection);
   const setActiveSection = useStore((s) => s.setActiveSection);
   const setScrollTargetSection = useStore((s) => s.setScrollTargetSection);
   const [renaming, setRenaming] = useState<string | null>(null);
   const [focused, setFocused] = useState(false);
-  const [treeLoading, setTreeLoading] = useState<Record<string, boolean>>({});
-  const [treeErrors, setTreeErrors] = useState<Record<string, string>>({});
-  const requested = useRef(new Set<string>());
-  const readmeRequested = useRef(new Set<string>());
   const treeRef = useRef<HTMLDivElement>(null);
 
-  // autoReveal scroll: openTab/setActiveTab bump revealNonce; bring the
-  // selected row into view (rows carry data-path). Top-level sections and root
-  // stay put so the Explorer header is never scrolled off-screen.
   useEffect(() => {
     const tree = treeRef.current;
     if (!tree || !selectedPath) return;
@@ -206,8 +94,8 @@ export default function Explorer({
       return;
     }
     let row: HTMLElement | undefined;
-    tree.querySelectorAll<HTMLElement>("[data-path]").forEach((n) => {
-      if (n.dataset.path === selectedPath) row = n;
+    tree.querySelectorAll<HTMLElement>("[data-path]").forEach((node) => {
+      if (node.dataset.path === selectedPath) row = node;
     });
     row?.scrollIntoView({ block: "nearest" });
   }, [revealNonce, selectedPath]);
@@ -216,115 +104,10 @@ export default function Explorer({
     filter.trim() === "" ||
     name.toLowerCase().includes(filter.trim().toLowerCase());
 
-  // The README of a project is its description (DOC/05 §5): fetch the blob
-  // once per commit SHA, keep the opening paragraph and open the file in a
-  // background tab.
-  const loadReadme = async (
-    project: { repo_owner: string; repo_name: string },
-    entries: TreeEntry[],
-  ) => {
-    const repo = `${project.repo_owner}/${project.repo_name}`;
-    const readme = entries.find(
-      (e) =>
-        e.type === "blob" &&
-        /^readme(\.md)?$/i.test(e.path.split("/").pop() ?? ""),
-    );
-    if (!readme || readmeRequested.current.has(readme.sha)) return;
-    readmeRequested.current.add(readme.sha);
-    try {
-      const query = new URLSearchParams({
-        owner: project.repo_owner,
-        repo: project.repo_name,
-        sha: readme.sha,
-        path: readme.path,
-      });
-      const res = await fetch(`/api/repo/blob?${query.toString()}`, {
-        cache: "no-store",
-      });
-      if (!res.ok) return;
-      const data: { content?: string } = await res.json();
-      const text = readmeDescription(data.content ?? "");
-      if (text) setReadme(repo, text);
-      // Auto-open the README in the background (the editor keeps its file).
-      useStore.getState().openTab(
-        {
-          kind: "code",
-          path: `Projects/${repo}/${readme.path}`,
-          sha: readme.sha,
-        },
-        false,
-      );
-    } catch {
-      // The description is optional — the tree still works without it.
-    }
+  const commitRename = (fullPath: string, value: string) => {
+    onRename?.(fullPath, value.trim() === "" ? null : value.trim());
+    setRenaming(null);
   };
-
-  const requestTree = (project: {
-    repo_owner: string;
-    repo_name: string;
-  }) => {
-    const repo = `${project.repo_owner}/${project.repo_name}`;
-    // A branch picked in the status bar wins; without one the route falls
-    // back to the repository's default branch and tells us which it used.
-    const branch = branchByRepo[repo];
-    const key = repoTreeKey(repo, branch ?? treeBranch[repo]);
-    if (requested.current.has(key) || trees[key]) return;
-    requested.current.add(key);
-    setTreeLoading((prev) => ({ ...prev, [key]: true }));
-    const query = new URLSearchParams({
-      owner: project.repo_owner,
-      repo: project.repo_name,
-    });
-    if (branch) query.set("branch", branch);
-    fetch(`/api/repo/tree?${query.toString()}`, { cache: "no-store" })
-      .then(async (res) => {
-        const data: {
-          tree?: TreeEntry[];
-          branch?: string;
-          error?: string;
-        } = await res.json();
-        if (!res.ok) throw new Error(data.error ?? "Could not load files");
-        const loaded = data.branch ?? branch ?? "";
-        const entries = Array.isArray(data.tree) ? data.tree : [];
-        setTree(repo, loaded, entries);
-        setTreeBranch(repo, loaded);
-        void loadReadme(project, entries);
-      })
-      .catch((error: unknown) => {
-        const message =
-          error instanceof Error ? error.message : "Could not load files";
-        setTreeErrors((prev) => ({ ...prev, [key]: message }));
-      })
-      .finally(() => {
-        requested.current.delete(key);
-        setTreeLoading((prev) => {
-          const next = { ...prev };
-          delete next[key];
-          return next;
-        });
-      });
-  };
-
-  // Fetch once per project + branch when the folder is opened; the tree is
-  // session-cached in the store (per branch). A failed request stays put
-  // until the Retry row is clicked.
-  useEffect(() => {
-    for (const project of projects) {
-      const repo = `${project.repo_owner}/${project.repo_name}`;
-      const key = `Projects/${repo}`;
-      const branch = branchByRepo[repo] ?? treeBranch[repo];
-      const treeKey = repoTreeKey(repo, branch);
-      if (
-        !expanded[key] ||
-        trees[treeKey] ||
-        treeLoading[treeKey] ||
-        treeErrors[treeKey]
-      ) {
-        continue;
-      }
-      requestTree(project);
-    }
-  }, [expanded, projects, treeErrors, treeLoading, trees, branchByRepo, treeBranch]);
 
   const rootOpen = expanded[ROOT_NAME] ?? false;
   const showRoot =
@@ -332,186 +115,13 @@ export default function Explorer({
     match(ROOT_NAME) ||
     sections.some((sec) => match(resolveName(sec.slug, renames, sec.title)));
 
-  const nodeMatches = (node: VfsNode, repoKey: string): boolean => {
-    const key = `${repoKey}/${node.path}`;
-    if (match(resolveName(key, renames, node.name))) return true;
-    return node.type === "tree" && node.children.some((child) => nodeMatches(child, repoKey));
-  };
-
-  const renderRepoNodes = (
-    nodes: VfsNode[],
-    repoKey: string,
-    depth: number,
-    indentOffset = 0,
-  ) =>
-    nodes.map((node) => {
-      if (!nodeMatches(node, repoKey)) return null;
-      const key = `${repoKey}/${node.path}`;
-      const name = resolveName(key, renames, node.name);
-      const indent =
-        REPO_INDENTS[
-        Math.min(depth + indentOffset, REPO_INDENTS.length - 1)
-        ];
-
-      if (node.type === "tree") {
-        const open = expanded[key] ?? false;
-        return (
-          <div key={key}>
-            <TreeRow
-              path={key}
-              indent={indent}
-              selected={selectedPath === key}
-              focused={focused}
-              onClick={() => {
-                selectPath(key);
-                toggleExpanded(key);
-              }}
-            >
-              <span className="flex w-5 shrink-0 items-center justify-center text-vscode-dim">
-                <Codicon
-                  name={open ? "chevron-down" : "chevron-right"}
-                  size={18}
-                  className="translate-y-px"
-                />
-              </span>
-              <span className="text-[#e5ba7d]">
-                <Codicon name="folder" size={18} />
-              </span>
-              <span className="truncate">{name}</span>
-            </TreeRow>
-            {open ? renderRepoNodes(node.children, repoKey, depth + 1, indentOffset) : null}
-          </div>
-        );
-      }
-
-      const dirty = isDirty(edits, key);
-      return (
-        <TreeRow
-          key={key}
-          path={key}
-          indent={indent}
-          selected={selectedPath === key}
-          focused={focused}
-          onClick={() => onOpenFile?.(key, node.sha)}
-        >
-          <span className="flex w-5 shrink-0 items-center justify-center">
-            <Codicon name={fileIcon(name)} size={18} className={getFileIconColor(name)} />
-          </span>
-          <span
-            className={`truncate ${dirty ? "text-vscode-modified" : ""}`}
-          >
-            {name}
-          </span>
-          {dirty ? (
-            <span className="ml-auto text-[10px] font-semibold text-vscode-modified">
-              M
-            </span>
-          ) : null}
-        </TreeRow>
-      );
-    });
-
-  // The local scratchpad stays internal (no Explorer row): the terminal can
-  // still write files and they open as tabs, but the tree shows the real
-  // sections only.
-
-  const commitRename = (fullPath: string, value: string) => {
-    onRename?.(fullPath, value.trim() === "" ? null : value.trim());
-    setRenaming(null);
-  };
-
-  // One repository row + its lazy tree. Top-level repos sit at pl-10; repos
-  // inside a project group sit one step deeper and indent their contents.
-  const projectRow = (
-    p: Project,
-    rowIndent: string,
-    indentOffset: number,
-  ) => {
-    const repo = `${p.repo_owner}/${p.repo_name}`;
-    const name = resolveName(
-      `Projects/${repo}`,
-      renames,
-      p.title_override ?? p.repo_name,
-    );
-    if (!match(name)) return null;
-    const branch = branchByRepo[repo] ?? treeBranch[repo];
-    const treeKey = repoTreeKey(repo, branch);
-    const tree = trees[treeKey];
-    const rkey = `Projects/${repo}`;
-    const ropen = expanded[rkey] ?? false;
-    const contentIndent =
-      REPO_INDENTS[Math.min(indentOffset, REPO_INDENTS.length - 1)];
-    return (
-      <div key={p.id}>
-        <TreeRow
-          path={rkey}
-          indent={rowIndent}
-          selected={selectedPath === rkey}
-          focused={focused}
-          title={
-            p.description_override ??
-            readmes[repo] ??
-            p.description ??
-            repoMeta[repo]?.description ??
-            undefined
-          }
-          onClick={() => {
-            selectPath(rkey);
-            toggleExpanded(rkey);
-          }}
-          onDoubleClick={() => setRenaming(rkey)}
-        >
-          <span className="flex w-5 shrink-0 items-center justify-center text-vscode-dim">
-            <Codicon
-              name={ropen ? "chevron-down" : "chevron-right"}
-              size={18}
-              className="translate-y-px"
-            />
-          </span>
-          {renaming === rkey ? (
-            <RenameInput
-              defaultValue={name}
-              label="Rename project"
-              onCommit={(v) => commitRename(rkey, v ?? "")}
-              onCancel={() => setRenaming(null)}
-            />
-          ) : (
-            <span className="truncate">{name}</span>
-          )}
-        </TreeRow>
-        {ropen ? (
-          treeErrors[treeKey] ? (
-            <button
-              type="button"
-              onClick={() => {
-                setTreeErrors((prev) => {
-                  const next = { ...prev };
-                  delete next[treeKey];
-                  return next;
-                });
-                requestTree(p);
-              }}
-              className={`w-full py-1 ${contentIndent} pr-2 text-left text-xs text-vscode-dim hover:text-vscode-fg`}
-            >
-              Could not load files · Retry
-            </button>
-          ) : !tree ? (
-            <p
-              className={`animate-pulse py-1 ${contentIndent} pr-2 text-xs text-vscode-dim`}
-            >
-              Loading files…
-            </p>
-          ) : tree.length === 0 ? (
-            <p className={`py-1 ${contentIndent} pr-2 text-xs text-vscode-dim`}>
-              No files
-            </p>
-          ) : (
-            renderRepoNodes(buildVfs(tree), rkey, 0, indentOffset)
-          )
-        ) : null}
-      </div>
-    );
-  };
+  const isUnifiedTabActive =
+    activeTabId === "page:about" ||
+    activeTabId === "page:experience" ||
+    activeTabId === "page:education" ||
+    activeTabId === "page:skills" ||
+    activeTabId === "page:hackathons" ||
+    activeTabId === "page:contact";
 
   return (
     <div
@@ -546,16 +156,17 @@ export default function Explorer({
               {ROOT_NAME}
             </span>
             <div className="ml-auto hidden shrink-0 items-center group-hover/pane:flex">
-              {EXPLORER_ACTIONS.map((a) => (
+              {EXPLORER_ACTIONS.map((action) => (
                 <ViewActionButton
-                  key={a.id}
-                  icon={a.icon}
-                  label={a.label}
-                  onClick={() => onAction?.(a.id)}
+                  key={action.id}
+                  icon={action.icon}
+                  label={action.label}
+                  onClick={() => onAction?.(action.id)}
                 />
               ))}
             </div>
           </TreeRow>
+
           {rootOpen ? (
             sections.length === 0 ? (
               <p className="py-1 pl-6 pr-2 text-xs text-vscode-dim">
@@ -579,186 +190,56 @@ export default function Explorer({
                 })
                 .map((sec) => {
                   const key = sec.slug;
-                  const open = expanded[key] ?? false;
                   const title = resolveName(key, renames, sec.title);
                   if (!match(title)) return null;
-                  const isProjects = sec.slug === "projects";
-                  const isBooks = sec.slug === "books";
+
                   const isUnified = UNIFIED_SECTIONS.has(sec.slug);
-
-                  const isUnifiedTabActive =
-                    activeTabId === "page:about" ||
-                    activeTabId === "page:experience" ||
-                    activeTabId === "page:education" ||
-                    activeTabId === "page:skills" ||
-                    activeTabId === "page:hackathons" ||
-                    activeTabId === "page:contact";
-
                   const isCurrent = isUnified
                     ? isUnifiedTabActive && activeSection === sec.slug
                     : activeTabId === `page:${sec.slug}`;
 
-                  const isSelected = isCurrent || (!isUnified && selectedPath === key);
-                  const isActiveIndicator = isCurrent;
-
                   return (
-                    <div key={sec.id}>
-                      {isProjects ? (
-                        <div className="my-[5px] mx-3 border-t border-vscode-border" />
-                      ) : null}
-                      <TreeRow
-                        path={key}
-                        indent="pl-5"
-                        selected={isSelected}
-                        focused={focused}
-                        activeIndicator={isActiveIndicator}
-                        onClick={() => {
-                          selectPath(key);
-                          if (isProjects) {
-                            toggleExpanded(key);
-                            return;
-                          }
-                          if (isBooks) {
-                            openTab({ kind: "page", path: "books", sha: null });
-                            return;
-                          }
-                          if (isUnified) {
-                            openTab({ kind: "page", path: "about", sha: null });
-                            setActiveSection(sec.slug);
-                            setScrollTargetSection(sec.slug);
-                            return;
-                          }
-                          openTab({ kind: "page", path: key, sha: null });
-                        }}
-                        onDoubleClick={() => setRenaming(key)}
-                      >
-                        {isProjects ? (
-                          <span className="flex w-5 shrink-0 items-center justify-center text-vscode-dim">
-                            <Codicon
-                              name={open ? "chevron-down" : "chevron-right"}
-                              size={18}
-                              className="translate-y-px"
-                            />
-                          </span>
-                        ) : (
-                          <span className="flex w-5 shrink-0 items-center justify-center">
-                            <Codicon name={sec.icon} size={18} className={getSectionIconColor(sec.slug)} />
-                          </span>
-                        )}
-                        {renaming === key ? (
-                          <RenameInput
-                            defaultValue={title}
-                            label="Rename folder"
-                            onCommit={(v) => commitRename(key, v ?? "")}
-                            onCancel={() => setRenaming(null)}
-                          />
-                        ) : (
-                          <>
-                            <span className="truncate">{title}</span>
-                            {isProjects ? (
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  openTab({ kind: "page", path: "projects", sha: null });
-                                }}
-                                className="ml-auto mr-1 rounded bg-[#0078d4] px-2.5 py-0.5 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-[#0078d4]/90"
-                              >
-                                All Projects
-                              </button>
-                            ) : null}
-                          </>
-                        )}
-                      </TreeRow>
-                      {open && sec.slug === "projects" ? (
-                        <div>
-                          {projectGroups.map((group) => {
-                            const gkey = `Projects/${group.slug}`;
-                            const gname = resolveName(gkey, renames, group.title);
-                            const gopen = expanded[gkey] ?? false;
-                            const children = projects.filter(
-                              (p) =>
-                                p.group_slug === group.slug &&
-                                p.repo_name.toLowerCase() !== "books" &&
-                                (p.title_override ?? "").toLowerCase() !== "books",
-                            );
-                            const matching = children.filter((p) => {
-                              const name = resolveName(
-                                `Projects/${p.repo_owner}/${p.repo_name}`,
-                                renames,
-                                p.title_override ?? p.repo_name,
-                              );
-                              return match(name);
-                            });
-                            if (!match(gname) && matching.length === 0) {
-                              return null;
-                            }
-                            // While filtering, open the group that holds matches.
-                            const showChildren =
-                              gopen || (!match(gname) && matching.length > 0);
-                            return (
-                              <div key={group.id}>
-                                <TreeRow
-                                  path={gkey}
-                                  indent="pl-10"
-                                  selected={selectedPath === gkey}
-                                  focused={focused}
-                                  title={`${gname}${group.description
-                                      ? ` — ${group.description}`
-                                      : ""
-                                    }`}
-                                  onClick={() => {
-                                    selectPath(gkey);
-                                    toggleExpanded(gkey);
-                                  }}
-                                  onDoubleClick={() => setRenaming(gkey)}
-                                >
-                                  <span className="flex w-5 shrink-0 items-center justify-center text-vscode-dim">
-                                    <Codicon
-                                      name={
-                                        gopen ? "chevron-down" : "chevron-right"
-                                      }
-                                      size={18}
-                                      className="translate-y-px"
-                                    />
-                                  </span>
-                                  <span className="text-vscode-dim">
-                                    <Codicon name={group.icon} size={18} />
-                                  </span>
-                                  {renaming === gkey ? (
-                                    <RenameInput
-                                      defaultValue={gname}
-                                      label="Rename group"
-                                      onCommit={(v) => commitRename(gkey, v ?? "")}
-                                      onCancel={() => setRenaming(null)}
-                                    />
-                                  ) : (
-                                    <span className="truncate">{gname}</span>
-                                  )}
-                                </TreeRow>
-                                {showChildren
-                                  ? matching.map((p) =>
-                                    projectRow(p, "pl-14", 1),
-                                  )
-                                  : null}
-                              </div>
-                            );
-                          })}
-                          {projects
-                            .filter(
-                              (p) =>
-                                !p.group_slug &&
-                                p.repo_name.toLowerCase() !== "books" &&
-                                (p.title_override ?? "").toLowerCase() !== "books",
-                            )
-                            .map((p) => projectRow(p, "pl-9", 0))}
-                        </div>
-                      ) : null}
-                    </div>
+                    <TreeRow
+                      key={sec.id}
+                      path={key}
+                      indent="pl-5"
+                      selected={isCurrent || selectedPath === key}
+                      focused={focused}
+                      activeIndicator={isCurrent}
+                      onClick={() => {
+                        selectPath(key);
+                        if (isUnified) {
+                          openTab({ kind: "page", path: "about", sha: null });
+                          setActiveSection(sec.slug);
+                          setScrollTargetSection(sec.slug);
+                          return;
+                        }
+                        openTab({ kind: "page", path: key, sha: null });
+                      }}
+                      onDoubleClick={() => setRenaming(key)}
+                    >
+                      <span className="flex w-5 shrink-0 items-center justify-center">
+                        <Codicon
+                          name={sec.icon}
+                          size={18}
+                          className={getSectionIconColor(sec.slug)}
+                        />
+                      </span>
+                      {renaming === key ? (
+                        <RenameInput
+                          defaultValue={title}
+                          label="Rename folder"
+                          onCommit={(value) => commitRename(key, value ?? "")}
+                          onCancel={() => setRenaming(null)}
+                        />
+                      ) : (
+                        <span className="truncate">{title}</span>
+                      )}
+                    </TreeRow>
                   );
                 })
-            )
-          ) : null}
+              )
+            ) : null}
         </div>
       ) : null}
     </div>
