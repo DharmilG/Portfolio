@@ -5,7 +5,7 @@
 // The static workspace root stays on top and carries the view actions, hidden
 // at rest and revealed on pane hover (VS Code paneview.css convention).
 // See DOC/05 §5, skills vscode-tokens.
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getSectionIconColor } from "@/lib/iconThemes";
 import { ROOT_NAME, useStore } from "@/lib/store";
 import Codicon from "./Codicon";
@@ -66,7 +66,7 @@ export default function Explorer({
   onAction,
   filter = "",
 }: ExplorerProps) {
-  const storeSections = useStore((s) => s.sections);
+  const sections = useStore((s) => s.sections);
   const renames = useStore((s) => s.renames);
   const expanded = useStore((s) => s.expanded);
   const toggleExpanded = useStore((s) => s.toggleExpanded);
@@ -81,23 +81,6 @@ export default function Explorer({
   const [renaming, setRenaming] = useState<string | null>(null);
   const [focused, setFocused] = useState(false);
   const treeRef = useRef<HTMLDivElement>(null);
-
-  // Production's sections check constraint does not yet allow "books", so the
-  // row cannot be stored there. Keep the section visible from a local fallback
-  // until the production schema is updated.
-  const sections = useMemo(() => {
-    if (storeSections.some((sec) => sec.slug === "books")) return storeSections;
-    return [
-      ...storeSections,
-      {
-        id: "books-fallback",
-        slug: "books",
-        title: "Books",
-        icon: "book",
-        orders: 85,
-      },
-    ];
-  }, [storeSections]);
 
   useEffect(() => {
     const tree = treeRef.current;
