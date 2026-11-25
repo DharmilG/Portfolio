@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 import {
   SiGo,
+  SiCloudflareworkers,
   SiTypescript,
   SiJavascript,
   SiPython,
@@ -123,6 +124,9 @@ export default function SkillIcon({
   // Cloud & DevOps
   if (norm.includes("aws")) {
     return <FaAws size={size} className="shrink-0 text-[#ff9900]" aria-hidden="true" />;
+  }
+  if (norm.includes("cloudflare")) {
+    return <SiCloudflareworkers size={size} className="shrink-0 text-[#f6821f]" aria-hidden="true" />;
   }
   if (norm === "docker") {
     return <SiDocker size={size} className="shrink-0 text-[#2496ed]" aria-hidden="true" />;

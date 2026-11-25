@@ -90,6 +90,46 @@ export async function getProfileContent() {
   };
 }
 
+const CURATED_TAGS = new Set([
+  "AWS",
+  "CSS",
+  "Cloudflare Workers",
+  "Docker",
+  "Express.js",
+  "FastAPI",
+  "Firebase",
+  "Git",
+  "GitHub Actions",
+  "Go",
+  "HTML",
+  "JavaScript",
+  "Machine Learning",
+  "MongoDB",
+  "NestJS",
+  "Next.js",
+  "Node.js",
+  "Odoo",
+  "Optuna",
+  "Pandas",
+  "PostgreSQL",
+  "Python",
+  "React",
+  "Redis",
+  "REST API",
+  "REST APIs",
+  "Socket.IO",
+  "Supabase",
+  "Tailwind CSS",
+  "TypeScript",
+]);
+
+function curatedTags(tags: unknown): string[] {
+  if (!Array.isArray(tags)) return [];
+  return tags.filter(
+    (tag): tag is string => typeof tag === "string" && CURATED_TAGS.has(tag),
+  );
+}
+
 export async function getProjectsContent() {
   const [
     { data, error },
@@ -140,7 +180,10 @@ export async function getProjectsContent() {
       readme_sha: fresh ? (metadata?.readme_sha ?? null) : null,
       highlights: project.highlights ?? [],
       group_slug: project.group_slug ?? null,
-      tags: (fresh ? metadata?.tags : null) ?? project.tags ?? [],
+      tags:
+        project.tags && project.tags.length > 0
+          ? project.tags
+          : curatedTags(fresh ? metadata?.tags : null),
       stars: (fresh ? metadata?.stars : 0) ?? 0,
       forks: (fresh ? metadata?.forks : 0) ?? 0,
       language: (fresh ? metadata?.language : null) ?? null,
