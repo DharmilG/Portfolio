@@ -660,16 +660,21 @@ values
     'DharmilG',
     'url_short',
     'URL Shortener',
-    'URL shortening service with click analytics and fast redirection.',
+    'A Cloudflare Workers URL shortener that turns long links into memorable short URLs and records clicks without putting analytics work on the redirect path.',
     null,
-    array[]::text[],
-    null,
+    array[
+      'Creates short links or custom slugs like /launch, with expiry dates and password protection.',
+      'Tracks clicks over time with referrer, country, and device breakdowns.',
+      'Keeps redirects fast by moving analytics work off the request path and running close to visitors.',
+      'Adds rate limits, bot checks, unsafe-URL filtering, QR codes, and API keys for scripted link creation.'
+    ]::text[],
+    'https://url-shortner.dharmilgajjar0.workers.dev/',
     true,
     'projects',
     70,
     true,
     false,
-    array['Python', 'Flask']::text[]
+    array['TypeScript', 'Cloudflare Workers', 'REST APIs']::text[]
   ),
   (
     'DharmilG',
