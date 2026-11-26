@@ -113,6 +113,24 @@ delete from experiences;
 insert into experiences (company, role, period, summary, highlights, tags, kind, url, location, orders, visible)
 values
   (
+    'Opal Works',
+    'Backend Developer',
+    'Jul 2026 — Current',
+    'Production backend and storefront work for an e-commerce brand, covering catalog, cart, checkout, payments, and fulfillment.',
+    array[
+      'Architected the PostgreSQL schema and built the production backend in Next.js for product catalog, cart, checkout, and order management.',
+      'Integrated Razorpay payments and webhook verification with idempotency across payment and order-creation pipelines.',
+      'Integrated the Qikink Print-on-Demand API to automate product synchronization, order forwarding, and fulfillment status updates.',
+      'Improved storefront navigation, responsive layouts, and checkout flows for a smoother shopping experience.'
+    ]::text[],
+    array['Next.js','PostgreSQL','Razorpay','Qikink','E-commerce']::text[],
+    'work',
+    'https://theunpluggedwear.com',
+    null,
+    5,
+    true
+  ),
+  (
     'Northstar Innovations',
     'Software Engineer Intern',
     'Jan 2026 — Jul 2026',
@@ -221,6 +239,47 @@ set phases = $json$[
   }
 ]$json$::jsonb
 where company = 'Northstar Innovations' and kind = 'work';
+
+update experiences
+set phases = $json$[
+  {
+    "label": "Part 01",
+    "title": "Commerce backend",
+    "summary": "Schema, APIs, and order workflows for a production storefront.",
+    "tags": ["Next.js", "PostgreSQL", "REST APIs"],
+    "achievements": [
+      {
+        "lead": "Production data model",
+        "body": "Architected the PostgreSQL schema powering catalog, cart, checkout, and order management.",
+        "tags": ["PostgreSQL"]
+      },
+      {
+        "lead": "Payments with idempotency",
+        "body": "Integrated Razorpay payments and verified webhooks so duplicate charges and orders are prevented.",
+        "tags": ["Next.js", "REST APIs"]
+      }
+    ]
+  },
+  {
+    "label": "Part 02",
+    "title": "Fulfillment & UX",
+    "summary": "Automated print-on-demand operations and refined the buying flow.",
+    "tags": ["Qikink", "E-commerce"],
+    "achievements": [
+      {
+        "lead": "Print-on-demand automation",
+        "body": "Connected the Qikink API for product sync, order forwarding, and fulfillment status updates.",
+        "tags": ["Qikink"]
+      },
+      {
+        "lead": "Storefront refinement",
+        "body": "Improved navigation, responsive layouts, and checkout flows across the storefront.",
+        "tags": ["Next.js", "E-commerce"]
+      }
+    ]
+  }
+]$json$::jsonb
+where company = 'Opal Works' and kind = 'work';
 
 -- Education
 delete from education;
