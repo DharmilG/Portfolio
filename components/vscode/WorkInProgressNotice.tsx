@@ -1,9 +1,8 @@
 "use client";
 
-// WorkInProgressNotice — a compact VS Code notification for every viewport.
-// The previous mobile/tablet modal blocked the whole UI and, because its long
-// paragraph became the largest contentful paint on phones, it dominated LCP.
-// The notice is now a dismissible banner: still visible, never in the way.
+// WorkInProgressNotice — mobile/tablet-only recommendation banner.
+// Desktop visitors get the full workbench with no notice; smaller viewports get
+// a compact, dismissible banner suggesting the desktop experience.
 import { useEffect, useState } from "react";
 import Codicon from "./Codicon";
 
@@ -14,11 +13,18 @@ export default function WorkInProgressNotice() {
   const [isDismissed, setIsDismissed] = useState(true);
   const [isExiting, setIsExiting] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [isSmallViewport, setIsSmallViewport] = useState(false);
 
   useEffect(() => {
     setMounted(true);
     const dismissed = sessionStorage.getItem(STORAGE_KEY) === "true";
     if (!dismissed) setIsDismissed(false);
+
+    const query = window.matchMedia("(max-width: 1023px)");
+    const syncViewport = () => setIsSmallViewport(query.matches);
+    syncViewport();
+    query.addEventListener("change", syncViewport);
+    return () => query.removeEventListener("change", syncViewport);
   }, []);
 
   const handleDismiss = () => {
@@ -44,12 +50,12 @@ export default function WorkInProgressNotice() {
     }
   };
 
-  if (!mounted || isDismissed) return null;
+  if (!mounted || isDismissed || !isSmallViewport) return null;
 
   return (
     <aside
-      aria-label="Work in Progress Notification"
-      className={`fixed bottom-4 left-4 right-4 z-40 select-none sm:left-auto sm:right-4 sm:w-[380px] ${
+      aria-label="Desktop view recommendation"
+      className={`fixed bottom-4 left-4 right-4 z-40 select-none ${
         isExiting ? "animate-vscode-slide-out" : "animate-vscode-slide-in"
       }`}
     >
@@ -57,12 +63,12 @@ export default function WorkInProgressNotice() {
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-2">
             <Codicon
-              name="warning"
+              name="device-desktop"
               size={15}
-              className="mt-0.5 shrink-0 text-vscode-warning"
+              className="mt-0.5 shrink-0 text-vscode-accent"
             />
             <span className="text-xs font-semibold text-vscode-fg-active">
-              Portfolio • Work in Progress
+              Best viewed on desktop
             </span>
           </div>
           <button
@@ -76,7 +82,8 @@ export default function WorkInProgressNotice() {
         </div>
 
         <p className="text-[12px] leading-snug text-vscode-muted">
-          Best viewed on desktop. Mobile layout may be constrained.
+          This portfolio is a desktop VS Code workspace. Some sections may be
+          constrained on smaller screens.
         </p>
 
         <div className="flex items-center justify-end gap-2">
